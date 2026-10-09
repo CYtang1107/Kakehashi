@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Item, PublicTag } from '@kakehashi/shared';
+import type { CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -30,7 +30,8 @@ async function call<T>(path: string, init?: { method?: string; body?: unknown })
 export const api = {
   home: (id: string) => call<HomeBundle>(`/api/home/${id}`),
   consent: (homeId: string, recording: boolean) => call(`/api/home/${homeId}/consent`, { method: 'POST', body: { recording } }),
-  suggest: (itemId: string, suggestion: Exclude<Decision, 'open'>) => call<Item>(`/api/items/${itemId}/suggest`, { method: 'POST', body: { suggestion } }),
+  wish: (itemId: string, kind: WishKind, note?: string) => call<Item>(`/api/items/${itemId}/wish`, { method: 'POST', body: { kind, note } }),
+  proceeds: (homeId: string, choice: Home['proceedsChoice']) => call(`/api/home/${homeId}/proceeds`, { method: 'POST', body: { choice } }),
   update: (itemId: string, body: { decision?: Decision; story?: string }) => call<Item>(`/api/items/${itemId}`, { method: 'PATCH', body }),
   addItem: (body: { homeId: string; roomId: string; name: string; photo?: { base64: string; mime: string }; estimate?: Estimate }) =>
     call<Item>('/api/items', { method: 'POST', body }),

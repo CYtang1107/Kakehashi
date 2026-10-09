@@ -5,9 +5,9 @@ export const HOME_ID = 'tanaka';
 
 export const plans: Plan[] = [
   { id: 'monthly', name: 'Monthly visit', nameJa: '月1回プラン', priceJpy: 12000, visitsPerMonth: 1,
-    description: 'One 2–3 hour visit a month by the same two students. Example price, to be tested in interviews.' },
+    description: 'One 2–3 hour visit a month by the same two students. The fee is the same whatever stays or goes. Example price, to be tested in interviews.' },
   { id: 'twice', name: 'Twice a month', nameJa: '月2回プラン', priceJpy: 22000, visitsPerMonth: 2,
-    description: 'Two visits a month, for homes that need more help. Example price, to be tested in interviews.' },
+    description: 'Two visits a month, for company and a safer home. Example price, to be tested in interviews.' },
 ];
 
 export function seedHome(): Home {
@@ -30,14 +30,15 @@ export function seedHome(): Home {
     ],
     visits: [
       { id: 'v5', date: '2026-10-24', roomId: 'washitsu', summary: 'Tatami room, part 2', status: 'planned' },
-      { id: 'v4', date: '2026-10-10', roomId: 'washitsu', summary: 'Desk and sewing machine passed on; kimono kept. She talked about Osaka for an hour.', status: 'done' },
-      { id: 'v3', date: '2026-09-12', roomId: 'kitchen', summary: 'Rice cooker passed on; old pans recycled. A handrail by the sink was suggested.', status: 'done' },
-      { id: 'v2', date: '2026-08-15', roomId: 'living', summary: 'Television sent to a licensed recycler. The camera is waiting for Kenji’s suggestion.', status: 'done' },
+      { id: 'v4', date: '2026-10-10', roomId: 'washitsu', summary: 'Most of the hour was stories about Osaka. She chose to keep the kimono and, when she was ready, to pass on the desk and sewing machine.', status: 'done' },
+      { id: 'v3', date: '2026-09-12', roomId: 'kitchen', summary: 'Cleared the floor by the stairs so she can walk safely. At her request, the spare rice cooker went to a student.', status: 'done' },
+      { id: 'v2', date: '2026-08-15', roomId: 'living', summary: 'Photo albums and tea; nothing left the house. The TV, broken for years, went to a licensed recycler at her request.', status: 'done' },
       { id: 'v1', date: '2026-07-18', roomId: 'living', summary: 'First visit. Tea and photo albums, nothing sorted. That was the plan.', status: 'done' },
     ],
     activity: { title: 'Gardening group', date: '2026-10-29 14:00', place: 'Neighbourhood gathering place (通いの場)', companion: 'Yui', status: 'accepted' },
     planId: 'monthly',
     payments: [],
+    proceedsChoice: 'grandchild',
   };
 }
 
@@ -48,7 +49,8 @@ export function seedItems(): Item[] {
     { id: 'sewing', homeId: HOME_ID, roomId: 'washitsu', name: 'Sewing machine', nameJa: 'ミシン', year: '1972', glyph: '縫', decision: 'pass',
       story: "I sewed all three children's school bags on this machine. Kenji's had a rocket on it. I'd like it to go to a young person who will make something with it.",
       tagCode: 'KK-0472-SEW', x: 228, y: 148,
-      estimate: { category: 'Household sewing machine', priceLowJpy: 3000, priceHighJpy: 8000, suggestion: 'pass', reason: 'Older mechanical machines still sell well after a service.', source: 'offline' },
+      estimate: { category: 'Household sewing machine', priceLowJpy: 3000, priceHighJpy: 8000, routeIfLetGo: 'pass', reason: 'Older mechanical machines are still useful after a service.', source: 'offline' },
+      proceedsJpy: 3000,
       journey: [
         { at: at('2026-10-10'), stage: 'home', by: 'Michiko Tanaka', note: 'In the family since 1972' },
         { at: at('2026-10-10'), stage: 'sorted', by: 'Yui and Arif', note: 'Michiko chose to pass it on' },
@@ -66,7 +68,7 @@ export function seedItems(): Item[] {
       journey: [{ at: at('2026-10-10'), stage: 'home', by: 'Michiko Tanaka', note: 'Kept at home' }], thanks: [] },
     { id: 'camera', homeId: HOME_ID, roomId: 'living', name: 'Film camera', nameJa: 'カメラ', year: '1979', glyph: '写', decision: 'open',
       story: 'My husband took every family photo with this camera. Kenji used to carry the bag for him on trips.', x: 62, y: 58,
-      journey: [{ at: at('2026-08-15'), stage: 'home', by: 'Michiko Tanaka', note: 'Waiting for a family suggestion' }], thanks: [] },
+      journey: [{ at: at('2026-08-15'), stage: 'home', by: 'Michiko Tanaka', note: 'On the shelf where it has always been' }], thanks: [] },
     { id: 'tv', homeId: HOME_ID, roomId: 'living', name: 'Old television', nameJa: 'テレビ', year: '1998', glyph: '映', decision: 'recycle',
       story: "It stopped working years ago. I kept it because I didn't know where to take it.", x: 146, y: 98,
       journey: [

@@ -86,12 +86,14 @@ export default function AddItem() {
         </View>
       </Card>
       <Card>
-        <Text style={type.section}>{t('estimate')}</Text>
+        <Text style={type.section}>{t('whatWorth')}</Text>
+        <Text style={type.caption}>{t('worthHint')}</Text>
         <Text style={type.caption}>{data.services.ai === 'claude' ? t('estimateBy', { source: t('sourceClaude') }) : t('estimateBy', { source: t('sourceOffline') })}</Text>
         {estimate ? (
           <View style={{ gap: 4 }}>
             <Text style={type.section}>{estimate.priceHighJpy > 0 ? `${yen(estimate.priceLowJpy)} – ${yen(estimate.priceHighJpy)}` : '¥0'}</Text>
-            <Text style={type.bodyBold}>{estimate.category} · {t(`decision_${estimate.suggestion}`)}</Text>
+            <Text style={type.bodyBold}>{estimate.category}</Text>
+            <Text style={type.caption}>{t('routeIfLetGo', { route: t(`decision_${estimate.routeIfLetGo}`) })}</Text>
             <Text style={type.caption}>{estimate.reason}</Text>
           </View>
         ) : null}

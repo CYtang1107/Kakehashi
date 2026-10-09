@@ -1,7 +1,20 @@
 // Types shared by the server and the mobile app.
 
+// 'open' means "not now": the normal state for most items. Nothing has to be decided.
 export type Decision = 'keep' | 'family' | 'pass' | 'recycle' | 'open';
 export const DECISIONS: Exclude<Decision, 'open'>[] = ['keep', 'family', 'pass', 'recycle'];
+// Choices shown to the senior, "not now" first.
+export const CHOICES: Decision[] = ['open', 'keep', 'family', 'pass', 'recycle'];
+
+// What the family far away can say about an item. A wish, never a vote.
+export type WishKind = 'keep-in-family' | 'ask-her' | 'her-choice';
+export const WISHES: WishKind[] = ['keep-in-family', 'ask-her', 'her-choice'];
+export interface Wish {
+  kind: WishKind;
+  from: string;
+  note?: string;
+  at: string;
+}
 
 export type RoomStatus = 'sorted' | 'now' | 'later';
 
@@ -30,7 +43,8 @@ export interface Estimate {
   category: string;
   priceLowJpy: number;
   priceHighJpy: number;
-  suggestion: Exclude<Decision, 'open'>;
+  // Only used if she decides to let the item go: the best route for it.
+  routeIfLetGo: 'pass' | 'recycle' | 'family';
   reason: string;
   source: 'claude' | 'offline';
 }
@@ -50,7 +64,11 @@ export interface Item {
   year?: string;
   glyph: string;
   decision: Decision;
-  suggestion?: Exclude<Decision, 'open'>;
+  wish?: Wish;
+  // Items she agrees to let go stay home until this date, so she can change her mind.
+  holdUntil?: string;
+  // Money from a resale goes to her, never off the family's bill.
+  proceedsJpy?: number;
   story?: string;
   audioUrl?: string;
   photoUrl?: string;
@@ -91,7 +109,6 @@ export interface Payment {
   id: string;
   planId: string;
   amountJpy: number;
-  resaleCreditJpy: number;
   status: 'paid' | 'pending';
   mode: 'stripe-test' | 'demo';
   at: string;
@@ -109,6 +126,8 @@ export interface Home {
   activity?: CommunityActivity;
   planId?: string;
   payments: Payment[];
+  // What she wants done with money from items sold.
+  proceedsChoice: 'keep' | 'grandchild' | 'donate';
 }
 
 export interface Services {
@@ -120,7 +139,8 @@ export interface HomeBundle {
   home: Home;
   items: Item[];
   plans: Plan[];
-  resaleCreditJpy: number;
+  // Total resale money that has gone to the senior.
+  seniorProceedsJpy: number;
   services: Services;
 }
 

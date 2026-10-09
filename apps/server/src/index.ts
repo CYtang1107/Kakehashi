@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { DECISIONS, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
+import { CHOICES, WISHES, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -23,12 +23,17 @@ function fail(res: Response, status: number, message: string) {
   res.status(status).json({ error: message });
 }
 
-// Half of the estimated resale value of items passed on goes back to the family's bill.
-function resaleCredit(homeId: string) {
-  const sum = db.items
-    .filter((i) => i.homeId === homeId && i.decision === 'pass' && i.estimate)
-    .reduce((t, i) => t + (i.estimate!.priceLowJpy + i.estimate!.priceHighJpy) / 2, 0);
-  return Math.round((sum * 0.5) / 100) * 100;
+// Resale money belongs to the senior. It never reduces the family's fee,
+// so nobody gains from her letting things go.
+function seniorProceeds(homeId: string) {
+  return db.items.filter((i) => i.homeId === homeId).reduce((t, i) => t + (i.proceedsJpy ?? 0), 0);
+}
+
+// Items she agrees to let go stay home until the next planned visit, so she can change her mind.
+function nextVisitDate(homeId: string) {
+  const home = findHome(homeId);
+  const today = new Date().toISOString().slice(0, 10);
+  return home?.visits.filter((v) => v.status === 'planned' && v.date >= today).map((v) => v.date).sort()[0];
 }
 
 function bundle(homeId: string): HomeBundle | null {
@@ -38,7 +43,7 @@ function bundle(homeId: string): HomeBundle | null {
     home,
     items: db.items.filter((i) => i.homeId === homeId),
     plans,
-    resaleCreditJpy: resaleCredit(homeId),
+    seniorProceedsJpy: seniorProceeds(homeId),
     services: { ai: aiEnabled() ? 'claude' : 'offline', payments: paymentsMode() },
   };
 }
@@ -62,6 +67,16 @@ app.get('/api/home/:id', (req, res) => {
   const b = bundle(req.params.id);
   if (!b) return fail(res, 404, 'Home not found.');
   res.json(b);
+});
+
+app.post('/api/home/:id/proceeds', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const choice = req.body?.choice;
+  if (!['keep', 'grandchild', 'donate'].includes(choice)) return fail(res, 400, 'Unknown choice.');
+  home.proceedsChoice = choice;
+  save();
+  res.json({ proceedsChoice: choice });
 });
 
 app.post('/api/home/:id/consent', (req, res) => {
@@ -99,10 +114,13 @@ app.patch('/api/items/:id', (req, res) => {
   if (!item) return fail(res, 404, 'Item not found.');
   const { decision, story } = req.body ?? {};
   if (decision !== undefined) {
-    if (![...DECISIONS, 'open'].includes(decision)) return fail(res, 400, 'Unknown decision.');
+    if (!CHOICES.includes(decision)) return fail(res, 400, 'Unknown decision.');
+    const leaving = decision === 'pass' || decision === 'recycle' || decision === 'family';
+    const alreadyLeft = item.journey.some((j) => j.stage !== 'home' && j.stage !== 'sorted');
     if (item.decision !== decision && decision !== 'open') {
-      item.journey.push({ at: now(), stage: 'sorted', by: 'Students, with the senior', note: `Decision: ${decision}` });
+      item.journey.push({ at: now(), stage: 'sorted', by: 'Her decision, with the students', note: `Decision: ${decision}` });
     }
+    item.holdUntil = leaving && !alreadyLeft ? nextVisitDate(item.homeId) : undefined;
     item.decision = decision as Decision;
   }
   if (typeof story === 'string') item.story = story.slice(0, 2000);
@@ -110,12 +128,14 @@ app.patch('/api/items/:id', (req, res) => {
   res.json(item);
 });
 
-app.post('/api/items/:id/suggest', (req, res) => {
+// The family far away can share a wish about an item. It is shown to her; it is never a vote.
+app.post('/api/items/:id/wish', (req, res) => {
   const item = findItem(req.params.id);
   if (!item) return fail(res, 404, 'Item not found.');
-  const s = req.body?.suggestion;
-  if (!DECISIONS.includes(s)) return fail(res, 400, 'Unknown suggestion.');
-  item.suggestion = s;
+  const { kind, note } = req.body ?? {};
+  if (!WISHES.includes(kind)) return fail(res, 400, 'Unknown wish.');
+  const home = findHome(item.homeId);
+  item.wish = { kind, from: home?.childName ?? 'Family', note: note ? String(note).slice(0, 300) : undefined, at: now() };
   save();
   res.json(item);
 });
@@ -148,6 +168,8 @@ app.post('/api/items/:id/handover', (req, res) => {
   const { stage, by, note } = req.body ?? {};
   if (!STAGES.includes(stage)) return fail(res, 400, 'Unknown handover stage.');
   if (!by) return fail(res, 400, 'Say who received the item.');
+  const today = new Date().toISOString().slice(0, 10);
+  if (item.holdUntil && today < item.holdUntil) return fail(res, 409, `This item stays at home until ${item.holdUntil}, in case she changes her mind.`);
   item.journey.push({ at: now(), stage, by: String(by).slice(0, 80), note: note ? String(note).slice(0, 200) : undefined });
   save();
   res.json(item);
@@ -185,17 +207,16 @@ app.post('/api/checkout', async (req, res) => {
   const home = findHome(homeId);
   const plan = plans.find((p) => p.id === planId);
   if (!home || !plan) return fail(res, 400, 'Choose a plan.');
-  const credit = Math.min(resaleCredit(homeId), plan.priceJpy - 1000);
-  const amount = plan.priceJpy - credit;
+  const amount = plan.priceJpy;
   home.planId = plan.id;
   if (paymentsMode() === 'demo') {
-    const payment: Payment = { id: id('pay'), planId: plan.id, amountJpy: amount, resaleCreditJpy: credit, status: 'paid', mode: 'demo', at: now() };
+    const payment: Payment = { id: id('pay'), planId: plan.id, amountJpy: amount, status: 'paid', mode: 'demo', at: now() };
     home.payments.unshift(payment);
     save();
     return res.json({ mode: 'demo', payment });
   }
   try {
-    const url = await createCheckout({ amountJpy: amount, planName: plan.name, homeId, planId: plan.id, resaleCreditJpy: credit, baseUrl: baseUrl(req) });
+    const url = await createCheckout({ amountJpy: amount, planName: plan.name, homeId, planId: plan.id, baseUrl: baseUrl(req) });
     save();
     res.json({ mode: 'stripe-test', url });
   } catch (err) {
@@ -212,7 +233,7 @@ app.get('/payment/success', async (req, res) => {
     const s = await readCheckout(sessionId);
     const home = findHome(s.homeId);
     if (s.paid && home && !home.payments.some((p) => p.id === sessionId)) {
-      home.payments.unshift({ id: sessionId, planId: s.planId, amountJpy: s.amountJpy, resaleCreditJpy: s.resaleCreditJpy, status: 'paid', mode: 'stripe-test', at: now() });
+      home.payments.unshift({ id: sessionId, planId: s.planId, amountJpy: s.amountJpy, status: 'paid', mode: 'stripe-test', at: now() });
       save();
     }
     res.send(page(s.paid ? 'Payment complete (test mode)' : 'Payment not completed', s.paid ? 'No real money was charged. You can close this page and return to the app.' : 'Return to the app and try again.'));

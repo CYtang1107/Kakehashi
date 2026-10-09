@@ -14,21 +14,22 @@ const SCHEMA = {
     category: { type: 'string', description: 'Short name of what the item is, in English' },
     priceLowJpy: { type: 'integer', description: 'Low end of a realistic second-hand price in Japan, in yen' },
     priceHighJpy: { type: 'integer', description: 'High end of a realistic second-hand price in Japan, in yen' },
-    suggestion: { type: 'string', enum: ['pass', 'recycle', 'family', 'keep'] },
-    reason: { type: 'string', description: 'One or two plain sentences explaining the suggestion' },
+    routeIfLetGo: { type: 'string', enum: ['pass', 'recycle', 'family'] },
+    reason: { type: 'string', description: 'One or two plain sentences about the item and the route' },
   },
-  required: ['category', 'priceLowJpy', 'priceHighJpy', 'suggestion', 'reason'],
+  required: ['category', 'priceLowJpy', 'priceHighJpy', 'routeIfLetGo', 'reason'],
   additionalProperties: false,
 } as const;
 
-const PROMPT = `You help university students who visit an elderly person's home every month to sort belongings together.
-Look at the photo of one item and estimate what it could sell for second-hand in Japan.
-Suggest one next step for the item:
+const PROMPT = `You help university students who visit an elderly person's home every month for company and to keep the home safe.
+The senior decides what happens to her belongings, and most items stay. Never encourage her to let anything go.
+The students only ask you because she or her family asked what this item might be worth.
+Look at the photo of one item and estimate a realistic second-hand price range in Japan.
+Then say which route would suit it ONLY IF she chooses to let it go:
 - "pass" if it is usable and someone else could use it (a student starting out, a second-hand shop, a charity)
-- "recycle" if it is broken, unsafe, or has no resale value (electronics go to a licensed recycler)
+- "recycle" if it is broken or unsafe (electronics go to a licensed recycler)
 - "family" if it may be valuable, an heirloom, or likely to matter to the family, so they should be asked first
-- "keep" only if it is something the senior clearly uses every day
-The senior always makes the final decision; your suggestion is advice for the students.
+Write the reason gently and plainly, about the item, not about getting rid of it.
 If you cannot tell what the item is, say so in the reason and give a wide price range.`;
 
 export async function estimateWithClaude(base64: string, mime: string, name?: string): Promise<Estimate> {
@@ -60,15 +61,15 @@ export async function estimateWithClaude(base64: string, mime: string, name?: st
 
 const RULES: { match: RegExp; e: Omit<Estimate, 'source'> }[] = [
   { match: /tv|television|テレビ|monitor|microwave|電子レンジ|fridge|冷蔵庫|washing|洗濯/i,
-    e: { category: 'Large electrical appliance', priceLowJpy: 0, priceHighJpy: 0, suggestion: 'recycle', reason: 'Old large appliances rarely resell. Send to a licensed recycler and track the handover.' } },
+    e: { category: 'Large electrical appliance', priceLowJpy: 0, priceHighJpy: 0, routeIfLetGo: 'recycle', reason: 'Old large appliances rarely resell. If she wants it gone, a licensed recycler is the right place, with the handover tracked.' } },
   { match: /camera|カメラ|watch|時計|ring|指輪|gold|金|jewel|宝石|kimono|着物|antique|骨董/i,
-    e: { category: 'Possible valuable or heirloom', priceLowJpy: 3000, priceHighJpy: 30000, suggestion: 'family', reason: 'This may be valuable or matter to the family. Ask the family before deciding.' } },
+    e: { category: 'Possible valuable or heirloom', priceLowJpy: 3000, priceHighJpy: 30000, routeIfLetGo: 'family', reason: 'This may be valuable or matter to the family. If she ever wants to let it go, ask the family first.' } },
   { match: /sewing|ミシン|desk|机|chair|椅子|table|テーブル|shelf|棚|bicycle|自転車|cooker|炊飯器|kettle|やかん/i,
-    e: { category: 'Usable household item', priceLowJpy: 1000, priceHighJpy: 8000, suggestion: 'pass', reason: 'Usable items like this are welcome by students setting up a first home.' } },
+    e: { category: 'Usable household item', priceLowJpy: 1000, priceHighJpy: 8000, routeIfLetGo: 'pass', reason: 'If she wants to let it go, students setting up a first home would welcome it.' } },
 ];
 
 export function offlineEstimate(name?: string): Estimate {
   const hit = RULES.find((r) => name && r.match.test(name));
-  const e = hit?.e ?? { category: 'Household item', priceLowJpy: 300, priceHighJpy: 3000, suggestion: 'pass' as const, reason: 'No AI key is set, so this is a rough rule-based estimate.' };
+  const e = hit?.e ?? { category: 'Household item', priceLowJpy: 300, priceHighJpy: 3000, routeIfLetGo: 'pass' as const, reason: 'No AI key is set, so this is a rough rule-based estimate.' };
   return { ...e, source: 'offline' };
 }

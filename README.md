@@ -8,7 +8,7 @@ TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an examp
 
 | Role | What they can do |
 | --- | --- |
-| **Family** | Home summary · **digital 実家** as a rotatable **3D** house, a floor plan, or **memory mode** (the house at dusk, every item that lived there glowing with its story, plus an automatic memory tour) · item stories with recordings · **suggest** what happens to an item (the senior decides) · **plan and payment** with resale credit · visit reports and thank-yous |
+| **Family** | Home summary · **digital 実家** as a rotatable **3D** house, a floor plan, or **memory mode** (the house at dusk, every item that lived there glowing with its story, plus an automatic memory tour) · item stories with recordings · share a **wish** about an item (never a vote; the senior decides) · value shown **only when asked** · **plan and payment** (same fee whatever stays or goes) · visit reports and thank-yous |
 | **Students** | Visit checklist · **recording consent** · log an item with a photo and an **AI value estimate** · record the story (real audio) · create a **story tag QR** · log handovers to repair shops or licensed recyclers |
 | **New owner** | **Scan the QR** (phone camera) or type the code · hear the story · see the item's journey · send a thank-you |
 
@@ -58,6 +58,15 @@ apps/server   Express API, JSON-file storage (apps/server/data, not committed), 
 apps/mobile   Expo Router app (iOS, Android, web)
 packages/shared  Types shared by both
 ```
+
+## No pressure to let go
+
+- **"Not now" is the first and default choice.** Most items are never decided, and most visits nothing leaves the house.
+- **Resale money belongs to the senior.** She chooses to keep it, save it for a grandchild, or donate it. It never reduces the family's fee, so nobody gains from her letting things go.
+- **The family shares wishes, not votes** ("I'd love to keep it in the family", "Please ask her about its story").
+- **Value is shown only when someone asks**, and the AI only says where an item would go *if* she chooses to let it go.
+- **Change-of-mind hold:** an item she agrees to let go stays at home until the next visit; the server refuses an earlier handover.
+- **Progress is measured in visits, stories and safer rooms**, never in items removed.
 
 ## Privacy defaults
 

@@ -7,7 +7,7 @@ import { FloorPlan } from '../../src/FloorPlan';
 import { Home3D, memoryColors } from '../../src/Home3D';
 import { StoryPlayer } from '../../src/Audio';
 import { useData } from '../../src/data';
-import { useI18n } from '../../src/i18n';
+import { useI18n, type Key } from '../../src/i18n';
 import { colors, fonts, roomColor, type } from '../../src/theme';
 
 type View3 = '3d' | '2d' | 'memory';
@@ -110,7 +110,7 @@ export default function House() {
                     <Glyph ch={it.glyph} />
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={type.bodyBold}>{lang === 'ja' && it.nameJa ? it.nameJa : it.name}</Text>
-                      <Text style={type.caption}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{it.suggestion && it.decision === 'open' ? ` · ${t('yourSuggestion')}: ${t(`decision_${it.suggestion}`)}` : ''}</Text>
+                      <Text style={type.caption}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{it.wish ? ` · ${t('yourWish')}: ${t(`wish_${it.wish.kind.replace(/-/g, '_')}` as Key)}` : ''}</Text>
                     </View>
                     <DecisionChip decision={it.decision} />
                   </Pressable>

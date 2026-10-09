@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import type { Home } from '@kakehashi/shared';
 import { Button, Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
 import { colors, fonts, type, yen } from '../../src/theme';
+
+const PROCEEDS: Home['proceedsChoice'][] = ['keep', 'grandchild', 'donate'];
 
 export default function PlanScreen() {
   const { data, refresh, showToast } = useData();
@@ -17,8 +20,6 @@ export default function PlanScreen() {
 
   const planId = chosen ?? data.home.planId ?? data.plans[0].id;
   const plan = data.plans.find((p) => p.id === planId)!;
-  const credit = Math.min(data.resaleCreditJpy, plan.priceJpy - 1000);
-  const total = plan.priceJpy - credit;
 
   const pay = async () => {
     setBusy(true);
@@ -33,6 +34,10 @@ export default function PlanScreen() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const setProceeds = async (choice: Home['proceedsChoice']) => {
+    try { await api.proceeds(data.home.id, choice); await refresh(); } catch (e) { setError(e instanceof Error ? e.message : 'Could not save.'); }
   };
 
   return (
@@ -54,30 +59,42 @@ export default function PlanScreen() {
         );
       })}
       <Card>
-        <Row label={lang === 'ja' ? plan.nameJa : plan.name} value={yen(plan.priceJpy)} />
-        <Row label={t('resaleCredit')} value={`− ${yen(credit)}`} color={colors.moss} />
-        <View style={{ height: 1, backgroundColor: colors.line }} />
-        <Row label={t('youPay')} value={yen(total)} strong />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={[type.bodyBold, { flex: 1 }]}>{t('youPay')}</Text>
+          <Text style={[type.section, { fontVariant: ['tabular-nums'] }]}>{yen(plan.priceJpy)}</Text>
+        </View>
         <Button label={t('payNow')} icon="credit-card" busy={busy} onPress={pay} />
         <Text style={type.caption}>{data.services.payments === 'stripe-test' ? t('stripeTest') : t('demoMode')}</Text>
         {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
       </Card>
+
+      <Card style={{ backgroundColor: colors.mossTint, borderColor: 'transparent' }}>
+        <Text style={type.section}>{t('proceedsTitle')}</Text>
+        <Text style={type.body}>{t('proceedsBody', { amount: yen(data.seniorProceedsJpy) })}</Text>
+        <Text style={type.bodyBold}>{t('proceedsChoice')}</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {PROCEEDS.map((c) => {
+            const on = data.home.proceedsChoice === c;
+            return (
+              <Pressable key={c} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => setProceeds(c)}
+                style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: on ? colors.moss : colors.line, backgroundColor: on ? colors.sheet : 'transparent' }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: on ? colors.moss : colors.inkSoft }}>{t(`proceeds_${c}`)}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Card>
+
       <Text style={type.section}>{t('payments')}</Text>
       {data.home.payments.length === 0 ? <Text style={type.caption}>{t('noPayments')}</Text> : data.home.payments.map((p) => (
         <Card key={p.id}>
-          <Row label={`${formatDate(p.at, lang)} · ${p.mode === 'demo' ? 'demo' : 'Stripe test'}`} value={yen(p.amountJpy)} />
-          <Text style={type.caption}>{t('resaleCredit')}: {yen(p.resaleCreditJpy)} · {t('paid')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={[type.body, { flex: 1 }]}>{formatDate(p.at, lang)} · {p.mode === 'demo' ? 'demo' : 'Stripe test'}</Text>
+            <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'] }]}>{yen(p.amountJpy)}</Text>
+          </View>
+          <Text style={type.caption}>{t('paid')}</Text>
         </Card>
       ))}
     </Screen>
-  );
-}
-
-function Row({ label, value, strong, color }: { label: string; value: string; strong?: boolean; color?: string }) {
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <Text style={[strong ? type.bodyBold : type.body, { flex: 1 }]}>{label}</Text>
-      <Text style={[strong ? type.section : type.body, { color: color ?? colors.ink, fontVariant: ['tabular-nums'] }]}>{value}</Text>
-    </View>
   );
 }

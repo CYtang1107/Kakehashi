@@ -17,7 +17,7 @@ export function paymentsMode(): 'stripe-test' | 'demo' {
 
 const stripe = () => new Stripe(key());
 
-export async function createCheckout(opts: { amountJpy: number; planName: string; homeId: string; planId: string; resaleCreditJpy: number; baseUrl: string }) {
+export async function createCheckout(opts: { amountJpy: number; planName: string; homeId: string; planId: string; baseUrl: string }) {
   const session = await stripe().checkout.sessions.create({
     mode: 'payment',
     line_items: [{
@@ -25,13 +25,10 @@ export async function createCheckout(opts: { amountJpy: number; planName: string
       price_data: {
         currency: 'jpy',
         unit_amount: opts.amountJpy,
-        product_data: {
-          name: `KAKEHASHI ${opts.planName} (first month)`,
-          description: opts.resaleCreditJpy > 0 ? `Includes a resale credit of ¥${opts.resaleCreditJpy.toLocaleString('en-US')}` : undefined,
-        },
+        product_data: { name: `KAKEHASHI ${opts.planName} (first month)` },
       },
     }],
-    metadata: { homeId: opts.homeId, planId: opts.planId, resaleCreditJpy: String(opts.resaleCreditJpy) },
+    metadata: { homeId: opts.homeId, planId: opts.planId },
     success_url: `${opts.baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${opts.baseUrl}/payment/cancel`,
   });
@@ -45,6 +42,5 @@ export async function readCheckout(sessionId: string) {
     amountJpy: s.amount_total ?? 0,
     homeId: s.metadata?.homeId ?? '',
     planId: s.metadata?.planId ?? '',
-    resaleCreditJpy: Number(s.metadata?.resaleCreditJpy ?? 0),
   };
 }

@@ -15,11 +15,11 @@ export default function FamilyHome() {
         const { home, items } = data;
         const next = home.visits.find((v) => v.status === 'planned');
         const room = home.rooms.find((r) => r.id === next?.roomId);
-        const sorted = home.rooms.filter((r) => r.status === 'sorted').length;
-        const decided = items.filter((i) => i.decision !== 'open').length;
+        const visitsDone = home.visits.filter((v) => v.status === 'done').length;
+        const stories = items.filter((i) => i.story || i.audioUrl).length;
+        const safer = home.rooms.filter((r) => r.status === 'sorted').length;
         const latest = [...items].filter((i) => i.story).sort((a, b) => (b.journey.at(-1)?.at ?? '').localeCompare(a.journey.at(-1)?.at ?? ''))[0];
         const [a, b] = home.students;
-        const pct = Math.round((sorted / home.rooms.length) * 100);
         return (
           <>
             <Heading eyebrow={t('mothersHome', { town: home.town })} title={t('greeting', { name: home.childName })} />
@@ -35,16 +35,9 @@ export default function FamilyHome() {
               </Card>
             ) : null}
             <Card>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={type.bodyBold}>{t('homeSorted')}</Text>
-                  <Text style={type.caption}>{t('roomsDone', { done: sorted, total: home.rooms.length, decided, items: items.length })}</Text>
-                </View>
-                <Text style={type.section}>{pct}%</Text>
-              </View>
-              <View style={{ height: 8, borderRadius: 4, backgroundColor: colors.paper, overflow: 'hidden' }}>
-                <View style={{ width: `${pct}%`, height: '100%', backgroundColor: colors.ai }} />
-              </View>
+              <Text style={type.bodyBold}>{t('togetherSoFar')}</Text>
+              <Text style={type.body}>{t('togetherStats', { visits: visitsDone, stories, rooms: safer })}</Text>
+              <Text style={type.caption}>{t('togetherNote')}</Text>
               <Button label={t('openHouse')} kind="secondary" icon="box" onPress={() => router.push('/family/house')} />
             </Card>
             {latest ? (
