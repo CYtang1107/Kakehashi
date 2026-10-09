@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "KAKEHASHI",
+    "slug": "kakehashi",
+    "scheme": "kakehashi",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      ["expo-camera", { "cameraPermission": "KAKEHASHI uses the camera to photograph items and scan story tags." }],
+      ["expo-audio", { "microphonePermission": "KAKEHASHI records item stories, only with the senior's consent." }],
+      ["expo-image-picker", { "photosPermission": "KAKEHASHI lets students add photos of items." }]
+    ],
+    "web": { "bundler": "metro", "output": "single" },
+    "experiments": { "typedRoutes": false }
+  }
+}

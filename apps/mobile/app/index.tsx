@@ -1,0 +1,43 @@
+import React from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import { TopBar } from '../src/ui';
+import { useI18n, type Key } from '../src/i18n';
+import { colors, fonts, type } from '../src/theme';
+
+const ROLES: { path: '/family' | '/student' | '/owner'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
+  { path: '/family', title: 'roleFamily', hint: 'roleFamilyHint', icon: 'home' },
+  { path: '/student', title: 'roleStudents', hint: 'roleStudentsHint', icon: 'users' },
+  { path: '/owner', title: 'roleOwner', hint: 'roleOwnerHint', icon: 'gift' },
+];
+
+export default function RolePicker() {
+  const { t } = useI18n();
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.paper }}>
+      <TopBar />
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 16, maxWidth: 640, width: '100%', alignSelf: 'center' }}>
+        <View style={{ gap: 6, paddingVertical: 12 }}>
+          <Text style={[type.title, { fontSize: 30, lineHeight: 40 }]}>実家じまい, started early and done together</Text>
+          <Text style={[type.body, { color: colors.inkSoft }]}>{t('appTagline')}</Text>
+        </View>
+        <Text style={type.section}>{t('chooseRole')}</Text>
+        {ROLES.map((r) => (
+          <Pressable key={r.path} accessibilityRole="button" onPress={() => router.push(r.path)}
+            style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet, opacity: pressed ? 0.85 : 1 })}>
+            <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.aiTint, alignItems: 'center', justifyContent: 'center' }}>
+              <Feather name={r.icon} size={22} color={colors.ai} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ink }}>{t(r.title)}</Text>
+              <Text style={type.caption}>{t(r.hint)}</Text>
+            </View>
+            <Feather name="chevron-right" size={20} color={colors.inkSoft} />
+          </Pressable>
+        ))}
+        <Text style={type.caption}>{t('exampleData')}</Text>
+      </ScrollView>
+    </View>
+  );
+}
