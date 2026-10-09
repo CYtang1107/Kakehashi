@@ -8,7 +8,7 @@ TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an examp
 
 | Role | What they can do |
 | --- | --- |
-| **Family** | Home summary · **digital 実家** as a rotatable **3D** house or a floor plan · item stories with recordings · **suggest** what happens to an item (the senior decides) · **plan and payment** with resale credit · visit reports and thank-yous |
+| **Family** | Home summary · **digital 実家** as a rotatable **3D** house, a floor plan, or **memory mode** (the house at dusk, every item that lived there glowing with its story, plus an automatic memory tour) · item stories with recordings · **suggest** what happens to an item (the senior decides) · **plan and payment** with resale credit · visit reports and thank-yous |
 | **Students** | Visit checklist · **recording consent** · log an item with a photo and an **AI value estimate** · record the story (real audio) · create a **story tag QR** · log handovers to repair shops or licensed recyclers |
 | **New owner** | **Scan the QR** (phone camera) or type the code · hear the story · see the item's journey · send a thank-you |
 
