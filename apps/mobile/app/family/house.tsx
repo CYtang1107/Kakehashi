@@ -7,6 +7,8 @@ import { FloorPlan } from '../../src/FloorPlan';
 import { Home3D, memoryColors } from '../../src/Home3D';
 import { StoryPlayer } from '../../src/Audio';
 import { RoomGallery } from '../../src/Community';
+import { PixelIcon } from '../../src/PixelIcon';
+import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { colors, fonts, roomColor, type } from '../../src/theme';
@@ -78,7 +80,7 @@ export default function House() {
               : <Home3D rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} memory={memory} />}
             {memory ? (
               <Text style={[type.caption, { color: '#CDBFAE', paddingHorizontal: 6, paddingTop: 4 }]}>{t('memoryLegend', { n: memories.length })}</Text>
-            ) : (
+            ) : view === '2d' ? (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14, paddingHorizontal: 6, paddingTop: 4 }}>
                 {([['sorted', t('legendSorted')], ['now', t('legendNow')], ['later', t('legendLater')]] as const).map(([k, label]) => (
                   <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -87,7 +89,7 @@ export default function House() {
                   </View>
                 ))}
               </View>
-            )}
+            ) : null}
           </Card>
 
           {memory ? (
@@ -109,7 +111,7 @@ export default function House() {
                 return (
                   <Pressable key={it.id} accessibilityRole="button" onPress={() => onSelect(it.id)}
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet }}>
-                    <Glyph ch={it.glyph} />
+                    <PixelIcon sprite={spriteFor(it)} />
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={type.bodyBold}>{lang === 'ja' && it.nameJa ? it.nameJa : it.name}</Text>
                       <Text style={type.caption}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{it.wish ? ` · ${t('yourWish')}: ${t(`wish_${it.wish.kind.replace(/-/g, '_')}` as Key)}` : ''}</Text>
@@ -142,9 +144,7 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
   return (
     <View style={{ borderRadius: 16, padding: 16, gap: 10, backgroundColor: '#2A241E', borderWidth: 1, borderColor: '#4A3F33' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View style={{ width: 46, height: 46, borderRadius: 12, backgroundColor: '#3A3128', alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontFamily: fonts.display, fontSize: 22, color: memoryColors.lantern }}>{item.glyph}</Text>
-        </View>
+        <PixelIcon sprite={spriteFor(item)} size={46} />
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: fonts.display, fontSize: 20, color: '#F5EBDD' }}>{lang === 'ja' && item.nameJa ? item.nameJa : item.name}</Text>
           <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: '#CDBFAE' }}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{item.year ? ` · ${item.year}` : ''}</Text>

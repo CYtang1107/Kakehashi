@@ -9,6 +9,8 @@ import { api } from '../../src/api';
 import { CallsCard, LetterCard } from '../../src/Touchpoints';
 import { ActivitiesCard, RoomCapture } from '../../src/Community';
 import { FieldNotesCard, ReportCard } from '../../src/Handover';
+import { PixelIcon } from '../../src/PixelIcon';
+import { spriteFor } from '../../src/pixelArt';
 import { colors, type } from '../../src/theme';
 
 export default function Visit() {
@@ -45,7 +47,7 @@ export default function Visit() {
       {[...roomItems, ...otherItems].map((it) => (
         <Pressable key={it.id} accessibilityRole="button" onPress={() => router.push(`/item/${it.id}?as=student`)}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet }}>
-          <Glyph ch={it.glyph} />
+          <PixelIcon sprite={spriteFor(it)} />
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={type.bodyBold}>{lang === 'ja' && it.nameJa ? it.nameJa : it.name}</Text>
             <DecisionChip decision={it.decision} />

@@ -5,6 +5,8 @@ import QRCode from 'react-native-qrcode-svg';
 import { CHOICES, WISHES, pick, tagPayload, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Field, Glyph, Heading, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
+import { PixelIcon } from '../../src/PixelIcon';
+import { spriteFor } from '../../src/pixelArt';
 import { Journey } from '../../src/Journey';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
@@ -50,7 +52,7 @@ export default function ItemScreen() {
   return (
     <Screen back>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Glyph ch={item.glyph} size={52} />
+        <PixelIcon sprite={spriteFor(item)} size={56} />
         <View style={{ flex: 1 }}>
           <Heading eyebrow={`${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? ` · ${item.year}` : ''}`} title={name} />
         </View>

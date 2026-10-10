@@ -4,6 +4,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { pick, type PublicTag } from '@kakehashi/shared';
 import { Button, Card, Field, Glyph, Heading, Screen } from '../../src/ui';
 import { StoryPlayer } from '../../src/Audio';
+import { PixelIcon } from '../../src/PixelIcon';
+import { spriteFor } from '../../src/pixelArt';
 import { Journey } from '../../src/Journey';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
@@ -43,7 +45,7 @@ export default function TagScreen() {
       {error && !tag ? <Card><Text style={type.bodyBold}>{error}</Text></Card> : !tag ? <ActivityIndicator color={colors.ai} /> : (
         <>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <Glyph ch={tag.glyph} size={52} />
+            <PixelIcon sprite={spriteFor({ id: '', name: tag.name, nameJa: tag.nameJa })} size={56} />
             <View style={{ flex: 1 }}>
               <Heading eyebrow={`${tag.code}${tag.year ? ` · ${tag.year}` : ''}`} title={t('tagTitle', { name: lang === 'ja' && tag.nameJa ? tag.nameJa : tag.name.toLowerCase() })} sub={t('from', { from: tag.from })} />
             </View>
