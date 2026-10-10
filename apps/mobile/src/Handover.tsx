@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import type { CheckResult, FieldNoteKind } from '@kakehashi/shared';
+import { pick, type CheckResult, type FieldNoteKind } from '@kakehashi/shared';
 import { Button, Card, Field, Pill, formatDate } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
@@ -40,7 +40,7 @@ export function FieldNotesCard() {
             <Pill label={t(`note_${n.kind}`)} color={kindTone[n.kind].fg} bg={kindTone[n.kind].bg} />
             <Text style={type.caption}>{n.by} · {formatDate(n.date, lang)}</Text>
           </View>
-          <Text style={type.body}>{n.text}</Text>
+          <Text style={type.body}>{pick(lang, n.text, n.textJa)}</Text>
         </View>
       ))}
       <View style={{ flexDirection: 'row', gap: 8, paddingTop: 8 }}>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { READINESS, isReady, type ActivityStatus, type CommunityActivity, type Student } from '@kakehashi/shared';
+import { READINESS, isReady, pick, type ActivityStatus, type CommunityActivity, type Student } from '@kakehashi/shared';
 import { Avatar, Button, Card, Pill, formatDate } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
@@ -34,7 +34,7 @@ export function StudentBadges({ student }: { student: Student }) {
 
 export function StudentsCard() {
   const { data } = useData();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   if (!data) return null;
   return (
     <Card>
@@ -43,7 +43,7 @@ export function StudentsCard() {
         <View key={s.id} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', paddingTop: i ? 8 : 0 }}>
           <Avatar initial={s.initial} tone={i % 2 ? 'moss' : 'plum'} />
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={type.bodyBold}>{s.name} · <Text style={type.caption}>{s.university}</Text></Text>
+            <Text style={type.bodyBold}>{s.name} · <Text style={type.caption}>{pick(lang, s.university, s.universityJa)}</Text></Text>
             {s.role === 'trainee' ? <Text style={type.caption}>{t('traineeRole')}</Text> : null}
             <StudentBadges student={s} />
           </View>
@@ -56,7 +56,7 @@ export function StudentsCard() {
 // From home to community: activities matched to her interests. Students propose; she decides.
 export function ActivitiesCard({ mode }: { mode: 'family' | 'student' }) {
   const { data, refresh, showToast } = useData();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
   if (!data) return null;
   const { home } = data;
@@ -74,13 +74,13 @@ export function ActivitiesCard({ mode }: { mode: 'family' | 'student' }) {
       {list.map((a) => (
         <View key={a.id} style={{ gap: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[type.bodyBold, { flex: 1 }]}>{a.title} · {a.titleJa}</Text>
+            <Text style={[type.bodyBold, { flex: 1 }]}>{pick(lang, a.title, a.titleJa)}</Text>
             <Pill label={t(actKey(a.status))} color={actTone[a.status].fg} bg={actTone[a.status].bg} />
           </View>
-          <Text style={type.caption}>{a.date} · {a.place}{a.companion ? ` · ${t(a.status === 'attended' ? 'wentWith' : 'goesWith', { who: a.companion })}` : ''}</Text>
+          <Text style={type.caption}>{a.date} · {pick(lang, a.place, a.placeJa)}{a.companion ? ` · ${t(a.status === 'attended' ? 'wentWith' : 'goesWith', { who: a.companion })}` : ''}</Text>
           {mode === 'student' ? (
             <>
-              <Text style={type.caption}>{t('matchesInterest', { interest: a.interest })}</Text>
+              <Text style={type.caption}>{t('matchesInterest', { interest: pick(lang, a.interest, a.interestJa) })}</Text>
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                 {a.status === 'suggested' || a.status === 'not-now'
                   ? <Button label={t('propose')} kind="secondary" busy={busy === a.id} onPress={() => set(a, 'proposed')} /> : null}

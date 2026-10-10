@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
-import { CHOICES, WISHES, tagPayload, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
+import { CHOICES, WISHES, pick, tagPayload, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Field, Glyph, Heading, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
 import { Journey } from '../../src/Journey';
@@ -59,7 +59,7 @@ export default function ItemScreen() {
 
       <Card>
         <StoryPlayer path={item.audioUrl} />
-        {item.story ? <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{item.story}”</Text> : null}
+        {item.story ? <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, item.story, item.storyJa)}”</Text> : null}
       </Card>
 
       {student ? (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import type { PublicTag } from '@kakehashi/shared';
+import { pick, type PublicTag } from '@kakehashi/shared';
 import { Button, Card, Field, Glyph, Heading, Screen } from '../../src/ui';
 import { StoryPlayer } from '../../src/Audio';
 import { Journey } from '../../src/Journey';
@@ -51,7 +51,7 @@ export default function TagScreen() {
           {tag.photoUrl ? <Image source={{ uri: fileUrl(tag.photoUrl) }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 14 }} accessibilityLabel={tag.name} /> : null}
           <Card>
             <StoryPlayer path={tag.audioUrl} />
-            {tag.story ? <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{tag.story}”</Text> : null}
+            {tag.story ? <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, tag.story, tag.storyJa)}”</Text> : null}
           </Card>
           <Card>
             <Text style={type.section}>{t('journey')}</Text>

@@ -54,7 +54,7 @@ function publicTag(item: Item): PublicTag {
   const first = home?.seniorName.split(' ')[0] ?? 'A neighbour';
   return {
     code: item.tagCode!, name: item.name, nameJa: item.nameJa, year: item.year, glyph: item.glyph,
-    story: item.story, audioUrl: item.audioUrl, photoUrl: item.photoUrl,
+    story: item.story, storyJa: item.storyJa, audioUrl: item.audioUrl, photoUrl: item.photoUrl,
     from: `${first}, ${home?.town ?? ''}`.replace(/, $/, ''),
     journey: item.journey, thanksCount: item.thanks.length,
   };
@@ -124,7 +124,7 @@ app.patch('/api/items/:id', (req, res) => {
     item.holdUntil = leaving && !alreadyLeft ? nextVisitDate(item.homeId) : undefined;
     item.decision = decision as Decision;
   }
-  if (typeof story === 'string') item.story = story.slice(0, 2000);
+  if (typeof story === 'string') { item.story = story.slice(0, 2000); delete item.storyJa; } // a new story replaces the old translation
   save();
   res.json(item);
 });
@@ -280,6 +280,7 @@ app.post('/api/home/:id/report', async (req, res) => {
     home.visits.sort((a, b) => b.date.localeCompare(a.date));
   }
   visit.summary = text.slice(0, 2000);
+  delete visit.summaryJa;
   visit.status = 'done';
   visit.checked = result.source;
   save();
@@ -352,6 +353,7 @@ app.post('/api/home/:id/letters', (req, res) => {
     home.letters.unshift(letter);
   } else if (typeof req.body?.note === 'string') {
     letter.note = req.body.note.slice(0, 600);
+    delete letter.noteJa;
   }
   save();
   res.json(letter);
@@ -377,13 +379,13 @@ app.get('/letters/:id', (req, res) => {
   const letter = home?.letters.find((l) => l.id === req.params.id);
   if (!home || !letter) return res.status(404).send(page('Letter not found', 'Check the link in the app.'));
   const [y, m] = letter.month.split('-').map(Number);
-  const first = home.seniorName.split(' ')[0];
+  const first = home.seniorNameJa?.split(' ')[1] ?? home.seniorName.split(' ')[0];
   const items = letter.itemIds.map((iid) => findItem(iid)).filter(Boolean) as Item[];
   const blocks = items.map((it) => {
     const photo = it.photoUrl ? `<img src="${it.photoUrl}" alt="">` : `<div class="glyph">${esc(it.glyph)}</div>`;
     const thanks = it.thanks.filter((t) => t.at.slice(0, 7) === letter.month)
       .map((t) => `<p class="thanks">${esc(t.from)}さんより：「${esc(t.message)}」</p>`).join('');
-    return `<section>${photo}<div><h2>${esc(it.nameJa ?? it.name)}<span>${esc(it.name)}</span></h2>${it.story ? `<p class="story">「${esc(it.story)}」</p>` : ''}${thanks}</div></section>`;
+    return `<section>${photo}<div><h2>${esc(it.nameJa ?? it.name)}<span>${esc(it.name)}</span></h2>${it.story || it.storyJa ? `<p class="story">「${esc(it.storyJa ?? it.story ?? '')}」</p>` : ''}${thanks}</div></section>`;
   }).join('');
   res.send(`<!doctype html><html lang="ja"><meta charset="utf-8"><title>思い出だより ${y}年${m}月</title>
 <style>
@@ -402,7 +404,7 @@ footer { margin-top: 24px; font-size: 18px; color: #5b6273; }
 </style>
 <header><h1>思い出だより</h1><p>${y}年${m}月　${esc(first)}さんへ</p></header>
 ${blocks || '<p>今月は、お茶とお話の時間でした。</p>'}
-<div class="note"><p>${esc(letter.note || 'またお会いできるのを楽しみにしています。')}</p><p>${home.students.filter((s) => s.role === 'pair').map((s) => esc(s.name)).join('・')}より</p></div>
+<div class="note"><p>${esc(letter.noteJa || letter.note || 'またお会いできるのを楽しみにしています。')}</p><p>${home.students.filter((s) => s.role === 'pair').map((s) => esc(s.name)).join('・')}より</p></div>
 <footer>次の訪問：${esc(home.visits.find((v) => v.status === 'planned')?.date ?? '')}　お電話：${esc(home.calls.find((c) => c.status === 'planned')?.date ?? '')}</footer>
 </html>`);
 });

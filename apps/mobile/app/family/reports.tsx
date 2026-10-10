@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
+import { pick } from '@kakehashi/shared';
 import { Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
@@ -25,7 +26,7 @@ export default function Reports() {
                   {v.status === 'planned' ? <Pill label={t('planned')} /> : null}
                   {v.checked ? <Pill label={t('checkedBadge')} color={colors.moss} bg={colors.mossTint} /> : null}
                 </View>
-                <Text style={[type.body, { color: v.status === 'planned' ? colors.inkSoft : colors.ink }]}>{v.summary}</Text>
+                <Text style={[type.body, { color: v.status === 'planned' ? colors.inkSoft : colors.ink }]}>{pick(lang, v.summary, v.summaryJa)}</Text>
               </Card>
             );
           })}

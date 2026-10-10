@@ -8,11 +8,11 @@ TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an examp
 
 | Role | What they can do |
 | --- | --- |
-| **Family** | Home summary · **digital 実家** as a rotatable **3D** house, a floor plan, or **memory mode** (the house at dusk, every item that lived there glowing with its story, plus an automatic memory tour) · item stories with recordings · share a **wish** about an item (never a vote; the senior decides) · value shown **only when asked** · **plan and payment** (same fee whatever stays or goes) · visit reports and thank-yous |
-| **Students** | Visit checklist · **recording consent** · log an item with a photo and an **AI value estimate** · record the story (real audio) · create a **story tag QR** · log handovers to repair shops or licensed recyclers |
+| **Family** | Home summary (visits, stories, safer rooms) · **digital 実家** as a rotatable **3D** house, a floor plan with **real room photos**, or **memory mode** (the house at dusk, every item glowing with its story, plus a memory tour) · item stories with recordings · share a **wish** about an item (never a vote; the senior decides) · value shown **only when asked** · **plan and payment** (same fee whatever stays or goes) · the **monthly letter** and **call notes** · visit reports marked "checked for pressure" · student badges · local activities |
+| **Students** | **Field notes** from earlier visits · recording consent · capture **room photos** · log an item with a photo and an **AI value estimate** · record the story (real audio) · create a **story tag QR** · her choice with "Not now" first · log handovers · write the **visit report**, which passes a **fresh-eyes check** for pushy wording before reaching the family · prepare the printed **monthly letter (思い出だより)** · log the **call between visits** · propose **local activities** matched to her interests · **Team** tab: the seven-step evaluation every student passes before visiting |
 | **New owner** | **Scan the QR** (phone camera) or type the code · hear the story · see the item's journey · send a thank-you |
 
-Japanese / English switch on every screen.
+Japanese / English switch on every screen; the example family's stories, reports and notes are written in both languages, and her printed letter is in Japanese.
 
 ## Run it
 
@@ -31,9 +31,9 @@ This starts the API server on port 4100 and the Expo app.
 
 To start over with the example family: `npm run reset` (while the server runs).
 
-## AI value estimates (optional)
+## AI features (optional)
 
-Without a key, estimates come from simple offline rules. To use Claude's vision model:
+Without a key, value estimates come from simple offline rules and the fresh-eyes check uses an English/Japanese word list. With a key, Claude estimates value from the photo and reviews visit reports like a cold reader. To enable:
 
 1. Create an API key at https://console.anthropic.com and set a monthly spend limit.
 2. Copy `apps/server/.env.example` to `apps/server/.env` and set `ANTHROPIC_API_KEY=...`.

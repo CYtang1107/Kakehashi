@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { READINESS, type ReadinessStep, type Student } from '@kakehashi/shared';
+import { READINESS, pick, type ReadinessStep, type Student } from '@kakehashi/shared';
 import { Avatar, Card, Heading, Screen, formatDate } from '../../src/ui';
 import { StudentBadges } from '../../src/Community';
 import { useData } from '../../src/data';
@@ -36,7 +36,7 @@ export default function Team() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Avatar initial={s.initial} tone={i % 2 ? 'moss' : 'plum'} />
             <View style={{ flex: 1, gap: 4 }}>
-              <Text style={type.bodyBold}>{s.name} · <Text style={type.caption}>{s.university}</Text></Text>
+              <Text style={type.bodyBold}>{s.name} · <Text style={type.caption}>{pick(lang, s.university, s.universityJa)}</Text></Text>
               {s.role === 'trainee' ? <Text style={type.caption}>{t('traineeRole')}</Text> : null}
             </View>
           </View>

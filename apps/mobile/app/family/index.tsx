@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { pick } from '@kakehashi/shared';
 import { Avatar, Button, Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { ActivitiesCard, StudentsCard } from '../../src/Community';
@@ -23,7 +24,7 @@ export default function FamilyHome() {
         const [a, b] = home.students;
         return (
           <>
-            <Heading eyebrow={t('mothersHome', { town: home.town })} title={t('greeting', { name: home.childName })} />
+            <Heading eyebrow={t('mothersHome', { town: pick(lang, home.town, home.townJa) })} title={t('greeting', { name: pick(lang, home.childName, home.childNameJa) })} />
             {next ? (
               <Card tint>
                 <Text style={type.eyebrow}>{t('nextVisit')}</Text>
@@ -31,7 +32,7 @@ export default function FamilyHome() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Avatar initial={a.initial} tone="plum" />
                   <Avatar initial={b.initial} tone="moss" />
-                  <Text style={[type.caption, { flex: 1 }]}>{t('samePair', { a: a.name, b: b.name, interests: a.interests })}</Text>
+                  <Text style={[type.caption, { flex: 1 }]}>{t('samePair', { a: a.name, b: b.name, interests: pick(lang, a.interests, a.interestsJa) })}</Text>
                 </View>
               </Card>
             ) : null}
@@ -44,7 +45,7 @@ export default function FamilyHome() {
             {latest ? (
               <Card>
                 <Text style={type.eyebrow}>{t('latestStory')}</Text>
-                <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{latest.story}”</Text>
+                <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, latest.story, latest.storyJa)}”</Text>
                 <Button label={lang === 'ja' && latest.nameJa ? latest.nameJa : latest.name} kind="secondary" icon="chevron-right" onPress={() => router.push(`/item/${latest.id}`)} />
               </Card>
             ) : null}

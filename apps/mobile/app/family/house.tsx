@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import type { Item } from '@kakehashi/shared';
+import { pick, type Item } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Glyph, Heading, Screen } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
 import { Home3D, memoryColors } from '../../src/Home3D';
@@ -61,7 +61,7 @@ export default function House() {
     <Screen>
       {data ? (
         <>
-          <Heading eyebrow={memory ? t('memoryHouse') : t('tabHouse')} title={`${data.home.seniorName.split(' ')[0]} · ${data.home.town}`}
+          <Heading eyebrow={memory ? t('memoryHouse') : t('tabHouse')} title={lang === 'ja' && data.home.seniorNameJa ? `${data.home.seniorNameJa.split(' ')[1]}さん · ${pick(lang, data.home.town, data.home.townJa)}` : `${data.home.seniorName.split(' ')[0]} · ${data.home.town}`}
             sub={memory ? t('memoryLead') : t('dragToRotate')} />
           <View style={{ flexDirection: 'row', backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
             {(['3d', '2d', 'memory'] as const).map((v) => (
@@ -150,8 +150,8 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
           <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: '#CDBFAE' }}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{item.year ? ` · ${item.year}` : ''}</Text>
         </View>
       </View>
-      {item.story ? (
-        <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', borderLeftWidth: 3, borderLeftColor: memoryColors.lantern, paddingLeft: 12 }}>“{item.story}”</Text>
+      {item.story || item.storyJa ? (
+        <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', borderLeftWidth: 3, borderLeftColor: memoryColors.lantern, paddingLeft: 12 }}>“{pick(lang, item.story, item.storyJa)}”</Text>
       ) : null}
       {item.audioUrl ? <StoryPlayer path={item.audioUrl} /> : null}
       <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: memoryColors.lantern }}>{now}</Text>

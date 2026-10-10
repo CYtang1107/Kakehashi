@@ -73,6 +73,7 @@ export interface Item {
   // Money from a resale goes to her, never off the family's bill.
   proceedsJpy?: number;
   story?: string;
+  storyJa?: string;
   audioUrl?: string;
   photoUrl?: string;
   tagCode?: string;
@@ -88,6 +89,7 @@ export interface Visit {
   date: string;
   roomId: string;
   summary: string;
+  summaryJa?: string;
   status: 'done' | 'planned';
   // Set when the report passed the fresh-eyes check before reaching the family.
   checked?: 'claude' | 'offline';
@@ -100,7 +102,9 @@ export interface CommunityActivity {
   title: string;
   titleJa: string;
   interest: string;
+  interestJa?: string;
   place: string;
+  placeJa?: string;
   date: string;
   companion?: string;
   status: ActivityStatus;
@@ -114,7 +118,9 @@ export interface Student {
   name: string;
   initial: string;
   interests: string;
+  interestsJa?: string;
   university: string;
+  universityJa?: string;
   visits: number;
   // Steps passed, with the date.
   passed: Partial<Record<ReadinessStep, string>>;
@@ -143,8 +149,11 @@ export interface Payment {
 export interface Home {
   id: string;
   seniorName: string;
+  seniorNameJa?: string;
   town: string;
+  townJa?: string;
   childName: string;
+  childNameJa?: string;
   seniorInterests: string[];
   // The visiting pair first, then any trainee preparing to take over.
   students: Student[];
@@ -170,6 +179,7 @@ export interface FieldNote {
   by: string;
   kind: FieldNoteKind;
   text: string;
+  textJa?: string;
 }
 
 // Fresh-eyes check: a reviewer that did not write the report flags pushy wording.
@@ -190,6 +200,7 @@ export interface Letter {
   month: string; // YYYY-MM
   itemIds: string[]; // stories and thank-yous included
   note: string; // a few words from the students
+  noteJa?: string;
   status: 'draft' | 'printed' | 'mailed';
   mailedAt?: string;
 }
@@ -204,6 +215,7 @@ export interface Call {
   minutes?: number;
   mood?: CallMood;
   note?: string;
+  noteJa?: string;
   followUp?: boolean;
 }
 
@@ -229,6 +241,7 @@ export interface PublicTag {
   year?: string;
   glyph: string;
   story?: string;
+  storyJa?: string;
   audioUrl?: string;
   photoUrl?: string;
   from: string;
@@ -249,3 +262,6 @@ export const parseTag = (data: string): string | null => {
   const m = t.match(/\/tag\/([A-Z0-9-]+)/i);
   return m ? m[1] : null;
 };
+
+// Picks the Japanese text when Japanese is selected and a translation exists.
+export const pick = (lang: 'en' | 'ja', en?: string, ja?: string) => (lang === 'ja' && ja ? ja : en ?? ja ?? '');

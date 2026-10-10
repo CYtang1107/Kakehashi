@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import type { CallMood, Home, Letter } from '@kakehashi/shared';
+import { pick, type CallMood, type Home, type Letter } from '@kakehashi/shared';
 import { Button, Card, Field, Pill, formatDate } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
@@ -140,7 +140,7 @@ export function CallsCard({ mode }: { mode: 'family' | 'student' }) {
             {c.mood ? <Pill label={t(`mood_${c.mood}`)} color={moodTone[c.mood].fg} bg={moodTone[c.mood].bg} /> : null}
             {c.followUp ? <Pill label={t('followUp')} color={colors.kaki} bg={colors.kakiTint} /> : null}
           </View>
-          {c.note ? <Text style={type.body}>{c.note}</Text> : null}
+          {c.note ? <Text style={type.body}>{pick(lang, c.note, c.noteJa)}</Text> : null}
         </View>
       ))}
       {mode === 'family' ? <Text style={type.caption}>{t('callsPrivacy')}</Text> : null}

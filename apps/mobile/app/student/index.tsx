@@ -28,7 +28,7 @@ export default function Visit() {
 
   return (
     <Screen>
-      <Heading eyebrow={t('visitToday', { name: home.seniorName.split(' ')[1] ?? home.seniorName })} title={lang === 'ja' ? current.nameJa : current.name} />
+      <Heading eyebrow={t('visitToday', { name: lang === 'ja' && home.seniorNameJa ? home.seniorNameJa.split(' ')[0] : home.seniorName.split(' ')[1] ?? home.seniorName })} title={lang === 'ja' ? current.nameJa : current.name} />
       <Card tint>
         <Text style={type.bodyBold}>{t('beforeYouStart')}</Text>
         <Text style={type.body}>{t('beforeYouStartBody')}</Text>
