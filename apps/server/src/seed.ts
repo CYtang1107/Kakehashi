@@ -44,10 +44,10 @@ export function seedHome(): Home {
       { id: 'v1', date: '2026-07-18', roomId: 'living', summary: 'First visit. Tea and photo albums, nothing sorted. That was the plan.', summaryJa: '初回の訪問。お茶とアルバムの時間で、片付けはしていません。予定どおりです。', status: 'done', checked: 'offline' },
     ],
     activities: [
-      { id: 'act-garden', title: 'Gardening group', titleJa: '園芸の会', interest: 'gardening', interestJa: '園芸', place: 'Neighbourhood gathering place (通いの場)', placeJa: '地域の通いの場', date: '2026-10-29 14:00', companion: 'Yui', status: 'accepted' },
-      { id: 'act-cooking', title: 'Community lunch cooking', titleJa: 'みんなの昼ごはん作り', interest: 'cooking', interestJa: '料理', place: 'Community centre kitchen', placeJa: '公民館の調理室', date: '2026-11-12 11:00', status: 'suggested' },
-      { id: 'act-letters', title: 'Calligraphy and letters circle', titleJa: '書道と手紙の会', interest: 'letters', interestJa: '手紙', place: 'Public library, room 2', placeJa: '市立図書館 第2会議室', date: '2026-11-20 13:30', status: 'suggested' },
-      { id: 'act-photo', title: 'Old photos talk', titleJa: '昔の写真を語る会', interest: 'photography', interestJa: '写真', place: 'Neighbourhood gathering place (通いの場)', placeJa: '地域の通いの場', date: '2026-09-18 14:00', companion: 'Arif', status: 'attended' },
+      { id: 'act-garden', title: 'Gardening group', titleJa: '園芸の会', interest: 'gardening', interestJa: '園芸', placeId: 'p-kayoi', place: 'Neighbourhood gathering place (通いの場)', placeJa: '地域の通いの場', date: '2026-10-29 14:00', companion: 'Yui', status: 'accepted' },
+      { id: 'act-cooking', title: 'Community lunch cooking', titleJa: 'みんなの昼ごはん作り', interest: 'cooking', interestJa: '料理', placeId: 'p-kominkan', place: 'Community centre kitchen', placeJa: '公民館の調理室', date: '2026-11-12 11:00', status: 'suggested' },
+      { id: 'act-letters', title: 'Calligraphy and letters circle', titleJa: '書道と手紙の会', interest: 'letters', interestJa: '手紙', placeId: 'p-library', place: 'Public library, room 2', placeJa: '市立図書館 第2会議室', date: '2026-11-20 13:30', status: 'suggested' },
+      { id: 'act-photo', title: 'Old photos talk', titleJa: '昔の写真を語る会', interest: 'photography', interestJa: '写真', placeId: 'p-kayoi', place: 'Neighbourhood gathering place (通いの場)', placeJa: '地域の通いの場', date: '2026-09-18 14:00', companion: 'Arif', status: 'attended' },
     ],
     planId: 'monthly',
     payments: [],
@@ -61,6 +61,15 @@ export function seedHome(): Home {
       { id: 'f3', roomId: 'kitchen', kind: 'nonslip', amount: 4, status: 'suggested', x: 210, y: 70, note: 'Floor by the sink gets wet.', noteJa: '流し台の前の床が濡れやすい。' },
       { id: 'f4', roomId: 'bedroom', kind: 'light', amount: 2, status: 'agreed', x: 90, y: 160, note: 'Sensor night lights on the way to the toilet.', noteJa: 'トイレまでの通路にセンサー付き足元灯。' },
       { id: 'f5', roomId: 'living', kind: 'door', amount: 1, status: 'not-now', x: 170, y: 40, note: 'Swing door could become a sliding door. She prefers to keep it for now.', noteJa: '開き戸を引き戸に。今はこのままが良いそうです。' },
+    ],
+    // Demo points in Niigata city for the neighbourhood map; not a real address.
+    places: [
+      { id: 'p-home', kind: 'home', name: 'Her home (demo point)', nameJa: 'ご自宅（デモ）', lat: 37.9065, lng: 139.0480 },
+      { id: 'p-kayoi', kind: 'activity', name: 'Neighbourhood gathering place (通いの場)', nameJa: '地域の通いの場', lat: 37.9089, lng: 139.0452 },
+      { id: 'p-kominkan', kind: 'activity', name: 'Community centre', nameJa: '公民館', lat: 37.9031, lng: 139.0521 },
+      { id: 'p-library', kind: 'activity', name: 'Public library', nameJa: '市立図書館', lat: 37.9112, lng: 139.0545 },
+      { id: 'p-clinic', kind: 'clinic', name: 'Family clinic', nameJa: 'かかりつけ医', lat: 37.9052, lng: 139.0438 },
+      { id: 'p-shop', kind: 'shop', name: 'Supermarket', nameJa: 'スーパー', lat: 37.9078, lng: 139.0510 },
     ],
     workers: [
       { id: 'w-sato', name: 'Takeshi Sato', nameJa: '佐藤 武', from: 'Silver Human Resources Centre', fromJa: 'シルバー人材センター', skills: ['garden', 'lifting', 'repair'],

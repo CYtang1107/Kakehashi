@@ -9,6 +9,7 @@ import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
 import { createCheckout, paymentsMode, readCheckout } from './payments';
 import { checkReport } from './pressure';
+import { mapPage } from './mapPage';
 
 const PORT = Number(process.env.PORT ?? 4100);
 const app = express();
@@ -321,6 +322,14 @@ app.post('/api/home/:id/future/step', (req, res) => {
   else delete home.future.steps[step as HouseStep];
   save();
   res.json(home.future);
+});
+
+// ---------- Neighbourhood map page (shown in an iframe or WebView) ----------
+
+app.get('/map/:homeId', (req, res) => {
+  const home = findHome(req.params.homeId);
+  if (!home) return res.status(404).send('Home not found.');
+  res.type('html').send(mapPage(home, req.query.lang === 'ja' ? 'ja' : 'en'));
 });
 
 // ---------- Public story feed: only stories she agreed to share ----------

@@ -111,6 +111,7 @@ export interface CommunityActivity {
   date: string;
   companion?: string;
   status: ActivityStatus;
+  placeId?: string; // where it happens, on the neighbourhood map
 }
 
 // Every student passes these steps before visiting a senior.
@@ -180,6 +181,18 @@ export interface Home {
   // Help she can ask for (garden, cleaning, small repairs) from checked local workers.
   workers: Worker[];
   services: ServiceRequest[];
+  // Neighbourhood map: her home and the places around it (demo points, never a real address).
+  places: Place[];
+}
+
+export type PlaceKind = 'home' | 'activity' | 'clinic' | 'shop' | 'station';
+export interface Place {
+  id: string;
+  kind: PlaceKind;
+  name: string;
+  nameJa: string;
+  lat: number;
+  lng: number;
 }
 
 export type FieldNoteKind = 'likes' | 'avoid' | 'tip';

@@ -75,6 +75,10 @@ Japan has about 9 million empty homes (空き家), often because nobody asked th
 
 Michiko has her own screen (large text, few choices). She taps Garden, Cleaning, Small repair or Heavy lifting, then "Soon" or "At the next visit"; a student calls her about the details. She can also ask by phone or on a visit, and students can ask for her. Students book only workers who passed the same checks as students (ID, interview, training): the Silver Human Resources Centre (シルバー人材センター), a home-help cooperative, a registered builder, or gig workers. Prices are fixed before anyone comes and the worker keeps 85%. Her screen always shows who is coming, with the rule "nobody comes from KAKEHASHI without a booking on this screen", against fake inspection and repair scams. Afterwards she taps how it went. A safer-home fix she agreed to can be booked with a builder; when the job is done, the fix is marked done.
 
+## Neighbourhood map
+
+A fourth view on the family's house screen (3D · Floor plan · Memory · Neighbourhood): a real street map with 3D buildings (MapLibre GL with free OpenFreeMap tiles from OpenStreetMap), showing her home, the clinic, the shop and the places for her local activities. Tap a pin for the activity, its date, who goes with her and roughly how long the walk takes; dotted lines are walks a student takes with her. The server serves the map page at `/map/:homeId`; the app shows it in an iframe on web and a WebView on phones (works in Expo Go). It needs an internet connection. All places are demo points, never a real address.
+
 ## No pressure to let go
 
 - **"Not now" is the first and default choice.** Most items are never decided, and most visits nothing leaves the house.

@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Glyph, Heading, Screen } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
+import { NeighbourhoodMap } from '../../src/NeighbourhoodMap';
 import { Home3D, eveningState, hasStory, memoryColors, type ColorBy, type Evening } from '../../src/Home3D';
 import { StoryPlayer } from '../../src/Audio';
 import { RoomGallery } from '../../src/Community';
@@ -15,7 +16,7 @@ import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { colors, decisionColor, fonts, roomColor, type } from '../../src/theme';
 
-type View3 = '3d' | '2d' | 'memory';
+type View3 = '3d' | '2d' | 'memory' | 'map';
 const TOUR_MS = 7000;
 
 export default function House() {
@@ -61,16 +62,16 @@ export default function House() {
   };
 
   const current = data?.items.find((i) => i.id === selected);
-  const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory') };
+  const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
   return (
     <Screen>
       {data ? (
         <>
           <Heading eyebrow={memory ? t('memoryHouse') : t('tabHouse')} title={lang === 'ja' && data.home.seniorNameJa ? `${data.home.seniorNameJa.split(' ')[1]}さん · ${pick(lang, data.home.town, data.home.townJa)}` : `${data.home.seniorName.split(' ')[0]} · ${data.home.town}`}
-            sub={memory ? t('memoryLead') : t('dragToRotate')} />
+            sub={memory ? t('memoryLead') : view === 'map' ? t('mapLead') : t('dragToRotate')} />
           <View style={{ flexDirection: 'row', backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
-            {(['3d', '2d', 'memory'] as const).map((v) => (
+            {(['3d', '2d', 'memory', 'map'] as const).map((v) => (
               <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: view === v }} onPress={() => pickView(v)}
                 style={{ flex: 1, paddingVertical: 8, borderRadius: 9, alignItems: 'center', backgroundColor: view === v ? (v === 'memory' ? memoryColors.sky : colors.aiTint) : 'transparent' }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: view === v ? (v === 'memory' ? memoryColors.lantern : colors.ai) : colors.inkSoft }}>{labels[v]}</Text>
@@ -79,7 +80,9 @@ export default function House() {
           </View>
 
           <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line }}>
-            {view === '2d'
+            {view === 'map'
+              ? <NeighbourhoodMap homeId={data.home.id} />
+              : view === '2d'
               ? <FloorPlan rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} fixes={data.home.safety} />
               : <Home3D rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} memory={memory} fixes={data.home.safety} colorBy={colorBy} evening={evening} />}
             {memory ? (
