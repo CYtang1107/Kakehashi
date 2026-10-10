@@ -40,8 +40,12 @@ export function mapPage(home: Home, lang: 'en' | 'ja') {
     directions: ja ? '道順（徒歩）' : 'Walking directions',
     note: ja ? '場所：OpenStreetMap ・ ご自宅と活動は例です' : 'Places: OpenStreetMap · her home and activities are examples',
     failed: ja ? '地図を読み込めませんでした。インターネット接続を確認してください。' : 'The map could not load. Check the internet connection.',
+    live: ja ? '{by}さんと{place}へ' : 'With {by}, walking to {place}',
+    liveLeft: ja ? '残り約{n}分' : 'about {n} min to go',
+    liveNote: ja ? 'このお出かけの間だけ、ご本人の同意で共有しています' : 'Shared only during this outing, with her consent',
+    liveSim: ja ? '（デモ用の再現）' : '(simulated for the demo)',
   };
-  const data = JSON.stringify({ me: { lat: me.lat, lng: me.lng }, places, routes, text }).replace(/</g, '\\u003c');
+  const data = JSON.stringify({ homeId: home.id, me: { lat: me.lat, lng: me.lng }, places, routes, text }).replace(/</g, '\\u003c');
 
   return `<!doctype html>
 <html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
@@ -56,11 +60,16 @@ export function mapPage(home: Home, lang: 'en' | 'ja') {
   .pop b{font-size:13.5px;color:#1D2433}.pop div{font-size:12px;color:#5B6273;margin-top:2px;line-height:1.45}
   .pop .walk{color:#2B4C7E;font-weight:700}.pop .act{color:#1D2433}
   .pop a{display:inline-block;margin-top:6px;color:#2B4C7E;font-weight:700;font-size:12px;text-decoration:none}
+  .walker{width:30px;height:30px;border-radius:50%;background:#B5562B;border:3px solid #fff;display:flex;align-items:center;justify-content:center;
+          box-shadow:0 0 0 0 rgba(181,86,43,.5);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(181,86,43,.55)}70%{box-shadow:0 0 0 16px rgba(181,86,43,0)}100%{box-shadow:0 0 0 0 rgba(181,86,43,0)}}
+  .live{display:none;position:absolute;left:8px;right:8px;bottom:26px;background:#B5562B;color:#fff;border-radius:12px;padding:6px 10px;font-size:12px;line-height:1.4;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .live b{font-size:13px}.live small{display:block;opacity:.9}
   .note{position:absolute;left:8px;top:8px;background:rgba(251,250,247,.92);border-radius:99px;padding:4px 10px;font-size:11px;color:#5B6273}
   .maplibregl-ctrl-attrib{font-size:9px}
   #err{display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:24px;text-align:center;color:#5B6273}
 </style></head>
-<body><div id="map"></div><div class="note" id="note"></div><div id="err"></div>
+<body><div id="map"></div><div class="note" id="note"></div><div class="live" id="live"></div><div id="err"></div>
 <script>
   var D = ${data};
   document.getElementById('note').textContent = D.text.note;
@@ -82,6 +91,8 @@ export function mapPage(home: Home, lang: 'en' | 'ja') {
       added = true;
       map.addSource('routes', { type: 'geojson', data: { type: 'FeatureCollection', features: D.routes.map(function (c) { return { type: 'Feature', geometry: { type: 'LineString', coordinates: c } }; }) } });
       map.addLayer({ id: 'routes', type: 'line', source: 'routes', paint: { 'line-color': '#2B4C7E', 'line-width': 3.5, 'line-dasharray': [1.2, 1.4] } });
+      map.addSource('walked', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({ id: 'walked', type: 'line', source: 'walked', paint: { 'line-color': '#B5562B', 'line-width': 5, 'line-opacity': 0.85 } });
     }
     map.on('styledata', addRoutes);
     map.on('load', addRoutes);
@@ -106,6 +117,37 @@ export function mapPage(home: Home, lang: 'en' | 'ja') {
     });
     var h = document.createElement('div'); h.className = 'home'; h.textContent = '家'; h.title = D.text.home;
     new maplibregl.Marker({ element: h }).setLngLat([D.me.lng, D.me.lat]).addTo(map);
+
+    // Live outing: polled from the server every 5 s; a simulated demo walk moves smoothly between polls.
+    var live = null, walker = null, banner = document.getElementById('live');
+    function walkMin(a, b) { var r = 6371000, q = Math.PI / 180, x = (b[1] - a[1]) * q, y = (b[0] - a[0]) * q;
+      var h = Math.sin(x / 2) * Math.sin(x / 2) + Math.cos(a[1] * q) * Math.cos(b[1] * q) * Math.sin(y / 2) * Math.sin(y / 2);
+      return Math.max(1, Math.round(2 * r * Math.asin(Math.sqrt(h)) / 50)); }
+    function livePos() {
+      if (!live || !live.place) return null;
+      var dest = [live.place.lng, live.place.lat];
+      if (live.simulated) { var p = ((Date.now() / 1000) % 90) / 90; return { at: [D.me.lng + (dest[0] - D.me.lng) * p, D.me.lat + (dest[1] - D.me.lat) * p], path: null, dest: dest }; }
+      if (!live.last) return null;
+      return { at: [live.last.lng, live.last.lat], path: live.trail.map(function (f) { return [f.lng, f.lat]; }), dest: dest };
+    }
+    function draw() {
+      var s = livePos();
+      if (!s) { if (walker) { walker.remove(); walker = null; } banner.style.display = 'none'; var src0 = map.getSource && map.getSource('walked'); if (src0) src0.setData({ type: 'FeatureCollection', features: [] }); return; }
+      if (!walker) {
+        var el = document.createElement('div'); el.className = 'walker';
+        el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M10 21l2-7 3 3v5"/><path d="M8 11l3-3 4 2 3 3"/></svg>';
+        walker = new maplibregl.Marker({ element: el }).setLngLat(s.at).addTo(map);
+      } else walker.setLngLat(s.at);
+      var src = map.getSource && map.getSource('walked');
+      if (src) src.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: s.path && s.path.length > 1 ? s.path : [[D.me.lng, D.me.lat], s.at] } });
+      banner.innerHTML = '';
+      var b = document.createElement('b'); b.textContent = '\u25CF ' + D.text.live.replace('{by}', live.by).replace('{place}', live.place.nameJa) + ' \u00B7 ' + D.text.liveLeft.replace('{n}', walkMin(s.at, s.dest));
+      var sm = document.createElement('small'); sm.textContent = D.text.liveNote + (live.simulated ? ' ' + D.text.liveSim : '');
+      banner.appendChild(b); banner.appendChild(sm); banner.style.display = 'block';
+    }
+    function poll() { fetch('/api/home/' + encodeURIComponent(D.homeId) + '/outings/live').then(function (r) { return r.json(); }).then(function (d) { live = d.live; draw(); }).catch(function () {}); }
+    poll(); setInterval(poll, 5000);
+    (function tick() { if (live && live.simulated) draw(); requestAnimationFrame(tick); })();
 
     window.__focus = function (id) {
       var m = markers[id]; if (!m) return;

@@ -65,6 +65,11 @@ export function seedHome(): Home {
     ],
     // Her home is a demo point; every other place is real, from OpenStreetMap (see nearby.ts). Her places come first, in letter order.
     places: herPlaces(),
+    // Demo: Yui is walking with her to the gardening group right now (simulated, so it moves on any screen).
+    outings: [
+      { id: 'o-demo', activityId: 'act-garden', placeId: 'osm-n12880273263', by: 'Yui', consentAt: new Date().toISOString(),
+        startedAt: new Date().toISOString(), status: 'live', trail: [], simulated: true },
+    ],
     workers: [
       { id: 'w-sato', name: 'Takeshi Sato', nameJa: '佐藤 武', from: 'Silver Human Resources Centre', fromJa: 'シルバー人材センター', skills: ['garden', 'lifting', 'repair'],
         checks: { identity: '2026-05-10', interview: '2026-05-14', training: '2026-05-20' }, jobs: 38 },

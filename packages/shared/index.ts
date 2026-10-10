@@ -208,6 +208,8 @@ export interface Home {
   services: ServiceRequest[];
   // Neighbourhood map: her home and the places around it (demo points, never a real address).
   places: Place[];
+  // Live location while a student takes her to an activity: with her consent, only during that outing.
+  outings: Outing[];
 }
 
 export type PlaceKind = 'home' | 'community' | 'library' | 'care' | 'clinic' | 'pharmacy' | 'shop';
@@ -475,3 +477,31 @@ export interface PublicStory {
   sharedAt: string;
   comments: { from: string; message: string; at: string }[];
 }
+
+// ---------- Outing sharing (お出かけの見守り) ----------
+// The family can follow an outing on the neighbourhood map while a student takes her to an activity. It uses the
+// STUDENT's phone, starts only after she agrees for that outing, stops when the outing ends (or after 4 hours), and
+// the route is deleted when it ends. KAKEHASHI does not track her the rest of the time.
+export interface GeoFix {
+  lat: number;
+  lng: number;
+  at: string;
+  accuracy?: number; // metres
+}
+export interface Outing {
+  id: string;
+  activityId: string;
+  placeId: string;
+  by: string; // the student whose phone shares the location
+  consentAt: string; // when she agreed, for this outing
+  startedAt: string;
+  status: 'live' | 'ended';
+  last?: GeoFix;
+  trail: GeoFix[];
+  endedAt?: string;
+  minutes?: number; // kept after the route is deleted
+  simulated?: boolean; // demo: the walk loops along the route instead of coming from a phone
+}
+export const OUTING_MAX_HOURS = 4;
+export const outingIsLive = (o: Outing, nowMs: number) =>
+  o.status === 'live' && (o.simulated || nowMs - Date.parse(o.startedAt) < OUTING_MAX_HOURS * 3600000);

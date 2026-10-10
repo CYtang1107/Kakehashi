@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
+import { metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { TRACK, plans, stagePoint } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -349,6 +349,79 @@ app.post('/api/home/:id/future/step', (req, res) => {
   else delete home.future.steps[step as HouseStep];
   save();
   res.json(home.future);
+});
+
+// ---------- Outing sharing: live location during an outing, with her consent ----------
+
+// Outings left running end on their own after OUTING_MAX_HOURS; ending deletes the route.
+function endOuting(o: Outing, at = now()) {
+  o.status = 'ended';
+  o.endedAt = at;
+  o.minutes = Math.max(1, Math.round((Date.parse(at) - Date.parse(o.startedAt)) / 60000));
+  o.trail = [];
+  delete o.last;
+}
+function sweepOutings(home: Home) {
+  const t = Date.now();
+  home.outings.forEach((o) => { if (o.status === 'live' && !outingIsLive(o, t)) endOuting(o, new Date(Date.parse(o.startedAt) + OUTING_MAX_HOURS * 3600000).toISOString()); });
+}
+
+app.post('/api/home/:id/outings', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  sweepOutings(home);
+  const { activityId, by, consent } = req.body ?? {};
+  if (consent !== true) return fail(res, 400, 'Ask her first. Location is shared only if she agrees for this outing.');
+  const act = home.activities.find((a) => a.id === activityId);
+  if (!act || act.status !== 'accepted') return fail(res, 400, 'Choose an activity she said yes to.');
+  if (!act.placeId) return fail(res, 400, 'This activity has no place on the map.');
+  if (home.outings.some((o) => o.status === 'live')) return fail(res, 409, 'An outing is already being shared. End it first.');
+  const at = now();
+  const outing: Outing = { id: id('out'), activityId: act.id, placeId: act.placeId, by: String(by || 'Student').slice(0, 40), consentAt: at, startedAt: at, status: 'live', trail: [] };
+  home.outings.unshift(outing);
+  save();
+  res.status(201).json(outing);
+});
+
+app.post('/api/home/:id/outings/:oid/fix', (req, res) => {
+  const home = findHome(req.params.id);
+  const o = home?.outings.find((x) => x.id === req.params.oid);
+  if (!home || !o) return fail(res, 404, 'Outing not found.');
+  sweepOutings(home);
+  if (o.status !== 'live') return fail(res, 409, 'This outing has ended; location is no longer shared.');
+  if (o.simulated) return fail(res, 409, 'This is the demo walk.');
+  const lat = Number(req.body?.lat), lng = Number(req.body?.lng), accuracy = Number(req.body?.accuracy);
+  if (!(Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) return fail(res, 400, 'Not a location.');
+  const homePt = home.places.find((p) => p.kind === 'home');
+  if (homePt && metresBetween(homePt, { lat, lng }) > 30000) return fail(res, 422, 'This location is far from her home, so it was not shared.');
+  const fix = { lat, lng, at: now(), ...(accuracy > 0 ? { accuracy: Math.round(accuracy) } : {}) };
+  o.last = fix;
+  o.trail.push(fix);
+  if (o.trail.length > 500) o.trail.splice(0, o.trail.length - 500);
+  save();
+  res.json({ ok: true });
+});
+
+app.post('/api/home/:id/outings/:oid/end', (req, res) => {
+  const home = findHome(req.params.id);
+  const o = home?.outings.find((x) => x.id === req.params.oid);
+  if (!home || !o) return fail(res, 404, 'Outing not found.');
+  if (o.status === 'live') endOuting(o);
+  save();
+  res.json(o);
+});
+
+// What the map page polls: the live outing, if any (no history is ever served).
+app.get('/api/home/:id/outings/live', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  sweepOutings(home);
+  const o = home.outings.find((x) => x.status === 'live');
+  if (!o) return res.json({ live: null });
+  const act = home.activities.find((a) => a.id === o.activityId);
+  const place = home.places.find((p) => p.id === o.placeId);
+  res.json({ live: { id: o.id, by: o.by, startedAt: o.startedAt, simulated: Boolean(o.simulated), last: o.last ?? null, trail: o.trail,
+    title: act?.title ?? '', titleJa: act?.titleJa ?? '', place: place ? { lat: place.lat, lng: place.lng, nameJa: place.nameJa } : null } });
 });
 
 // ---------- Neighbourhood map page (shown in an iframe or WebView) ----------

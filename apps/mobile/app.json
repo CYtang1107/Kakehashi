@@ -11,7 +11,8 @@
       "expo-font",
       ["expo-camera", { "cameraPermission": "KAKEHASHI uses the camera to photograph items and scan story tags." }],
       ["expo-audio", { "microphonePermission": "KAKEHASHI records item stories, only with the senior's consent." }],
-      ["expo-image-picker", { "photosPermission": "KAKEHASHI lets students add photos of items." }]
+      ["expo-image-picker", { "photosPermission": "KAKEHASHI lets students add photos of items." }],
+      ["expo-location", { "locationWhenInUsePermission": "KAKEHASHI shares your location with her family only during an outing she agreed to." }]
     ],
     "web": { "bundler": "metro", "output": "single" },
     "experiments": { "typedRoutes": false }

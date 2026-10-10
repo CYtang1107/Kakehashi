@@ -6,6 +6,7 @@ import { Avatar, Button, Card, Heading, Pill, Screen, formatDate } from '../../s
 import { useData } from '../../src/data';
 import { ActivitiesCard, StudentsCard } from '../../src/Community';
 import { ServicesCard } from '../../src/Services';
+import { LiveOutingBanner } from '../../src/Outing';
 import { useI18n } from '../../src/i18n';
 import { colors, type } from '../../src/theme';
 
@@ -26,6 +27,7 @@ export default function FamilyHome() {
         return (
           <>
             <Heading eyebrow={t('mothersHome', { town: pick(lang, home.town, home.townJa) })} title={t('greeting', { name: pick(lang, home.childName, home.childNameJa) })} />
+            <LiveOutingBanner onOpenMap={() => router.push('/family/house?view=map')} />
             {next ? (
               <Card tint>
                 <Text style={type.eyebrow}>{t('nextVisit')}</Text>

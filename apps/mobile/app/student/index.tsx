@@ -13,6 +13,7 @@ import { PixelIcon } from '../../src/PixelIcon';
 import { SaferHomeCard } from '../../src/SaferHome';
 import { HouseFutureCard } from '../../src/HouseFuture';
 import { ServicesCard } from '../../src/Services';
+import { OutingCard } from '../../src/Outing';
 import { spriteFor } from '../../src/pixelArt';
 import { colors, type } from '../../src/theme';
 
@@ -39,6 +40,7 @@ export default function Visit() {
         <Text style={type.body}>{t('beforeYouStartBody')}</Text>
       </Card>
       <FieldNotesCard />
+      <OutingCard />
       <Card>
         <Text style={type.section}>{t('consentTitle')}</Text>
         <Text style={type.body}>{home.consent.recording ? t('consentGiven', { date: formatDate(home.consent.at ?? '', lang) }) : t('consentMissing')}</Text>

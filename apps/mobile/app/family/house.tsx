@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Glyph, Heading, Screen } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
@@ -11,6 +11,7 @@ import { RoomGallery } from '../../src/Community';
 import { SaferHomeCard, fixTone } from '../../src/SaferHome';
 import { HouseFutureCard } from '../../src/HouseFuture';
 import { TrackMap, isTrackable } from '../../src/TrackMap';
+import { LiveOutingBanner } from '../../src/Outing';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
@@ -23,7 +24,9 @@ const TOUR_MS = 7000;
 export default function House() {
   const { data } = useData();
   const { t, lang } = useI18n();
-  const [view, setView] = useState<View3>('3d');
+  const params = useLocalSearchParams<{ view?: string }>();
+  const [view, setView] = useState<View3>(params.view === 'map' ? 'map' : '3d');
+  useEffect(() => { if (params.view === 'map') setView('map'); }, [params.view]);
   const [selected, setSelected] = useState<string | undefined>();
   const [touring, setTouring] = useState(false);
   const [colorBy, setColorBy] = useState<ColorBy>('none');
@@ -81,6 +84,7 @@ export default function House() {
             ))}
           </View>
 
+          {view === 'map' ? <LiveOutingBanner /> : null}
           <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line }}>
             {view === 'map'
               ? <NeighbourhoodMap homeId={data.home.id} focus={focus} />
