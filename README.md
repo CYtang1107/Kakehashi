@@ -63,6 +63,14 @@ packages/shared  Types shared by both
 
 Students note small home modifications with her (handrail, removing a step, non-slip floor, sliding door, night light) with a length, count or area. She decides each one (suggested, she agreed, not now, done). The family sees a costed plan and an estimate of the care-insurance home-modification subsidy (介護保険の住宅改修: usually up to ¥200,000 of eligible work, often 90% covered; it needs a care-level certification and approval before work). Prices in `packages/shared` are examples for QS members to replace with real local quotes. Fixes appear as markers on the floor plan.
 
+## 3D views: colour by, and evening light
+
+Under the 3D house, **Colour by** rings every item by her choice or by whether it has a story (with counts), or shows the safer-home fixes as markers. **Evening light** shows the house at night, lit only by night lights: *Tonight* uses the lights already installed; *With her plan* adds the ones she agreed to. Unfixed fall risks pulse red, and the legend names the rooms that are still dark.
+
+## The house's future (家のこれから)
+
+Japan has about 9 million empty homes (空き家), often because nobody asked the owner what she wanted while she could say. Students write down her wish for the house in her own words, only if she brings it up ("not decided yet" is the default). The family adds notes (wishes, not votes), sees the condition students noted on visits (roof, water, wood, walls, garden), what the house would cost each year if it stood empty (including the extra land tax if the city designates it), and a checklist of steps to take early, such as the inheritance registration that has been required since April 2024. It is not a listing: KAKEHASHI never sells houses and takes no fees from estate agents.
+
 ## No pressure to let go
 
 - **"Not now" is the first and default choice.** Most items are never decided, and most visits nothing leaves the house.

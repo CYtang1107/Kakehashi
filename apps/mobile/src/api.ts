@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -45,6 +45,12 @@ export const api = {
     call<SafetyFix[]>(`/api/home/${homeId}/safety`, { method: 'POST', body }),
   fixStatus: (homeId: string, fixId: string, status: FixStatus) =>
     call<SafetyFix[]>(`/api/home/${homeId}/safety/${fixId}`, { method: 'POST', body: { status } }),
+  houseWish: (homeId: string, wish: HouseWish, words: string, by: string) =>
+    call<HouseFuture>(`/api/home/${homeId}/future/wish`, { method: 'POST', body: { wish, words, by } }),
+  houseNote: (homeId: string, note: string, by: string) => call<HouseFuture>(`/api/home/${homeId}/future/note`, { method: 'POST', body: { note, by } }),
+  houseCondition: (homeId: string, part: ConditionPart, level: ConditionLevel) =>
+    call<HouseFuture>(`/api/home/${homeId}/future/condition`, { method: 'POST', body: { part, level } }),
+  houseStep: (homeId: string, step: HouseStep, done: boolean) => call<HouseFuture>(`/api/home/${homeId}/future/step`, { method: 'POST', body: { step, done } }),
   addFieldNote: (homeId: string, kind: FieldNoteKind, text: string, by: string) =>
     call<FieldNote[]>(`/api/home/${homeId}/fieldnotes`, { method: 'POST', body: { kind, text, by } }),
   checkReport: (text: string) => call<CheckResult>('/api/report/check', { method: 'POST', body: { text } }),

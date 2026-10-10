@@ -172,6 +172,8 @@ export interface Home {
   fieldNotes: FieldNote[];
   // Small home modifications she agreed to, with costs and the care-insurance estimate.
   safety: SafetyFix[];
+  // The house's future (家のこれから): her wish for the house, in her words, and the facts the family needs.
+  future: HouseFuture;
 }
 
 export type FieldNoteKind = 'likes' | 'avoid' | 'tip';
@@ -303,4 +305,39 @@ export function safetyEstimate(fixes: SafetyFix[]) {
   const covered = Math.round(Math.min(eligible, SUBSIDY.limitJpy) * SUBSIDY.coverRate);
   const suggested = fixes.filter((f) => f.status === 'suggested').reduce((t, f) => t + fixCost(f), 0);
   return { total, eligible, covered, familyPays: total - covered, suggested };
+}
+
+// ---------- The house's future (家のこれから) ----------
+// Japan has about 9 million empty homes (空き家). Most become empty because nobody asked the owner early
+// what she wanted, and the family cannot decide later. KAKEHASHI records her wish while she lives there.
+// It is not a listing: KAKEHASHI never sells houses and takes no fee from estate agents.
+export type HouseWish = 'undecided' | 'family-lives' | 'young-family' | 'rent' | 'sell' | 'community';
+export const HOUSE_WISHES: HouseWish[] = ['undecided', 'family-lives', 'young-family', 'rent', 'sell', 'community'];
+export type ConditionPart = 'roof' | 'water' | 'wood' | 'walls' | 'garden';
+export const CONDITION_PARTS: ConditionPart[] = ['roof', 'water', 'wood', 'walls', 'garden'];
+export type ConditionLevel = 'ok' | 'watch' | 'repair';
+export type HouseStep = 'papers' | 'registration' | 'talk' | 'note';
+export const HOUSE_STEPS: HouseStep[] = ['papers', 'talk', 'note', 'registration'];
+export interface HouseFuture {
+  // For after she no longer lives there. While she does, the answer is always "she stays".
+  wish: HouseWish;
+  words?: string; // her words, as the students wrote them down
+  wordsJa?: string;
+  recordedBy?: string;
+  recordedAt?: string;
+  // Family members share wishes too; these are notes, not votes.
+  familyNotes: { by: string; note: string; noteJa?: string; at: string }[];
+  // Students note the condition on visits (QS members know what to look for).
+  condition: Partial<Record<ConditionPart, { level: ConditionLevel; note?: string; noteJa?: string; at: string }>>;
+  // Yearly costs if the house stands empty; example numbers until the family checks the tax notice.
+  emptyCost: { landTaxJpy: number; buildingTaxJpy: number; upkeepJpy: number; insuranceJpy: number };
+  steps: Partial<Record<HouseStep, string>>; // date each step was done
+}
+// If an empty house is left unmanaged, the city can designate it (管理不全空家・特定空家) and the
+// residential-land tax reduction ends: the land part of the property tax can rise up to about 6 times.
+export const DESIGNATED_LAND_MULTIPLIER = 6;
+export function emptyHouseCost(c: HouseFuture['emptyCost']) {
+  const yearly = c.landTaxJpy + c.buildingTaxJpy + c.upkeepJpy + c.insuranceJpy;
+  const ifDesignated = c.landTaxJpy * (DESIGNATED_LAND_MULTIPLIER - 1);
+  return { yearly, tenYears: yearly * 10, ifDesignated };
 }

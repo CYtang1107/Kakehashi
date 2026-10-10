@@ -62,6 +62,23 @@ export function seedHome(): Home {
       { id: 'f4', roomId: 'bedroom', kind: 'light', amount: 2, status: 'agreed', x: 90, y: 160, note: 'Sensor night lights on the way to the toilet.', noteJa: 'トイレまでの通路にセンサー付き足元灯。' },
       { id: 'f5', roomId: 'living', kind: 'door', amount: 1, status: 'not-now', x: 170, y: 40, note: 'Swing door could become a sliding door. She prefers to keep it for now.', noteJa: '開き戸を引き戸に。今はこのままが良いそうです。' },
     ],
+    future: {
+      wish: 'young-family',
+      words: 'I am staying here as long as I can. After that, I would rather a young family lived here than see it stand empty.',
+      wordsJa: 'できる限りここで暮らします。そのあとは、空き家にするより、若い家族に住んでもらえたら嬉しいです。',
+      recordedBy: 'Yui', recordedAt: '2026-10-10',
+      familyNotes: [
+        { by: 'Kenji', note: 'I cannot move back to Niigata. If that is what Mum wants, I am happy with it.', noteJa: '新潟には戻れません。母がそう望むなら、それで良いと思います。', at: '2026-10-11' },
+      ],
+      condition: {
+        roof: { level: 'ok', at: '2026-09-12' },
+        water: { level: 'watch', note: 'Kitchen drain is slow.', noteJa: '台所の排水が遅い。', at: '2026-09-12' },
+        wood: { level: 'watch', note: 'Two veranda boards feel soft.', noteJa: 'ベランダの板が2枚柔らかい。', at: '2026-10-10' },
+        walls: { level: 'ok', at: '2026-10-10' },
+      },
+      emptyCost: { landTaxJpy: 38000, buildingTaxJpy: 22000, upkeepJpy: 120000, insuranceJpy: 25000 },
+      steps: { papers: '2026-09-12' },
+    },
     fieldNotes: [
       { id: 'n1', date: '2026-10-10', by: 'Yui', kind: 'likes', text: 'Hojicha first, always. She opens up when we ask about Osaka in the 1960s.', textJa: 'まずはほうじ茶から。1960年代の大阪の話を聞くと、たくさん話してくださいます。' },
       { id: 'n2', date: '2026-10-10', by: 'Arif', kind: 'avoid', text: 'Do not open the kimono drawer unless she offers. It belonged to her mother.', textJa: '着物の引き出しは、ご本人が勧めない限り開けないこと。お母さまの物です。' },

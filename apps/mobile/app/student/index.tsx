@@ -11,6 +11,7 @@ import { ActivitiesCard, RoomCapture } from '../../src/Community';
 import { FieldNotesCard, ReportCard } from '../../src/Handover';
 import { PixelIcon } from '../../src/PixelIcon';
 import { SaferHomeCard } from '../../src/SaferHome';
+import { HouseFutureCard } from '../../src/HouseFuture';
 import { spriteFor } from '../../src/pixelArt';
 import { colors, type } from '../../src/theme';
 
@@ -45,6 +46,7 @@ export default function Visit() {
       </Card>
       <RoomCapture roomId={current.id} />
       <SaferHomeCard mode="student" roomId={current.id} />
+      <HouseFutureCard mode="student" />
       <Text style={type.section}>{t('items')}</Text>
       {[...roomItems, ...otherItems].map((it) => (
         <Pressable key={it.id} accessibilityRole="button" onPress={() => router.push(`/item/${it.id}?as=student`)}

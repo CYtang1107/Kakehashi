@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { CHOICES, FIX_KINDS, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
+import { CHOICES, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -277,6 +277,50 @@ app.post('/api/home/:id/safety/:fid', (req, res) => {
   fix.status = status;
   save();
   res.json(home.safety);
+});
+
+// ---------- The house's future (家のこれから): her wish, family notes, condition, steps ----------
+
+app.post('/api/home/:id/future/wish', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const { wish, words, by } = req.body ?? {};
+  if (!HOUSE_WISHES.includes(wish)) return fail(res, 400, 'Choose her wish, or "not decided".');
+  Object.assign(home.future, { wish, words: words ? String(words).trim().slice(0, 400) : undefined, wordsJa: undefined, recordedBy: String(by || 'Student').slice(0, 40), recordedAt: now().slice(0, 10) });
+  save();
+  res.json(home.future);
+});
+
+app.post('/api/home/:id/future/note', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const note = String(req.body?.note ?? '').trim();
+  if (!note) return fail(res, 400, 'Write your note first.');
+  home.future.familyNotes.push({ by: String(req.body?.by || home.childName).slice(0, 40), note: note.slice(0, 400), at: now().slice(0, 10) });
+  save();
+  res.status(201).json(home.future);
+});
+
+app.post('/api/home/:id/future/condition', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const { part, level, note } = req.body ?? {};
+  if (!CONDITION_PARTS.includes(part)) return fail(res, 400, 'Choose a part of the house.');
+  if (!['ok', 'watch', 'repair'].includes(level)) return fail(res, 400, 'Choose OK, keep an eye on it, or needs repair.');
+  home.future.condition[part as ConditionPart] = { level, note: note ? String(note).trim().slice(0, 200) : undefined, at: now().slice(0, 10) };
+  save();
+  res.json(home.future);
+});
+
+app.post('/api/home/:id/future/step', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const { step, done } = req.body ?? {};
+  if (!HOUSE_STEPS.includes(step)) return fail(res, 400, 'Unknown step.');
+  if (done) home.future.steps[step as HouseStep] = now().slice(0, 10);
+  else delete home.future.steps[step as HouseStep];
+  save();
+  res.json(home.future);
 });
 
 // ---------- Field notes and the fresh-eyes check ----------
