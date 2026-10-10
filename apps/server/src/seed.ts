@@ -39,6 +39,14 @@ export function seedHome(): Home {
     planId: 'monthly',
     payments: [],
     proceedsChoice: 'grandchild',
+    letters: [
+      { id: 'l-2026-09', month: '2026-09', itemIds: ['cooker'], note: 'Thank you for the stories about your kitchen. The stairs are clear now, so please walk safely! See you in October.', status: 'mailed', mailedAt: '2026-09-14' },
+    ],
+    calls: [
+      { id: 'c1', date: '2026-08-29', by: 'Yui', status: 'done', minutes: 15, mood: 'good', note: 'Talked about her tomatoes. She asked if we could look at the photo albums again next time.' },
+      { id: 'c2', date: '2026-09-26', by: 'Yui', status: 'done', minutes: 12, mood: 'okay', note: 'A little tired after a cold, now better. Happy that the rice cooker went to a student.' },
+      { id: 'c3', date: '2026-10-17', by: 'Yui', status: 'planned' },
+    ],
   };
 }
 

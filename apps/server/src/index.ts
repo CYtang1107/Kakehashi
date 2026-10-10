@@ -244,6 +244,106 @@ app.get('/payment/success', async (req, res) => {
 
 app.get('/payment/cancel', (_req, res) => res.send(page('Payment cancelled', 'Nothing was charged. You can close this page and return to the app.')));
 
+// ---------- Her touchpoints between visits ----------
+
+// Gathers this month's stories and thank-yous into a draft letter (or returns the existing one).
+app.post('/api/home/:id/letters', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const month = String(req.body?.month ?? new Date().toISOString().slice(0, 7));
+  let letter = home.letters.find((l) => l.month === month);
+  if (!letter) {
+    const inMonth = (iso?: string) => Boolean(iso && iso.slice(0, 7) === month);
+    const itemIds = db.items
+      .filter((i) => i.homeId === home.id && (i.story || i.audioUrl) && (i.journey.some((j) => inMonth(j.at)) || i.thanks.some((t) => inMonth(t.at))))
+      .map((i) => i.id);
+    letter = { id: `l-${month}`, month, itemIds, note: String(req.body?.note ?? ''), status: 'draft' };
+    home.letters.unshift(letter);
+  } else if (typeof req.body?.note === 'string') {
+    letter.note = req.body.note.slice(0, 600);
+  }
+  save();
+  res.json(letter);
+});
+
+app.post('/api/letters/:id/status', (req, res) => {
+  const home = db.homes.find((h) => h.letters.some((l) => l.id === req.params.id));
+  const letter = home?.letters.find((l) => l.id === req.params.id);
+  if (!letter) return fail(res, 404, 'Letter not found.');
+  const status = req.body?.status;
+  if (!['draft', 'printed', 'mailed'].includes(status)) return fail(res, 400, 'Unknown status.');
+  letter.status = status;
+  if (status === 'mailed') letter.mailedAt = now().slice(0, 10);
+  save();
+  res.json(letter);
+});
+
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+// Printable A4 letter in large type, for posting to her.
+app.get('/letters/:id', (req, res) => {
+  const home = db.homes.find((h) => h.letters.some((l) => l.id === req.params.id));
+  const letter = home?.letters.find((l) => l.id === req.params.id);
+  if (!home || !letter) return res.status(404).send(page('Letter not found', 'Check the link in the app.'));
+  const [y, m] = letter.month.split('-').map(Number);
+  const first = home.seniorName.split(' ')[0];
+  const items = letter.itemIds.map((iid) => findItem(iid)).filter(Boolean) as Item[];
+  const blocks = items.map((it) => {
+    const photo = it.photoUrl ? `<img src="${it.photoUrl}" alt="">` : `<div class="glyph">${esc(it.glyph)}</div>`;
+    const thanks = it.thanks.filter((t) => t.at.slice(0, 7) === letter.month)
+      .map((t) => `<p class="thanks">${esc(t.from)}さんより：「${esc(t.message)}」</p>`).join('');
+    return `<section>${photo}<div><h2>${esc(it.nameJa ?? it.name)}<span>${esc(it.name)}</span></h2>${it.story ? `<p class="story">「${esc(it.story)}」</p>` : ''}${thanks}</div></section>`;
+  }).join('');
+  res.send(`<!doctype html><html lang="ja"><meta charset="utf-8"><title>思い出だより ${y}年${m}月</title>
+<style>
+@page { size: A4; margin: 18mm; }
+body { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; color: #1d2433; background: #fbfaf7; font-size: 20px; line-height: 1.8; max-width: 760px; margin: 0 auto; padding: 32px; }
+header { border-bottom: 3px solid #2b4c7e; padding-bottom: 12px; margin-bottom: 24px; }
+h1 { font-size: 40px; margin: 0; letter-spacing: 0.1em; } header p { margin: 4px 0 0; font-size: 22px; }
+section { display: grid; grid-template-columns: 140px 1fr; gap: 20px; padding: 18px 0; border-bottom: 1px solid #d9d7cf; break-inside: avoid; }
+section img { width: 140px; height: 140px; object-fit: cover; border-radius: 10px; }
+.glyph { width: 140px; height: 140px; border-radius: 10px; background: #e3e9f3; display: grid; place-items: center; font-size: 64px; }
+h2 { font-size: 26px; margin: 0; } h2 span { font-size: 16px; color: #5b6273; margin-left: 12px; font-family: system-ui, sans-serif; }
+.story { margin: 8px 0; } .thanks { margin: 8px 0; color: #4f6b3a; }
+.note { background: #e3e9f3; padding: 18px 22px; border-radius: 10px; margin-top: 24px; }
+footer { margin-top: 24px; font-size: 18px; color: #5b6273; }
+@media print { body { background: #fff; padding: 0; } }
+</style>
+<header><h1>思い出だより</h1><p>${y}年${m}月　${esc(first)}さんへ</p></header>
+${blocks || '<p>今月は、お茶とお話の時間でした。</p>'}
+<div class="note"><p>${esc(letter.note || 'またお会いできるのを楽しみにしています。')}</p><p>${home.students.map((s) => esc(s.name)).join('・')}より</p></div>
+<footer>次の訪問：${esc(home.visits.find((v) => v.status === 'planned')?.date ?? '')}　お電話：${esc(home.calls.find((c) => c.status === 'planned')?.date ?? '')}</footer>
+</html>`);
+});
+
+// Phone calls between visits: plan one, or log one that happened.
+app.post('/api/home/:id/calls', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const { date, by, minutes, mood, note, followUp } = req.body ?? {};
+  if (mood !== undefined && !['good', 'okay', 'low'].includes(mood)) return fail(res, 400, 'Unknown mood.');
+  const planned = home.calls.find((c) => c.status === 'planned');
+  const call = planned ?? { id: id('call'), date: String(date ?? now().slice(0, 10)), by: String(by ?? home.students[0].name), status: 'planned' as const };
+  Object.assign(call, {
+    status: 'done' as const,
+    date: String(date ?? call.date),
+    minutes: Number(minutes) || undefined,
+    mood,
+    note: note ? String(note).slice(0, 500) : undefined,
+    followUp: Boolean(followUp),
+  });
+  if (!planned) home.calls.unshift(call);
+  // Book the next call two weeks after the next visit.
+  const next = home.visits.find((v) => v.status === 'planned');
+  if (next && !home.calls.some((c) => c.status === 'planned')) {
+    const d = new Date(`${next.date}T12:00:00`);
+    d.setDate(d.getDate() + 14);
+    home.calls.push({ id: id('call'), date: d.toISOString().slice(0, 10), by: call.by, status: 'planned' });
+  }
+  save();
+  res.json(home.calls);
+});
+
 app.post('/api/reset', (_req, res) => {
   reset();
   res.json({ ok: true });

@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, PublicTag, WishKind } from '@kakehashi/shared';
+import type { Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -15,6 +15,7 @@ function resolveBase(): string {
 
 export const API_BASE = resolveBase();
 export const fileUrl = (path?: string) => (path ? `${API_BASE}${path}` : undefined);
+export const letterUrl = (letterId: string) => `${API_BASE}/letters/${letterId}`;
 
 async function call<T>(path: string, init?: { method?: string; body?: unknown }): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -40,6 +41,10 @@ export const api = {
   handover: (itemId: string, stage: HandoverStage, by: string, note?: string) =>
     call<Item>(`/api/items/${itemId}/handover`, { method: 'POST', body: { stage, by, note } }),
   estimate: (body: { base64?: string; mime?: string; name?: string }) => call<Estimate>('/api/estimate', { method: 'POST', body }),
+  prepareLetter: (homeId: string, note?: string) => call<Letter>(`/api/home/${homeId}/letters`, { method: 'POST', body: note !== undefined ? { note } : {} }),
+  letterStatus: (letterId: string, status: Letter['status']) => call<Letter>(`/api/letters/${letterId}/status`, { method: 'POST', body: { status } }),
+  logCall: (homeId: string, body: { by?: string; minutes?: number; mood?: CallMood; note?: string; followUp?: boolean }) =>
+    call<Call[]>(`/api/home/${homeId}/calls`, { method: 'POST', body }),
   publicTag: (code: string) => call<PublicTag>(`/api/tags/${encodeURIComponent(code)}`),
   thanks: (code: string, from: string, message: string) => call<PublicTag>(`/api/tags/${encodeURIComponent(code)}/thanks`, { method: 'POST', body: { from, message } }),
   checkout: (homeId: string, planId: string) => call<CheckoutResult>('/api/checkout', { method: 'POST', body: { homeId, planId } }),

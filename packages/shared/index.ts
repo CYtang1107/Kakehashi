@@ -128,6 +128,32 @@ export interface Home {
   payments: Payment[];
   // What she wants done with money from items sold.
   proceedsChoice: 'keep' | 'grandchild' | 'donate';
+  // Her own touchpoints between visits: a printed monthly letter and a phone call.
+  letters: Letter[];
+  calls: Call[];
+}
+
+// 思い出だより: a printed monthly letter posted to her (and shown to the family).
+export interface Letter {
+  id: string;
+  month: string; // YYYY-MM
+  itemIds: string[]; // stories and thank-yous included
+  note: string; // a few words from the students
+  status: 'draft' | 'printed' | 'mailed';
+  mailedAt?: string;
+}
+
+// A short phone call from her student between visits.
+export type CallMood = 'good' | 'okay' | 'low';
+export interface Call {
+  id: string;
+  date: string;
+  by: string;
+  status: 'planned' | 'done';
+  minutes?: number;
+  mood?: CallMood;
+  note?: string;
+  followUp?: boolean;
 }
 
 export interface Services {

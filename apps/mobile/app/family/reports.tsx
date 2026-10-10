@@ -4,6 +4,7 @@ import { Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { colors, type } from '../../src/theme';
+import { CallsCard, LetterCard } from '../../src/Touchpoints';
 
 export default function Reports() {
   const { data } = useData();
@@ -13,6 +14,8 @@ export default function Reports() {
       {data ? (
         <>
           <Heading title={t('reportsTitle')} />
+          <LetterCard mode="family" />
+          <CallsCard mode="family" />
           {data.home.visits.map((v) => {
             const room = data.home.rooms.find((r) => r.id === v.roomId);
             return (

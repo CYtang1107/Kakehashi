@@ -6,6 +6,7 @@ import { Button, Card, DecisionChip, Glyph, Heading, Screen, formatDate } from '
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
+import { CallsCard, LetterCard } from '../../src/Touchpoints';
 import { colors, type } from '../../src/theme';
 
 export default function Visit() {
@@ -49,6 +50,8 @@ export default function Visit() {
         </Pressable>
       ))}
       <Button label={t('tabAdd')} kind="secondary" icon="camera" onPress={() => router.push('/student/add')} />
+      <LetterCard mode="student" />
+      <CallsCard mode="student" />
     </Screen>
   );
 }
