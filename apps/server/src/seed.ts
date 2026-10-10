@@ -62,6 +62,21 @@ export function seedHome(): Home {
       { id: 'f4', roomId: 'bedroom', kind: 'light', amount: 2, status: 'agreed', x: 90, y: 160, note: 'Sensor night lights on the way to the toilet.', noteJa: 'トイレまでの通路にセンサー付き足元灯。' },
       { id: 'f5', roomId: 'living', kind: 'door', amount: 1, status: 'not-now', x: 170, y: 40, note: 'Swing door could become a sliding door. She prefers to keep it for now.', noteJa: '開き戸を引き戸に。今はこのままが良いそうです。' },
     ],
+    workers: [
+      { id: 'w-sato', name: 'Takeshi Sato', nameJa: '佐藤 武', from: 'Silver Human Resources Centre', fromJa: 'シルバー人材センター', skills: ['garden', 'lifting', 'repair'],
+        checks: { identity: '2026-05-10', interview: '2026-05-14', training: '2026-05-20' }, jobs: 38 },
+      { id: 'w-kobayashi', name: 'Emi Kobayashi', nameJa: '小林 恵美', from: 'Home-help cooperative', fromJa: '家事支援の協同組合', skills: ['cleaning'],
+        checks: { identity: '2026-04-02', interview: '2026-04-06', training: '2026-04-15' }, jobs: 21 },
+      { id: 'w-mori', name: 'Mori Builders', nameJa: '森工務店', from: 'Licensed builder, registered for care-insurance work', fromJa: '住宅改修の登録業者', skills: ['builder', 'repair'],
+        checks: { identity: '2026-03-01', interview: '2026-03-03', training: '2026-03-10' }, jobs: 64 },
+      { id: 'w-ryo', name: 'Ryo Ishida', nameJa: '石田 涼', from: 'Gig worker, joining', fromJa: '登録中のギグワーカー', skills: ['lifting', 'garden'],
+        checks: { identity: '2026-10-05' }, jobs: 0 },
+    ],
+    services: [
+      { id: 's1', kind: 'garden', when: 'soon', by: 'her', note: 'Weeds by the veranda; the tomatoes need stakes.', noteJa: 'ベランダ脇の草取りと、トマトの支柱立て。', status: 'booked', createdAt: '2026-10-08', workerId: 'w-sato', date: '2026-10-15', hours: 2, priceJpy: 4000 },
+      { id: 's2', kind: 'builder', when: 'soon', by: 'student', fixId: 'f1', note: 'Handrail in the bedroom she agreed to.', noteJa: 'ご本人が同意した寝室の手すり。', status: 'requested', createdAt: '2026-10-10' },
+      { id: 's3', kind: 'cleaning', when: 'soon', by: 'her', note: 'Kitchen and bathroom before the autumn.', noteJa: '秋の前に台所とお風呂の掃除。', status: 'done', createdAt: '2026-09-14', workerId: 'w-kobayashi', date: '2026-09-20', hours: 2, priceJpy: 6000, feedback: 'good' },
+    ],
     future: {
       wish: 'young-family',
       words: 'I am staying here as long as I can. After that, I would rather a young family lived here than see it stand empty.',

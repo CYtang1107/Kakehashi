@@ -75,6 +75,9 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student'; ro
                 ? <Button label={t('fixstatus_not-now')} kind="secondary" onPress={() => run(f.id, () => api.fixStatus(home.id, f.id, 'not-now'))} /> : null}
               {f.status === 'agreed'
                 ? <Button label={t('markDone')} kind="secondary" busy={busy === f.id} onPress={() => run(f.id, () => api.fixStatus(home.id, f.id, 'done'))} /> : null}
+              {f.status === 'agreed' && !home.services.some((s) => s.fixId === f.id && s.status !== 'cancelled')
+                ? <Button label={t('bookBuilder')} kind="secondary" icon="tool" busy={busy === `b-${f.id}`}
+                    onPress={() => run(`b-${f.id}`, () => api.askHelp(home.id, { kind: 'builder', when: 'soon', by: 'student', fixId: f.id }), t('builderAsked'))} /> : null}
             </View>
           ) : null}
         </View>

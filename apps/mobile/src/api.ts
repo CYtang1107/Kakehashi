@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -51,6 +51,12 @@ export const api = {
   houseCondition: (homeId: string, part: ConditionPart, level: ConditionLevel) =>
     call<HouseFuture>(`/api/home/${homeId}/future/condition`, { method: 'POST', body: { part, level } }),
   houseStep: (homeId: string, step: HouseStep, done: boolean) => call<HouseFuture>(`/api/home/${homeId}/future/step`, { method: 'POST', body: { step, done } }),
+  askHelp: (homeId: string, body: { kind: ServiceKind; when: 'soon' | 'next-visit'; by: 'her' | 'student'; note?: string; fixId?: string }) =>
+    call<ServiceRequest[]>(`/api/home/${homeId}/services`, { method: 'POST', body }),
+  bookHelp: (homeId: string, sid: string, body: { workerId: string; date: string; hours?: number }) =>
+    call<ServiceRequest[]>(`/api/home/${homeId}/services/${sid}/book`, { method: 'POST', body }),
+  helpStatus: (homeId: string, sid: string, body: { status?: 'done' | 'cancelled'; feedback?: ServiceFeedback }) =>
+    call<ServiceRequest[]>(`/api/home/${homeId}/services/${sid}/status`, { method: 'POST', body }),
   addFieldNote: (homeId: string, kind: FieldNoteKind, text: string, by: string) =>
     call<FieldNote[]>(`/api/home/${homeId}/fieldnotes`, { method: 'POST', body: { kind, text, by } }),
   checkReport: (text: string) => call<CheckResult>('/api/report/check', { method: 'POST', body: { text } }),

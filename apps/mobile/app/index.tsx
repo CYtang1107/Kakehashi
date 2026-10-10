@@ -6,7 +6,8 @@ import { TopBar } from '../src/ui';
 import { useI18n, type Key } from '../src/i18n';
 import { colors, fonts, type } from '../src/theme';
 
-const ROLES: { path: '/family' | '/student' | '/owner'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
+const ROLES: { path: '/family' | '/student' | '/owner' | '/her'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
+  { path: '/her', title: 'roleHer', hint: 'roleHerHint', icon: 'sun' },
   { path: '/family', title: 'roleFamily', hint: 'roleFamilyHint', icon: 'home' },
   { path: '/student', title: 'roleStudents', hint: 'roleStudentsHint', icon: 'users' },
   { path: '/owner', title: 'roleOwner', hint: 'roleOwnerHint', icon: 'gift' },

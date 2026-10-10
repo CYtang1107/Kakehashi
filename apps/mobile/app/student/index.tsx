@@ -12,6 +12,7 @@ import { FieldNotesCard, ReportCard } from '../../src/Handover';
 import { PixelIcon } from '../../src/PixelIcon';
 import { SaferHomeCard } from '../../src/SaferHome';
 import { HouseFutureCard } from '../../src/HouseFuture';
+import { ServicesCard } from '../../src/Services';
 import { spriteFor } from '../../src/pixelArt';
 import { colors, type } from '../../src/theme';
 
@@ -46,6 +47,7 @@ export default function Visit() {
       </Card>
       <RoomCapture roomId={current.id} />
       <SaferHomeCard mode="student" roomId={current.id} />
+      <ServicesCard mode="student" />
       <HouseFutureCard mode="student" />
       <Text style={type.section}>{t('items')}</Text>
       {[...roomItems, ...otherItems].map((it) => (

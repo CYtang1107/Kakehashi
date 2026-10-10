@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { CHOICES, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
+import { CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -321,6 +321,75 @@ app.post('/api/home/:id/future/step', (req, res) => {
   else delete home.future.steps[step as HouseStep];
   save();
   res.json(home.future);
+});
+
+// ---------- Help at home: she asks, a checked worker is booked, she says how it went ----------
+
+app.post('/api/home/:id/services', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const { kind, when, by, note, fixId } = req.body ?? {};
+  const fix = fixId ? home.safety.find((f) => f.id === fixId) : undefined;
+  if (fixId && !fix) return fail(res, 400, 'Fix not found.');
+  if (fix && fix.status !== 'agreed') return fail(res, 400, 'Book a builder only for a fix she agreed to.');
+  if (!(HELP_KINDS as string[]).concat(fix ? ['builder'] : []).includes(kind)) return fail(res, 400, 'Choose what kind of help.');
+  if (fix && home.services.some((s) => s.fixId === fix.id && s.status !== 'cancelled')) return fail(res, 409, 'A builder is already asked for this fix.');
+  const request = {
+    id: id('svc'), kind: kind as ServiceKind, when: when === 'next-visit' ? 'next-visit' as const : 'soon' as const,
+    by: by === 'student' ? 'student' as const : 'her' as const, note: note ? String(note).trim().slice(0, 300) : undefined,
+    fixId: fix?.id, status: 'requested' as const, createdAt: now().slice(0, 10),
+  };
+  home.services.unshift(request);
+  save();
+  res.status(201).json(home.services);
+});
+
+app.post('/api/home/:id/services/:sid/book', (req, res) => {
+  const home = findHome(req.params.id);
+  const svc = home?.services.find((s) => s.id === req.params.sid);
+  if (!home || !svc) return fail(res, 404, 'Request not found.');
+  if (svc.status !== 'requested') return fail(res, 409, 'This request is already booked or closed.');
+  const worker = home.workers.find((w) => w.id === req.body?.workerId);
+  if (!worker) return fail(res, 400, 'Choose a worker.');
+  if (!worker.skills.includes(svc.kind)) return fail(res, 400, `${worker.name} does not do this kind of work.`);
+  if (!isCleared(worker)) return fail(res, 403, `${worker.name} has not finished the checks yet, so cannot be booked.`);
+  const date = String(req.body?.date ?? '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail(res, 400, 'Enter a date like 2026-10-20.');
+  const fix = svc.fixId ? home.safety.find((f) => f.id === svc.fixId) : undefined;
+  if (SERVICE_CATALOG[svc.kind].unit === 'hour') {
+    const hours = Number(req.body?.hours);
+    if (!(hours > 0 && hours <= 8)) return fail(res, 400, 'Enter 0.5 to 8 hours.');
+    svc.hours = Math.round(hours * 2) / 2;
+    svc.priceJpy = Math.round(svc.hours * SERVICE_CATALOG[svc.kind].priceJpy);
+  } else if (fix) {
+    svc.priceJpy = fixCost(fix);
+  }
+  Object.assign(svc, { status: 'booked', workerId: worker.id, date });
+  save();
+  res.json(home.services);
+});
+
+app.post('/api/home/:id/services/:sid/status', (req, res) => {
+  const home = findHome(req.params.id);
+  const svc = home?.services.find((s) => s.id === req.params.sid);
+  if (!home || !svc) return fail(res, 404, 'Request not found.');
+  const { status, feedback } = req.body ?? {};
+  if (status === 'done') {
+    if (svc.status !== 'booked') return fail(res, 409, 'Only a booked job can be marked done.');
+    svc.status = 'done';
+    if (svc.fixId) { const fix = home.safety.find((f) => f.id === svc.fixId); if (fix) fix.status = 'done'; }
+    const worker = home.workers.find((w) => w.id === svc.workerId);
+    if (worker) worker.jobs += 1;
+  } else if (status === 'cancelled') {
+    if (svc.status === 'done') return fail(res, 409, 'This job is already done.');
+    svc.status = 'cancelled';
+  } else if (feedback) {
+    if (svc.status !== 'done') return fail(res, 409, 'Say how it went once the job is done.');
+    if (!['good', 'okay', 'not-good'].includes(feedback)) return fail(res, 400, 'Unknown feedback.');
+    svc.feedback = feedback;
+  } else return fail(res, 400, 'Nothing to change.');
+  save();
+  res.json(home.services);
 });
 
 // ---------- Field notes and the fresh-eyes check ----------

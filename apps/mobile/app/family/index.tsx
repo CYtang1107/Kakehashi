@@ -5,6 +5,7 @@ import { pick } from '@kakehashi/shared';
 import { Avatar, Button, Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { ActivitiesCard, StudentsCard } from '../../src/Community';
+import { ServicesCard } from '../../src/Services';
 import { useI18n } from '../../src/i18n';
 import { colors, type } from '../../src/theme';
 
@@ -51,6 +52,7 @@ export default function FamilyHome() {
             ) : null}
             <StudentsCard />
             <ActivitiesCard mode="family" />
+            <ServicesCard mode="family" />
           </>
         );
       })() : null}

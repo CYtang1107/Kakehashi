@@ -174,6 +174,9 @@ export interface Home {
   safety: SafetyFix[];
   // The house's future (家のこれから): her wish for the house, in her words, and the facts the family needs.
   future: HouseFuture;
+  // Help she can ask for (garden, cleaning, small repairs) from checked local workers.
+  workers: Worker[];
+  services: ServiceRequest[];
 }
 
 export type FieldNoteKind = 'likes' | 'avoid' | 'tip';
@@ -340,4 +343,51 @@ export function emptyHouseCost(c: HouseFuture['emptyCost']) {
   const yearly = c.landTaxJpy + c.buildingTaxJpy + c.upkeepJpy + c.insuranceJpy;
   const ifDesignated = c.landTaxJpy * (DESIGNATED_LAND_MULTIPLIER - 1);
   return { yearly, tenYears: yearly * 10, ifDesignated };
+}
+
+// ---------- Help at home (お手伝いの依頼) ----------
+// She can ask for help in her own screen, on the phone, or through the students. Only workers who passed the
+// same checks as students can be booked, and nobody comes without a booking she can see on her screen
+// (older people living alone are a main target of fake inspection and repair scams in Japan).
+export type ServiceKind = 'garden' | 'cleaning' | 'repair' | 'lifting' | 'builder';
+export const HELP_KINDS: ServiceKind[] = ['garden', 'cleaning', 'repair', 'lifting'];
+// Example prices for the pilot; workers keep WORKER_SHARE, the rest pays for checks, coordination and insurance.
+export const SERVICE_CATALOG: Record<ServiceKind, { unit: 'hour' | 'quote'; priceJpy: number }> = {
+  garden: { unit: 'hour', priceJpy: 2000 },
+  cleaning: { unit: 'hour', priceJpy: 3000 },
+  repair: { unit: 'hour', priceJpy: 3500 },
+  lifting: { unit: 'hour', priceJpy: 3000 },
+  builder: { unit: 'quote', priceJpy: 0 }, // priced from the safer-home fix
+};
+export const WORKER_SHARE = 0.85;
+export type WorkerCheck = 'identity' | 'interview' | 'training';
+export const WORKER_CHECKS: WorkerCheck[] = ['identity', 'interview', 'training'];
+export interface Worker {
+  id: string;
+  name: string;
+  nameJa?: string;
+  from: string; // e.g. the local Silver Human Resources Centre (シルバー人材センター)
+  fromJa?: string;
+  skills: ServiceKind[];
+  checks: Partial<Record<WorkerCheck, string>>; // date each check was passed
+  jobs: number;
+}
+export const isCleared = (w: Worker) => WORKER_CHECKS.every((c) => Boolean(w.checks[c]));
+export type ServiceStatus = 'requested' | 'booked' | 'done' | 'cancelled';
+export type ServiceFeedback = 'good' | 'okay' | 'not-good';
+export interface ServiceRequest {
+  id: string;
+  kind: ServiceKind;
+  when: 'soon' | 'next-visit';
+  by: 'her' | 'student';
+  note?: string;
+  noteJa?: string;
+  fixId?: string; // a safer-home fix this booking carries out
+  status: ServiceStatus;
+  createdAt: string;
+  workerId?: string;
+  date?: string;
+  hours?: number;
+  priceJpy?: number;
+  feedback?: ServiceFeedback;
 }
