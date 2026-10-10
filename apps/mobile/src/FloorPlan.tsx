@@ -1,11 +1,12 @@
 import React from 'react';
-import Svg, { G, Line, Rect, Circle, Text as SvgText } from 'react-native-svg';
-import type { Item, Room } from '@kakehashi/shared';
+import Svg, { G, Line, Rect, Circle, Polygon, Text as SvgText } from 'react-native-svg';
+import type { Item, Room, SafetyFix } from '@kakehashi/shared';
+import { fixTone } from './SaferHome';
 import { colors, decisionColor, roomColor } from './theme';
 import { useI18n } from './i18n';
 
 // 2D floor plan on the shared 320 x 240 grid, with a tappable pin per item.
-export function FloorPlan({ rooms, items, selected, onSelect }: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void }) {
+export function FloorPlan({ rooms, items, selected, onSelect, fixes = [] }: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; fixes?: SafetyFix[] }) {
   const { lang } = useI18n();
   const tatami = rooms.find((r) => r.id === 'washitsu');
   return (
@@ -18,6 +19,13 @@ export function FloorPlan({ rooms, items, selected, onSelect }: { rooms: Room[];
       )) : null}
       {rooms.map((r) => (
         <SvgText key={`l-${r.id}`} x={r.x + 7} y={r.y + 14} fontSize={10} fill={colors.inkSoft}>{lang === 'ja' ? r.nameJa : r.name}</SvgText>
+      ))}
+      {/* Safer home plan: a small diamond per fix, coloured by her decision */}
+      {fixes.filter((f) => f.status !== 'not-now').map((f) => (
+        <G key={f.id}>
+          <Polygon points={`${f.x},${f.y - 7} ${f.x + 7},${f.y} ${f.x},${f.y + 7} ${f.x - 7},${f.y}`} fill={fixTone[f.status].bg} stroke={fixTone[f.status].fg} strokeWidth={1.5} />
+          <SvgText x={f.x} y={f.y + 3.5} fontSize={9} fontWeight="bold" fill={fixTone[f.status].fg} textAnchor="middle">+</SvgText>
+        </G>
       ))}
       {items.map((it) => {
         const c = decisionColor[it.decision].fg;

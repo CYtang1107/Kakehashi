@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { CHOICES, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
+import { CHOICES, FIX_KINDS, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -244,6 +244,40 @@ app.get('/payment/success', async (req, res) => {
 });
 
 app.get('/payment/cancel', (_req, res) => res.send(page('Payment cancelled', 'Nothing was charged. You can close this page and return to the app.')));
+
+// ---------- Safer home plan: small modifications she agrees to ----------
+
+app.post('/api/home/:id/safety', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const { roomId, kind, amount, note } = req.body ?? {};
+  const room = home.rooms.find((r) => r.id === roomId);
+  if (!room) return fail(res, 400, 'Choose a room.');
+  if (!FIX_KINDS.includes(kind)) return fail(res, 400, 'Choose a kind of fix.');
+  const qty = Number(amount);
+  if (!(qty > 0 && qty <= 50)) return fail(res, 400, 'Enter a length, count or area between 0 and 50.');
+  // Place the marker inside the room, spread out so markers do not stack.
+  const n = home.safety.filter((f) => f.roomId === room.id).length;
+  home.safety.push({
+    id: id('fix'), roomId: room.id, kind, amount: Math.round(qty * 10) / 10, status: 'suggested',
+    note: note ? String(note).slice(0, 300) : undefined,
+    x: Math.round(room.x + 20 + ((n * 37) % Math.max(1, room.w - 40))),
+    y: Math.round(room.y + room.h - 20 - ((n * 23) % Math.max(1, room.h - 40))),
+  });
+  save();
+  res.status(201).json(home.safety);
+});
+
+app.post('/api/home/:id/safety/:fid', (req, res) => {
+  const home = findHome(req.params.id);
+  const fix = home?.safety.find((f) => f.id === req.params.fid);
+  if (!home || !fix) return fail(res, 404, 'Fix not found.');
+  const status = req.body?.status;
+  if (!['suggested', 'agreed', 'not-now', 'done'].includes(status)) return fail(res, 400, 'Unknown status.');
+  fix.status = status;
+  save();
+  res.json(home.safety);
+});
 
 // ---------- Field notes and the fresh-eyes check ----------
 

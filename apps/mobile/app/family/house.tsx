@@ -7,6 +7,7 @@ import { FloorPlan } from '../../src/FloorPlan';
 import { Home3D, memoryColors } from '../../src/Home3D';
 import { StoryPlayer } from '../../src/Audio';
 import { RoomGallery } from '../../src/Community';
+import { SaferHomeCard } from '../../src/SaferHome';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
@@ -76,7 +77,7 @@ export default function House() {
 
           <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line }}>
             {view === '2d'
-              ? <FloorPlan rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} />
+              ? <FloorPlan rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} fixes={data.home.safety} />
               : <Home3D rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} memory={memory} />}
             {memory ? (
               <Text style={[type.caption, { color: '#CDBFAE', paddingHorizontal: 6, paddingTop: 4 }]}>{t('memoryLegend', { n: memories.length })}</Text>
@@ -104,6 +105,7 @@ export default function House() {
             </>
           ) : (
             <>
+              <SaferHomeCard mode="family" />
               <RoomGallery />
               <Text style={type.section}>{t('items')}</Text>
               {data.items.map((it) => {

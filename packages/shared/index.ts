@@ -170,6 +170,8 @@ export interface Home {
   calls: Call[];
   // Notes students leave for whoever visits next (handover when a student graduates).
   fieldNotes: FieldNote[];
+  // Small home modifications she agreed to, with costs and the care-insurance estimate.
+  safety: SafetyFix[];
 }
 
 export type FieldNoteKind = 'likes' | 'avoid' | 'tip';
@@ -265,3 +267,40 @@ export const parseTag = (data: string): string | null => {
 
 // Picks the Japanese text when Japanese is selected and a translation exists.
 export const pick = (lang: 'en' | 'ja', en?: string, ja?: string) => (lang === 'ja' && ja ? ja : en ?? ja ?? '');
+
+// ---------- Safer home plan (安心リフォーム) ----------
+// Small home modifications that she agrees to. Prices are example estimates for the pilot;
+// QS members replace them with real local quotes.
+export type FixKind = 'handrail' | 'step' | 'nonslip' | 'door' | 'light';
+export const FIX_KINDS: FixKind[] = ['handrail', 'step', 'nonslip', 'door', 'light'];
+export const FIX_CATALOG: Record<FixKind, { unit: 'm' | 'each' | 'm2'; priceJpy: number; eligible: boolean }> = {
+  handrail: { unit: 'm', priceJpy: 15000, eligible: true }, // 手すりの取付け
+  step: { unit: 'each', priceJpy: 30000, eligible: true }, // 段差の解消
+  nonslip: { unit: 'm2', priceJpy: 12000, eligible: true }, // 滑り防止の床材への変更
+  door: { unit: 'each', priceJpy: 80000, eligible: true }, // 引き戸等への扉の取替え
+  light: { unit: 'each', priceJpy: 8000, eligible: false }, // 足元灯 (not a care-insurance item)
+};
+export type FixStatus = 'suggested' | 'agreed' | 'not-now' | 'done';
+export interface SafetyFix {
+  id: string;
+  roomId: string;
+  kind: FixKind;
+  amount: number; // metres, count or square metres, per the catalog unit
+  note?: string;
+  noteJa?: string;
+  status: FixStatus;
+  x: number; // floor-plan position
+  y: number;
+}
+// Care-insurance home modification (介護保険の住宅改修): usually up to ¥200,000 of eligible work per person,
+// with insurance paying most of it (often 90%). Actual coverage depends on care level and income.
+export const SUBSIDY = { limitJpy: 200000, coverRate: 0.9 };
+export const fixCost = (f: Pick<SafetyFix, 'kind' | 'amount'>) => Math.round(FIX_CATALOG[f.kind].priceJpy * f.amount);
+export function safetyEstimate(fixes: SafetyFix[]) {
+  const counted = fixes.filter((f) => f.status === 'agreed' || f.status === 'done');
+  const total = counted.reduce((t, f) => t + fixCost(f), 0);
+  const eligible = counted.filter((f) => FIX_CATALOG[f.kind].eligible).reduce((t, f) => t + fixCost(f), 0);
+  const covered = Math.round(Math.min(eligible, SUBSIDY.limitJpy) * SUBSIDY.coverRate);
+  const suggested = fixes.filter((f) => f.status === 'suggested').reduce((t, f) => t + fixCost(f), 0);
+  return { total, eligible, covered, familyPays: total - covered, suggested };
+}

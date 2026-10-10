@@ -55,6 +55,13 @@ export function seedHome(): Home {
     letters: [
       { id: 'l-2026-09', month: '2026-09', itemIds: ['cooker'], note: 'Thank you for the stories about your kitchen. The stairs are clear now, so please walk safely! See you in October.', noteJa: '台所の思い出話をありがとうございました。階段まわりがすっきりしたので、足元に気をつけてお過ごしください。10月にまたお会いしましょう。', status: 'mailed', mailedAt: '2026-09-14' },
     ],
+    safety: [
+      { id: 'f1', roomId: 'bedroom', kind: 'handrail', amount: 1.8, status: 'agreed', x: 40, y: 200, note: 'Along the wall from the bed to the door; she holds the wall at night.', noteJa: 'ベッドから扉までの壁沿い。夜は壁を伝って歩いています。' },
+      { id: 'f2', roomId: 'washitsu', kind: 'step', amount: 1, status: 'suggested', x: 186, y: 150, note: 'The raised threshold into the tatami room; she lifts her foot slowly here.', noteJa: '和室の敷居の段差。ここでゆっくり足を上げています。' },
+      { id: 'f3', roomId: 'kitchen', kind: 'nonslip', amount: 4, status: 'suggested', x: 210, y: 70, note: 'Floor by the sink gets wet.', noteJa: '流し台の前の床が濡れやすい。' },
+      { id: 'f4', roomId: 'bedroom', kind: 'light', amount: 2, status: 'agreed', x: 90, y: 160, note: 'Sensor night lights on the way to the toilet.', noteJa: 'トイレまでの通路にセンサー付き足元灯。' },
+      { id: 'f5', roomId: 'living', kind: 'door', amount: 1, status: 'not-now', x: 170, y: 40, note: 'Swing door could become a sliding door. She prefers to keep it for now.', noteJa: '開き戸を引き戸に。今はこのままが良いそうです。' },
+    ],
     fieldNotes: [
       { id: 'n1', date: '2026-10-10', by: 'Yui', kind: 'likes', text: 'Hojicha first, always. She opens up when we ask about Osaka in the 1960s.', textJa: 'まずはほうじ茶から。1960年代の大阪の話を聞くと、たくさん話してくださいます。' },
       { id: 'n2', date: '2026-10-10', by: 'Arif', kind: 'avoid', text: 'Do not open the kimono drawer unless she offers. It belonged to her mother.', textJa: '着物の引き出しは、ご本人が勧めない限り開けないこと。お母さまの物です。' },

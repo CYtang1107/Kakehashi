@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -41,6 +41,10 @@ export const api = {
   handover: (itemId: string, stage: HandoverStage, by: string, note?: string) =>
     call<Item>(`/api/items/${itemId}/handover`, { method: 'POST', body: { stage, by, note } }),
   estimate: (body: { base64?: string; mime?: string; name?: string }) => call<Estimate>('/api/estimate', { method: 'POST', body }),
+  addFix: (homeId: string, body: { roomId: string; kind: FixKind; amount: number; note?: string }) =>
+    call<SafetyFix[]>(`/api/home/${homeId}/safety`, { method: 'POST', body }),
+  fixStatus: (homeId: string, fixId: string, status: FixStatus) =>
+    call<SafetyFix[]>(`/api/home/${homeId}/safety/${fixId}`, { method: 'POST', body: { status } }),
   addFieldNote: (homeId: string, kind: FieldNoteKind, text: string, by: string) =>
     call<FieldNote[]>(`/api/home/${homeId}/fieldnotes`, { method: 'POST', body: { kind, text, by } }),
   checkReport: (text: string) => call<CheckResult>('/api/report/check', { method: 'POST', body: { text } }),

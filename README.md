@@ -59,6 +59,10 @@ apps/mobile   Expo Router app (iOS, Android, web)
 packages/shared  Types shared by both
 ```
 
+## Safer home plan (安心リフォーム)
+
+Students note small home modifications with her (handrail, removing a step, non-slip floor, sliding door, night light) with a length, count or area. She decides each one (suggested, she agreed, not now, done). The family sees a costed plan and an estimate of the care-insurance home-modification subsidy (介護保険の住宅改修: usually up to ¥200,000 of eligible work, often 90% covered; it needs a care-level certification and approval before work). Prices in `packages/shared` are examples for QS members to replace with real local quotes. Fixes appear as markers on the floor plan.
+
 ## No pressure to let go
 
 - **"Not now" is the first and default choice.** Most items are never decided, and most visits nothing leaves the house.
