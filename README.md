@@ -1,18 +1,21 @@
 # KAKEHASHI 架け橋
 
-実家じまい, started early and done together. The same two students visit an elderly parent every month to sort the home, record the story behind each item, and pass things on to someone who will use them. The adult child far away follows along in a digital map of the home.
+実家じまい, started early and done together. The same two students visit an older parent every month: tea first, her stories, one room at a time, and a safer home. She decides everything, and "Not now" is the default answer. The adult child far away follows along in a digital 実家 and a monthly letter.
 
-TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an example family (Michiko Tanaka in Niigata, her son Kenji, students Yui and Arif). All people are illustrative.
+TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an example family: Michiko Tanaka in Niigata, her son Kenji, and students Yui and Arif. All people are illustrative.
 
-## What's in it
+## Who uses it
 
 | Role | What they can do |
 | --- | --- |
-| **Family** | Home summary (visits, stories, safer rooms) · **digital 実家** as a rotatable **3D** house, a floor plan with **real room photos**, or **memory mode** (the house at dusk, every item glowing with its story, plus a memory tour) · item stories with recordings · share a **wish** about an item (never a vote; the senior decides) · value shown **only when asked** · **plan and payment** (same fee whatever stays or goes) · the **monthly letter** and **call notes** · visit reports marked "checked for pressure" · student badges · local activities |
-| **Students** | **Field notes** from earlier visits · recording consent · capture **room photos** · log an item with a photo and an **AI value estimate** · record the story (real audio) · create a **story tag QR** · her choice with "Not now" first · log handovers · write the **visit report**, which passes a **fresh-eyes check** for pushy wording before reaching the family · prepare the printed **monthly letter (思い出だより)** · log the **call between visits** · propose **local activities** matched to her interests · **Team** tab: the seven-step evaluation every student passes before visiting |
-| **New owner** | **Scan the QR** (phone camera) or type the code · hear the story · see the item's journey · send a thank-you |
+| **Michiko** (her own screen) | Large text, few choices. See who is visiting next and who is coming to help, with the door rule against repair scams. Ask for help in two taps. Say how a job went. |
+| **Family** | The visit thread (every visit as a knot on a thread). The **digital 実家**: 3D house, floor plan, memory mode, neighbourhood map. Item stories and recordings. Share a **wish** about an item (never a vote). Safer home plan with costs, the house's future, help bookings, live outings. Plan and payment, visit reports, the monthly letter, call notes. |
+| **Students** | A visit in three steps: **Before** (field notes, consent), **With her** (items, story tags, room photos, safer home, help, the house's future, activities, outing sharing), **After** (visit report with a fresh-eyes check, monthly letter, calls). **Team** tab: the seven-step evaluation every student passes. |
+| **Helpers** | Checked local workers find jobs on the **job board**, at a price set beforehand, and see what they receive after the 15% fee. |
+| **New owner** | Scan the item's QR (or type the code), hear its story, send a thank-you. |
+| **Story readers** | Anyone: read stories she chose to share, and send kind words that students approve. |
 
-Japanese / English switch on every screen; the example family's stories, reports and notes are written in both languages, and her printed letter is in Japanese.
+Every screen switches between Japanese and English.
 
 ## Run it
 
@@ -23,73 +26,122 @@ npm install
 npm run dev
 ```
 
-This starts the API server on port 4100 and the Expo app.
+This starts the API server on port 4100 and the Expo app on port 8081.
 
 - **Browser:** open http://localhost:8081
-- **Phone:** install **Expo Go**, scan the QR code Expo prints. Phone and laptop must be on the same Wi-Fi. Camera scanning and audio recording work best here.
-- If the phone can't reach the server, copy `apps/mobile/.env.example` to `apps/mobile/.env` and set `EXPO_PUBLIC_API_URL` to the address the server prints (e.g. `http://192.168.1.20:4100`).
+- **Phone:** install **Expo Go** and scan the QR code Expo prints (phone and laptop on the same Wi-Fi). Camera scanning, audio recording and location sharing work best here.
+- If the phone can't reach the server, copy `apps/mobile/.env.example` to `apps/mobile/.env` and set `EXPO_PUBLIC_API_URL` to the address the server prints (for example `http://192.168.1.20:4100`).
+- The maps need an internet connection.
+- An "error installing React Native DevTools" line at start-up is harmless; the app runs without the debugger.
 
 To start over with the example family: `npm run reset` (while the server runs).
 
+## Features
+
+### Visits, stories and her choice
+
+- Story tags: the story behind an item in her words, her real voice (with consent), and a QR code that travels with the item.
+- Her choice for each item, with **Not now** first. An item she agrees to let go stays home until the next visit, in case she changes her mind.
+- Visit reports pass a **fresh-eyes check** for pushy or disrespectful wording before reaching the family.
+- Between visits: a printed monthly letter (思い出だより) and a phone call, logged for the family with her agreement.
+
+### Digital 実家
+
+- **3D house** in pixel art. **Colour by** her choices, stories or planned fixes, with counts. **Evening light** shows the house at night lit only by night lights: *Tonight* (installed) or *With her plan* (also the ones she agreed to); unfixed fall risks pulse red.
+- **Floor plan** with room photos, and **memory mode** (the house at dusk, every item with a story glowing, plus a memory tour).
+- **Neighbourhood map** (MapLibre GL, OpenFreeMap tiles): her places as lettered pins (A–F: activity venues, her care support centre, doctor, supermarket, library) and every other clinic, pharmacy, care place and shop nearby as dots, with walking times and directions. The places are real, copied from OpenStreetMap (see `apps/server/src/nearby.ts`); her home and the activities are examples.
+
+### Safer home plan (安心リフォーム)
+
+Students note small fixes with her (handrail, removing a step, non-slip floor, sliding door, night light) with a length, count or area. She decides each one. The family sees a costed plan and an estimate of the care-insurance home-modification subsidy (介護保険の住宅改修: usually up to ¥200,000 of eligible work, often 90% covered, after care-level certification and approval). Prices in `packages/shared` are examples for QS members to replace with real local quotes.
+
+### The house's future (家のこれから)
+
+Japan has about 9 million empty homes (空き家). Only if she brings it up, students write down her wish for the house in her own words ("not decided yet" is the default). The family adds notes (wishes, not votes) and sees the condition noted on visits, what the house would cost each year if it stood empty, and early steps such as the inheritance registration required since April 2024. It is not a listing: KAKEHASHI never sells houses and takes no fees from estate agents.
+
+### Help at home and the job board
+
+1. She asks for help (garden, cleaning, small repair, heavy lifting) on her screen, by phone or on a visit.
+2. With her, a student sets the price and date, ticks that she agreed to the price, and **posts it to the job board** (or books a helper directly).
+3. **Helpers** who passed ID, interview and training checks see open jobs matching their skills: the price, the date, the **area only** (never her name or address), what they receive, and the fee.
+4. A helper accepts; the job appears on her screen under "Who is coming". Afterwards she rates it.
+
+**Commission:** KAKEHASHI keeps **15%** of each job for checks, insurance and coordination; the helper keeps 85% (a ¥6,000 job pays the helper ¥5,100).
+
+**Rules for helpers** (shown on their screen): only checked helpers see or accept jobs; the price is fixed before they go, with no extra charges, new work or selling on the day; no cash or gifts from her, payment only through KAKEHASHI; go only on the booked day and show the ID; take, buy or throw away nothing outside the job; she rates every job and repeated complaints end access.
+
+A safer-home fix she agreed to can be booked with a registered builder; finishing the job marks the fix done.
+
+### Where is it now?
+
+Each item's journey on a map: her home, the partner repair shop, the licensed recycler, and the new owner's **area** (a circle, never an address). While a student delivers an item, a marker moves along the route. The demo delivery (the writing desk) is simulated and labelled.
+
+### Outing sharing
+
+While a student walks her to an activity, the family follows the walk live on the neighbourhood map. It uses the **student's** phone, starts only after the student ticks that she agreed for this outing, stops when the outing ends or after 4 hours, and the route is then deleted (only its length is kept). Locations far from her home are refused. The demo walk is simulated and labelled.
+
+### Story feed (物語の広場)
+
+With her consent, a story can be shared publicly, named as she chooses (her first name or "someone in Niigata"), with or without her voice. She can take it down any time. Visitors' messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
+
+## No pressure to let go
+
+- **"Not now" is the first and default choice.** Most visits, nothing leaves the house.
+- **Resale money belongs to her.** It never reduces the family's fee, and students earn nothing from resale.
+- **The family shares wishes, not votes.**
+- **Value is shown only when someone asks.**
+- **Progress is measured in visits, stories and safer rooms**, never in items removed.
+
+## Privacy defaults
+
+- Story recordings need her consent; the server refuses uploads without it.
+- The public story-tag page shows her first name and town only, and no locations.
+- Public stories need her consent per story; visitors' messages are moderated.
+- Job listings show the area only; item tracking shows the new owner's area only.
+- Live location only during an outing she agreed to, deleted when it ends.
+
+## Design
+
+- **Visit thread:** the family home opens on a year of visits drawn as knots on a white thread over indigo cloth (藍染): done, next, and months ahead.
+- Cool washi-grey paper, indigo (藍) accent, sentence-case labels, Zen Kaku Gothic New and Shippori Mincho.
+- Long screens use **folds**: a section shows one line (title and status) until tapped.
+
 ## AI features (optional)
 
-Without a key, value estimates come from simple offline rules and the fresh-eyes check uses an English/Japanese word list. With a key, Claude estimates value from the photo and reviews visit reports like a cold reader. To enable:
+Without a key, value estimates come from simple offline rules and the fresh-eyes check uses an English/Japanese word list. With a key, Claude estimates value from the photo and reviews visit reports like a cold reader:
 
 1. Create an API key at https://console.anthropic.com and set a monthly spend limit.
 2. Copy `apps/server/.env.example` to `apps/server/.env` and set `ANTHROPIC_API_KEY=...`.
 3. Restart `npm run dev`.
 
-The key stays on the server and is never sent to the app. Each estimate is one paid API call (photo + short answer).
+The key stays on the server and is never sent to the app.
 
 ## Payments (optional, test mode only)
 
-Without a key, checkout runs in **demo mode** and records a payment without charging anything. To try real Stripe screens with test cards:
-
-1. Create a Stripe account and copy the **test** secret key (starts with `sk_test_`).
-2. Set `STRIPE_SECRET_KEY=sk_test_...` in `apps/server/.env` and restart.
-3. Pay with the test card `4242 4242 4242 4242`, any future date, any CVC.
-
-Live keys (`sk_live_`) are refused on purpose: this pilot never moves real money.
+Without a key, checkout runs in **demo mode** and records a payment without charging anything. To try Stripe's test screens, set `STRIPE_SECRET_KEY=sk_test_...` in `apps/server/.env`, restart, and pay with the test card `4242 4242 4242 4242`. Live keys (`sk_live_`) are refused on purpose: this pilot never moves real money.
 
 ## Project layout
 
 ```
-apps/server   Express API, JSON-file storage (apps/server/data, not committed), Claude + Stripe integrations
-apps/mobile   Expo Router app (iOS, Android, web)
-packages/shared  Types shared by both
+apps/server            Express API, JSON-file storage (apps/server/data, not committed)
+  src/index.ts         API routes
+  src/seed.ts          The example family
+  src/mapPage.ts       Neighbourhood map page (/map/:homeId)
+  src/trackPage.ts     Item tracking page (/track/:itemId)
+  src/nearby.ts        Real nearby places from OpenStreetMap
+apps/mobile            Expo Router app (iOS, Android, web)
+  app/                 Screens per role: her/, family/, student/, worker/, owner/, stories/, item/
+  src/                 Shared components (3D house, maps, cards, i18n)
+packages/shared        Types and rules shared by both
 ```
 
-## Safer home plan (安心リフォーム)
+## Known limits
 
-Students note small home modifications with her (handrail, removing a step, non-slip floor, sliding door, night light) with a length, count or area. She decides each one (suggested, she agreed, not now, done). The family sees a costed plan and an estimate of the care-insurance home-modification subsidy (介護保険の住宅改修: usually up to ¥200,000 of eligible work, often 90% covered; it needs a care-level certification and approval before work). Prices in `packages/shared` are examples for QS members to replace with real local quotes. Fixes appear as markers on the floor plan.
+- A pilot prototype: no real sign-in (helpers pick who they are), and data is a JSON file.
+- Not yet tested end to end on a phone.
+- Prices, fees and subsidy figures are examples to verify.
+- Demo IDs include the example family's surname; a real build should use random IDs.
 
-## 3D views: colour by, and evening light
+## Data and credits
 
-Under the 3D house, **Colour by** rings every item by her choice or by whether it has a story (with counts), or shows the safer-home fixes as markers. **Evening light** shows the house at night, lit only by night lights: *Tonight* uses the lights already installed; *With her plan* adds the ones she agreed to. Unfixed fall risks pulse red, and the legend names the rooms that are still dark.
-
-## The house's future (家のこれから)
-
-Japan has about 9 million empty homes (空き家), often because nobody asked the owner what she wanted while she could say. Students write down her wish for the house in her own words, only if she brings it up ("not decided yet" is the default). The family adds notes (wishes, not votes), sees the condition students noted on visits (roof, water, wood, walls, garden), what the house would cost each year if it stood empty (including the extra land tax if the city designates it), and a checklist of steps to take early, such as the inheritance registration that has been required since April 2024. It is not a listing: KAKEHASHI never sells houses and takes no fees from estate agents.
-
-## Help at home (お手伝いの依頼)
-
-Michiko has her own screen (large text, few choices). She taps Garden, Cleaning, Small repair or Heavy lifting, then "Soon" or "At the next visit"; a student calls her about the details. She can also ask by phone or on a visit, and students can ask for her. Students book only workers who passed the same checks as students (ID, interview, training): the Silver Human Resources Centre (シルバー人材センター), a home-help cooperative, a registered builder, or gig workers. Prices are fixed before anyone comes and the worker keeps 85%. Her screen always shows who is coming, with the rule "nobody comes from KAKEHASHI without a booking on this screen", against fake inspection and repair scams. Afterwards she taps how it went. A safer-home fix she agreed to can be booked with a builder; when the job is done, the fix is marked done.
-
-## Neighbourhood map
-
-A fourth view on the family's house screen (3D · Floor plan · Memory · Neighbourhood): a real street map with 3D buildings (MapLibre GL with free OpenFreeMap tiles from OpenStreetMap), showing her home, the clinic, the shop and the places for her local activities. Tap a pin for the activity, its date, who goes with her and roughly how long the walk takes; dotted lines are walks a student takes with her. The server serves the map page at `/map/:homeId`; the app shows it in an iframe on web and a WebView on phones (works in Expo Go). It needs an internet connection. All places are demo points, never a real address.
-
-## No pressure to let go
-
-- **"Not now" is the first and default choice.** Most items are never decided, and most visits nothing leaves the house.
-- **Resale money belongs to the senior.** She chooses to keep it, save it for a grandchild, or donate it. It never reduces the family's fee, so nobody gains from her letting things go.
-- **The family shares wishes, not votes** ("I'd love to keep it in the family", "Please ask her about its story").
-- **Value is shown only when someone asks**, and the AI only says where an item would go *if* she chooses to let it go.
-- **Change-of-mind hold:** an item she agrees to let go stays at home until the next visit; the server refuses an earlier handover.
-- **Progress is measured in visits, stories and safer rooms**, never in items removed.
-
-## Privacy defaults
-
-- Story recordings need the senior's consent; the server refuses uploads without it.
-- A scanned story tag shows only the senior's first name and town, never a surname or address.
-- Students earn nothing from resale, so they have no reason to pressure anyone to let go of items.
+Map data © OpenStreetMap contributors (ODbL). Map tiles by OpenFreeMap. Places near the demo home were copied on 10 October 2026.
