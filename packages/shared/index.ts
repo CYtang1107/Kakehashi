@@ -185,15 +185,27 @@ export interface Home {
   places: Place[];
 }
 
-export type PlaceKind = 'home' | 'activity' | 'clinic' | 'shop' | 'station';
+export type PlaceKind = 'home' | 'community' | 'library' | 'care' | 'clinic' | 'pharmacy' | 'shop';
+export const NEARBY_KINDS: Exclude<PlaceKind, 'home'>[] = ['community', 'care', 'clinic', 'pharmacy', 'shop', 'library'];
 export interface Place {
-  id: string;
+  id: string; // osm-… for real places from OpenStreetMap
   kind: PlaceKind;
   name: string;
   nameJa: string;
   lat: number;
   lng: number;
+  hours?: string; // OpenStreetMap opening_hours, when known
+  mine?: boolean; // one of her places (lettered A, B, C… in this order)
 }
+// Straight-line distance and an unhurried walking time (50 m a minute) for an older walker.
+export function metresBetween(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const r = 6371000, q = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * q, dLng = (b.lng - a.lng) * q;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * q) * Math.cos(b.lat * q) * Math.sin(dLng / 2) ** 2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}
+export const walkMinutes = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => Math.max(1, Math.round(metresBetween(a, b) / 50));
+export const NEARBY_SOURCE = { name: 'OpenStreetMap', copied: '2026-10-10', url: 'https://www.openstreetmap.org/#map=16/37.9035/139.0545' };
 
 export type FieldNoteKind = 'likes' | 'avoid' | 'tip';
 export interface FieldNote {

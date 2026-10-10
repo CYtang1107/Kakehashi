@@ -1,4 +1,5 @@
-import type { Home, Item, Plan } from '@kakehashi/shared';
+import type { Home, Item, Place, Plan } from '@kakehashi/shared';
+import { NEARBY } from './nearby';
 
 // Example family used for demos. Every person here is illustrative.
 export const HOME_ID = 'tanaka';
@@ -44,10 +45,10 @@ export function seedHome(): Home {
       { id: 'v1', date: '2026-07-18', roomId: 'living', summary: 'First visit. Tea and photo albums, nothing sorted. That was the plan.', summaryJa: '初回の訪問。お茶とアルバムの時間で、片付けはしていません。予定どおりです。', status: 'done', checked: 'offline' },
     ],
     activities: [
-      { id: 'act-garden', title: 'Gardening group', titleJa: '園芸の会', interest: 'gardening', interestJa: '園芸', placeId: 'p-kayoi', place: 'Neighbourhood gathering place (通いの場)', placeJa: '地域の通いの場', date: '2026-10-29 14:00', companion: 'Yui', status: 'accepted' },
-      { id: 'act-cooking', title: 'Community lunch cooking', titleJa: 'みんなの昼ごはん作り', interest: 'cooking', interestJa: '料理', placeId: 'p-kominkan', place: 'Community centre kitchen', placeJa: '公民館の調理室', date: '2026-11-12 11:00', status: 'suggested' },
-      { id: 'act-letters', title: 'Calligraphy and letters circle', titleJa: '書道と手紙の会', interest: 'letters', interestJa: '手紙', placeId: 'p-library', place: 'Public library, room 2', placeJa: '市立図書館 第2会議室', date: '2026-11-20 13:30', status: 'suggested' },
-      { id: 'act-photo', title: 'Old photos talk', titleJa: '昔の写真を語る会', interest: 'photography', interestJa: '写真', placeId: 'p-kayoi', place: 'Neighbourhood gathering place (通いの場)', placeJa: '地域の通いの場', date: '2026-09-18 14:00', companion: 'Arif', status: 'attended' },
+      { id: 'act-garden', title: 'Gardening group', titleJa: '園芸の会', interest: 'gardening', interestJa: '園芸', placeId: 'osm-n12880273263', place: 'Najimi no Ie Kinaseya (community salon)', placeJa: 'なじみの家きなせや天神尾', date: '2026-10-29 14:00', companion: 'Yui', status: 'accepted' },
+      { id: 'act-cooking', title: 'Community lunch cooking', titleJa: 'みんなの昼ごはん作り', interest: 'cooking', interestJa: '料理', placeId: 'osm-w392703365', place: 'Ekinan Community Centre, kitchen', placeJa: '駅南コミュニティーセンター 調理室', date: '2026-11-12 11:00', status: 'suggested' },
+      { id: 'act-letters', title: 'Calligraphy and letters circle', titleJa: '書道と手紙の会', interest: 'letters', interestJa: '手紙', placeId: 'osm-n3958970808', place: 'Toyano City Library', placeJa: '新潟市立鳥屋野図書館', date: '2026-11-20 13:30', status: 'suggested' },
+      { id: 'act-photo', title: 'Old photos talk', titleJa: '昔の写真を語る会', interest: 'photography', interestJa: '写真', placeId: 'osm-n12880273263', place: 'Najimi no Ie Kinaseya (community salon)', placeJa: 'なじみの家きなせや天神尾', date: '2026-09-18 14:00', companion: 'Arif', status: 'attended' },
     ],
     planId: 'monthly',
     payments: [],
@@ -62,15 +63,8 @@ export function seedHome(): Home {
       { id: 'f4', roomId: 'bedroom', kind: 'light', amount: 2, status: 'agreed', x: 90, y: 160, note: 'Sensor night lights on the way to the toilet.', noteJa: 'トイレまでの通路にセンサー付き足元灯。' },
       { id: 'f5', roomId: 'living', kind: 'door', amount: 1, status: 'not-now', x: 170, y: 40, note: 'Swing door could become a sliding door. She prefers to keep it for now.', noteJa: '開き戸を引き戸に。今はこのままが良いそうです。' },
     ],
-    // Demo points in Niigata city for the neighbourhood map; not a real address.
-    places: [
-      { id: 'p-home', kind: 'home', name: 'Her home (demo point)', nameJa: 'ご自宅（デモ）', lat: 37.9065, lng: 139.0480 },
-      { id: 'p-kayoi', kind: 'activity', name: 'Neighbourhood gathering place (通いの場)', nameJa: '地域の通いの場', lat: 37.9089, lng: 139.0452 },
-      { id: 'p-kominkan', kind: 'activity', name: 'Community centre', nameJa: '公民館', lat: 37.9031, lng: 139.0521 },
-      { id: 'p-library', kind: 'activity', name: 'Public library', nameJa: '市立図書館', lat: 37.9112, lng: 139.0545 },
-      { id: 'p-clinic', kind: 'clinic', name: 'Family clinic', nameJa: 'かかりつけ医', lat: 37.9052, lng: 139.0438 },
-      { id: 'p-shop', kind: 'shop', name: 'Supermarket', nameJa: 'スーパー', lat: 37.9078, lng: 139.0510 },
-    ],
+    // Her home is a demo point; every other place is real, from OpenStreetMap (see nearby.ts). Her places come first, in letter order.
+    places: herPlaces(),
     workers: [
       { id: 'w-sato', name: 'Takeshi Sato', nameJa: '佐藤 武', from: 'Silver Human Resources Centre', fromJa: 'シルバー人材センター', skills: ['garden', 'lifting', 'repair'],
         checks: { identity: '2026-05-10', interview: '2026-05-14', training: '2026-05-20' }, jobs: 38 },
@@ -163,4 +157,19 @@ export function seedItems(): Item[] {
         { at: at('2026-09-20'), stage: 'delivered', by: 'Yui', note: 'Delivered to a first-year student' },
       ], thanks: [{ from: 'Ravi', message: 'Thank you, I cooked rice for my whole floor on the first night!', at: at('2026-09-21') }] },
   ];
+}
+
+// Her places on the neighbourhood map, lettered A, B, C… in this order, then everything else nearby.
+const MINE = [
+  'osm-n12880273263', // なじみの家きなせや天神尾: community salon (gardening group, old photos talk)
+  'osm-w392703365', // 駅南コミュニティーセンター (community lunch cooking)
+  'osm-n12704105958', // 地域包括支援センター: her care support centre
+  'osm-n12743687389', // わかばやし内科クリニック: her doctor
+  'osm-n12747104715', // イオン: where she shops
+  'osm-n3958970808', // 鳥屋野図書館 (calligraphy and letters circle)
+];
+function herPlaces(): Place[] {
+  const home: Place = { id: 'p-home', kind: 'home', name: 'Her home (demo point)', nameJa: 'ご自宅（デモ）', lat: 37.9035, lng: 139.0545 };
+  const mine = MINE.map((id) => ({ ...NEARBY.find((p) => p.id === id)!, mine: true }));
+  return [home, ...mine, ...NEARBY.filter((p) => !MINE.includes(p.id))];
 }

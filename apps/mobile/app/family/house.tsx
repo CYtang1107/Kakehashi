@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Glyph, Heading, Screen } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
-import { NeighbourhoodMap } from '../../src/NeighbourhoodMap';
+import { NearbyList, NeighbourhoodMap } from '../../src/NeighbourhoodMap';
 import { Home3D, eveningState, hasStory, memoryColors, type ColorBy, type Evening } from '../../src/Home3D';
 import { StoryPlayer } from '../../src/Audio';
 import { RoomGallery } from '../../src/Community';
@@ -27,6 +27,7 @@ export default function House() {
   const [touring, setTouring] = useState(false);
   const [colorBy, setColorBy] = useState<ColorBy>('none');
   const [evening, setEvening] = useState<Evening>('off');
+  const [focus, setFocus] = useState<{ id: string; n: number } | undefined>();
 
   const memories = data ? data.items.filter((i) => i.story || i.audioUrl) : [];
   const memory = view === 'memory';
@@ -81,7 +82,7 @@ export default function House() {
 
           <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line }}>
             {view === 'map'
-              ? <NeighbourhoodMap homeId={data.home.id} />
+              ? <NeighbourhoodMap homeId={data.home.id} focus={focus} />
               : view === '2d'
               ? <FloorPlan rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} fixes={data.home.safety} />
               : <Home3D rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} memory={memory} fixes={data.home.safety} colorBy={colorBy} evening={evening} />}
@@ -108,7 +109,9 @@ export default function House() {
             </Card>
           ) : null}
 
-          {memory ? (
+          {view === 'map' ? (
+            <NearbyList onFocus={(id) => setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }))} />
+          ) : memory ? (
             <>
               {current ? <MemoryCard item={current} rooms={data.home.rooms} /> : null}
               <View style={{ flexDirection: 'row', gap: 8 }}>

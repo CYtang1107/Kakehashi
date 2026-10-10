@@ -20,7 +20,7 @@ function fresh(): Db {
 }
 
 // Older data files from earlier versions lack newer fields; demo data is simply re-seeded.
-const isCurrent = (d: Db) => d.homes.every((h) => Array.isArray(h.activities) && Array.isArray(h.letters) && Array.isArray(h.fieldNotes) && Array.isArray(h.safety) && Array.isArray(h.future?.familyNotes) && Array.isArray(h.services) && Array.isArray(h.places) && d.items.some((i) => i.share) && h.students.every((s) => s.passed) && h.rooms.every((r) => Array.isArray(r.photos)));
+const isCurrent = (d: Db) => d.homes.every((h) => Array.isArray(h.activities) && Array.isArray(h.letters) && Array.isArray(h.fieldNotes) && Array.isArray(h.safety) && Array.isArray(h.future?.familyNotes) && Array.isArray(h.services) && Array.isArray(h.places) && h.places.some((p) => p.mine) && d.items.some((i) => i.share) && h.students.every((s) => s.passed) && h.rooms.every((r) => Array.isArray(r.photos)));
 
 function load(): Db {
   try {
