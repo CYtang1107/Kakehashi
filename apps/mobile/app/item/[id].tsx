@@ -72,7 +72,7 @@ export default function ItemScreen() {
           <Text style={type.caption}>{t('inHerOwnWords', { name: data.home.seniorNameJa && lang === 'ja' ? data.home.seniorNameJa.split(' ')[1] : data.home.seniorName.split(' ')[0] })}</Text>
         </View>
       ) : null}
-      <StoryPlayer path={item.audioUrl} />
+      {item.audioUrl ? <StoryPlayer path={item.audioUrl} /> : null}
 
       {student ? (
         <>
@@ -133,7 +133,7 @@ export default function ItemScreen() {
             </View>
             {held ? <Text style={[type.caption, { color: colors.moss }]}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text> : null}
           </View>
-          <Card>
+          <Card flat>
             <Text style={type.section}>{t('yourWish')}</Text>
             <Text style={type.caption}>{t('wishHint')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -154,12 +154,16 @@ export default function ItemScreen() {
 
       <Card>
         <Text style={type.section}>{isTrackable(item) ? t('whereNow') : t('journey')}</Text>
-        {isTrackable(item) ? <TrackMap item={item} height={210} /> : null}
+        {isTrackable(item) ? <TrackMap item={item} height={180} /> : null}
         {isTrackable(item)
           ? <Fold title={t('everyStep', { n: item.journey.length })} icon="list"><Journey steps={item.journey} /></Fold>
           : <Journey steps={item.journey} />}
       </Card>
-      <ShareCard item={item} mode={student ? 'student' : 'family'} />
+      {student ? <ShareCard item={item} mode="student" /> : (
+        <Fold title={t('shareTitle')} icon="globe" summary={item.share ? t('sharedOn', { date: formatDate(item.share.at, lang) }) : t('notSharedShort')}>
+          <ShareCard item={item} mode="family" />
+        </Fold>
+      )}
       <Worth item={item} />
 
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}

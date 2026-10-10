@@ -31,7 +31,7 @@ export default function HerScreen() {
   const { home } = data;
   const pair = home.students.filter((s) => s.role === 'pair');
   const next = home.visits.filter((v) => v.status === 'planned').sort((a, b) => a.date.localeCompare(b.date))[0];
-  const waiting = home.services.filter((s) => s.status === 'requested');
+  const waiting = home.services.filter((s) => s.status === 'requested' || s.status === 'open');
   const coming = home.services.filter((s) => s.status === 'booked').sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
   const toRate = home.services.filter((s) => s.status === 'done' && !s.feedback);
 

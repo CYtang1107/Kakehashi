@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Feather } from '@expo/vector-icons';
 import { Pressable, Text, View } from 'react-native';
 import { HELP_KINDS, SERVICE_CATALOG, WORKER_SHARE, isCleared, pick, type ServiceKind, type ServiceRequest, type ServiceStatus, type Worker } from '@kakehashi/shared';
 import { Button, Card, Field, Pill, formatDate } from './ui';
@@ -9,6 +10,7 @@ import { colors, fonts, type, yen } from './theme';
 
 export const serviceTone: Record<ServiceStatus, { fg: string; bg: string }> = {
   requested: { fg: colors.kaki, bg: colors.kakiTint },
+  open: { fg: '#9A6A12', bg: '#F5EBD6' },
   booked: { fg: colors.ai, bg: colors.aiTint },
   done: { fg: colors.moss, bg: colors.mossTint },
   cancelled: { fg: colors.inkSoft, bg: colors.paper },
@@ -28,6 +30,9 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
   const [date, setDate] = useState('');
   const [hours, setHours] = useState('2');
   const [askKind, setAskKind] = useState<ServiceKind>('garden');
+  const [posting, setPosting] = useState<string | null>(null);
+  const [price, setPrice] = useState('');
+  const [agreed, setAgreed] = useState(false);
   if (!data) return null;
   const { home } = data;
   const services = home.services.filter((s) => mode === 'student' || s.status !== 'cancelled');
@@ -78,7 +83,30 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
 
             {mode === 'student' && s.status === 'requested' ? (
               <>
-                <Button label={t('bookButton')} kind="secondary" icon="calendar" onPress={() => startBooking(s)} />
+                <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+                  <Button label={t('bookButton')} kind="secondary" icon="calendar" onPress={() => { setPosting(null); startBooking(s); }} />
+                  {SERVICE_CATALOG[s.kind].unit === 'hour' ? (
+                    <Button label={t('postJob')} kind="secondary" icon="clipboard" onPress={() => {
+                      setOpen(null); setPosting(posting === s.id ? null : s.id); setAgreed(false); setHours('2');
+                      setPrice(String(SERVICE_CATALOG[s.kind].priceJpy * 2)); setDate(home.visits.find((v) => v.status === 'planned')?.date ?? '');
+                    }} />
+                  ) : null}
+                </View>
+                {posting === s.id ? (
+                  <View style={{ gap: 8, padding: 10, borderRadius: 12, backgroundColor: colors.paper }}>
+                    <Text style={type.caption}>{t('postJobLead')}</Text>
+                    <Field label={t('priceLabel')} value={price} onChangeText={setPrice} keyboardType="number-pad" />
+                    <Field label={t('dateLabel')} value={date} onChangeText={setDate} placeholder="2026-10-20" />
+                    <Field label={t('hoursLabel')} value={hours} onChangeText={setHours} keyboardType="decimal-pad" />
+                    <Text style={type.caption}>{t('postSplit', { worker: yen((Number(price) || 0) * WORKER_SHARE), fee: yen((Number(price) || 0) * (1 - WORKER_SHARE)) })}</Text>
+                    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} onPress={() => setAgreed(!agreed)} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                      <Feather name={agreed ? 'check-square' : 'square'} size={20} color={agreed ? colors.moss : colors.inkSoft} />
+                      <Text style={[type.body, { flex: 1 }]}>{t('priceAgreed')}</Text>
+                    </Pressable>
+                    <Button label={t('postJob')} icon="send" busy={busy === `post-${s.id}`} disabled={!agreed || !(Number(price) > 0) || !date}
+                      onPress={() => run(`post-${s.id}`, () => api.postJob(home.id, s.id, { priceJpy: Number(price), date, hours: Number(hours) || undefined, agreed }), t('jobPosted')).then((ok) => { if (ok) setPosting(null); })} />
+                  </View>
+                ) : null}
                 {open === s.id ? (
                   <View style={{ gap: 8, padding: 10, borderRadius: 12, backgroundColor: colors.paper }}>
                     <Text style={type.eyebrow}>{t('chooseWorker')}</Text>
@@ -107,6 +135,12 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
                   </View>
                 ) : null}
               </>
+            ) : null}
+            {s.status === 'open' ? (
+              <Text style={type.caption}>{t('onBoard', { date: formatDate(s.date ?? '', lang) })}</Text>
+            ) : null}
+            {mode === 'student' && s.status === 'open' ? (
+              <Button label={t('cancelJob')} kind="secondary" busy={busy === `x-${s.id}`} onPress={() => run(`x-${s.id}`, () => api.helpStatus(home.id, s.id, { status: 'cancelled' }))} />
             ) : null}
             {mode === 'student' && s.status === 'booked' ? (
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>

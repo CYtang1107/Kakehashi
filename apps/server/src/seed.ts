@@ -83,6 +83,7 @@ export function seedHome(): Home {
     services: [
       { id: 's1', kind: 'garden', when: 'soon', by: 'her', note: 'Weeds by the veranda; the tomatoes need stakes.', noteJa: 'ベランダ脇の草取りと、トマトの支柱立て。', status: 'booked', createdAt: '2026-10-08', workerId: 'w-sato', date: '2026-10-15', hours: 2, priceJpy: 4000 },
       { id: 's2', kind: 'builder', when: 'soon', by: 'student', fixId: 'f1', note: 'Handrail in the bedroom she agreed to.', noteJa: 'ご本人が同意した寝室の手すり。', status: 'requested', createdAt: '2026-10-10' },
+      { id: 's4', kind: 'lifting', when: 'soon', by: 'her', note: 'Move the old wardrobe from the bedroom to the entrance for collection.', noteJa: '寝室の古い箪笥を、回収のため玄関まで運ぶ。', status: 'open', createdAt: '2026-10-09', postedAt: '2026-10-10', date: '2026-10-18', hours: 2, priceJpy: 6000 },
       { id: 's3', kind: 'cleaning', when: 'soon', by: 'her', note: 'Kitchen and bathroom before the autumn.', noteJa: '秋の前に台所とお風呂の掃除。', status: 'done', createdAt: '2026-09-14', workerId: 'w-kobayashi', date: '2026-09-20', hours: 2, priceJpy: 6000, feedback: 'good' },
     ],
     future: {

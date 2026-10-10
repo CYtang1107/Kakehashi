@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
+import { workerTake, type JobListing, type ServiceRequest, metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { TRACK, plans, stagePoint } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -488,6 +488,57 @@ app.post('/api/items/:id/comments/:cid', (req, res) => {
   c.status = req.body.status;
   save();
   res.json(item);
+});
+
+// ---------- Job board: checked helpers find jobs she (or a student with her) posted, at a set price ----------
+
+const findWorker = (workerId: string) => db.homes.flatMap((h) => h.workers).find((w) => w.id === workerId);
+const listing = (home: Home, s: ServiceRequest): JobListing => ({
+  homeId: home.id, id: s.id, kind: s.kind, note: s.note, noteJa: s.noteJa, date: s.date ?? '', hours: s.hours,
+  priceJpy: s.priceJpy ?? 0, youReceiveJpy: workerTake(s.priceJpy ?? 0), feeJpy: (s.priceJpy ?? 0) - workerTake(s.priceJpy ?? 0),
+  area: `${home.town}, near Toyano (area only)`, areaJa: `${home.townJa ?? home.town}・鳥屋野付近（地域のみ）`, postedAt: s.postedAt ?? s.createdAt,
+});
+
+// A student posts her request with the price and date agreed with her.
+app.post('/api/home/:id/services/:sid/post', (req, res) => {
+  const home = findHome(req.params.id);
+  const svc = home?.services.find((s) => s.id === req.params.sid);
+  if (!home || !svc) return fail(res, 404, 'Request not found.');
+  if (svc.status !== 'requested') return fail(res, 409, 'Only a new request can be posted.');
+  if (req.body?.agreed !== true) return fail(res, 400, 'Agree the price with her before posting.');
+  const price = Math.round(Number(req.body?.priceJpy));
+  if (!(price >= 1000 && price <= 300000)) return fail(res, 400, 'Set a price between ¥1,000 and ¥300,000.');
+  const date = String(req.body?.date ?? '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return fail(res, 400, 'Enter a date like 2026-10-20.');
+  const hours = Number(req.body?.hours);
+  Object.assign(svc, { status: 'open', priceJpy: price, date, hours: hours > 0 && hours <= 8 ? Math.round(hours * 2) / 2 : undefined, postedAt: now().slice(0, 10) });
+  save();
+  res.json(home.services);
+});
+
+// The board itself: only for checked helpers, only jobs that match their skills.
+app.get('/api/jobs', (req, res) => {
+  const worker = findWorker(String(req.query.workerId ?? ''));
+  if (!worker) return fail(res, 404, 'Helper not found.');
+  if (!isCleared(worker)) return fail(res, 403, 'Finish your checks (ID, interview, training) to see jobs.');
+  const open = db.homes.flatMap((h) => h.services.filter((s) => s.status === 'open' && worker.skills.includes(s.kind)).map((s) => listing(h, s)));
+  const mine = db.homes.flatMap((h) => h.services.filter((s) => s.workerId === worker.id && (s.status === 'booked' || s.status === 'done')).map((s) => ({ ...listing(h, s), status: s.status, feedback: s.feedback })));
+  const earned = mine.filter((j) => j.status === 'done').reduce((t, j) => t + j.youReceiveJpy, 0);
+  res.json({ open, mine, earned });
+});
+
+app.post('/api/jobs/:homeId/:sid/accept', (req, res) => {
+  const home = findHome(req.params.homeId);
+  const svc = home?.services.find((s) => s.id === req.params.sid);
+  if (!home || !svc) return fail(res, 404, 'Job not found.');
+  const worker = home.workers.find((w) => w.id === req.body?.workerId);
+  if (!worker) return fail(res, 404, 'Helper not found.');
+  if (!isCleared(worker)) return fail(res, 403, 'Finish your checks before accepting jobs.');
+  if (!worker.skills.includes(svc.kind)) return fail(res, 400, 'This job needs a different skill.');
+  if (svc.status !== 'open') return fail(res, 409, 'Someone else has already taken this job.');
+  Object.assign(svc, { status: 'booked', workerId: worker.id });
+  save();
+  res.json(listing(home, svc));
 });
 
 // ---------- Help at home: she asks, a checked worker is booked, she says how it went ----------

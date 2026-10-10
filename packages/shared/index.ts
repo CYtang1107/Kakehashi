@@ -415,6 +415,8 @@ export const SERVICE_CATALOG: Record<ServiceKind, { unit: 'hour' | 'quote'; pric
   builder: { unit: 'quote', priceJpy: 0 }, // priced from the safer-home fix
 };
 export const WORKER_SHARE = 0.85;
+export const COMMISSION = 1 - WORKER_SHARE; // KAKEHASHI's fee: checks, insurance, coordination
+export const workerTake = (priceJpy: number) => Math.round(priceJpy * WORKER_SHARE);
 export type WorkerCheck = 'identity' | 'interview' | 'training';
 export const WORKER_CHECKS: WorkerCheck[] = ['identity', 'interview', 'training'];
 export interface Worker {
@@ -428,7 +430,8 @@ export interface Worker {
   jobs: number;
 }
 export const isCleared = (w: Worker) => WORKER_CHECKS.every((c) => Boolean(w.checks[c]));
-export type ServiceStatus = 'requested' | 'booked' | 'done' | 'cancelled';
+// requested -> (booked directly | open on the job board -> booked when a checked helper accepts) -> done
+export type ServiceStatus = 'requested' | 'open' | 'booked' | 'done' | 'cancelled';
 export type ServiceFeedback = 'good' | 'okay' | 'not-good';
 export interface ServiceRequest {
   id: string;
@@ -445,6 +448,24 @@ export interface ServiceRequest {
   hours?: number;
   priceJpy?: number;
   feedback?: ServiceFeedback;
+  postedAt?: string; // when it went on the job board
+}
+
+// What a helper sees on the job board: never her name or address, only the area.
+export interface JobListing {
+  homeId: string;
+  id: string;
+  kind: ServiceKind;
+  note?: string;
+  noteJa?: string;
+  date: string;
+  hours?: number;
+  priceJpy: number;
+  youReceiveJpy: number;
+  feeJpy: number;
+  area: string;
+  areaJa: string;
+  postedAt: string;
 }
 
 // ---------- Public story feed (物語の広場) ----------

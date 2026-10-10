@@ -6,10 +6,11 @@ import { TopBar } from '../src/ui';
 import { useI18n, type Key } from '../src/i18n';
 import { colors, fonts, type } from '../src/theme';
 
-const ROLES: { group: 'home' | 'beyond'; path: '/family' | '/student' | '/owner' | '/her' | '/stories'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
+const ROLES: { group: 'home' | 'beyond'; path: '/family' | '/student' | '/owner' | '/her' | '/stories' | '/worker'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
   { group: 'home', path: '/her', title: 'roleHer', hint: 'roleHerHint', icon: 'sun' },
   { group: 'home', path: '/family', title: 'roleFamily', hint: 'roleFamilyHint', icon: 'home' },
   { group: 'home', path: '/student', title: 'roleStudents', hint: 'roleStudentsHint', icon: 'users' },
+  { group: 'beyond', path: '/worker', title: 'roleHelpers', hint: 'roleHelpersHint', icon: 'tool' },
   { group: 'beyond', path: '/owner', title: 'roleOwner', hint: 'roleOwnerHint', icon: 'gift' },
   { group: 'beyond', path: '/stories', title: 'roleReaders', hint: 'roleReadersHint', icon: 'book-open' },
 ];
