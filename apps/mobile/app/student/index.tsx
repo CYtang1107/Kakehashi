@@ -8,6 +8,7 @@ import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
 import { CallsCard, LetterCard } from '../../src/Touchpoints';
 import { ActivitiesCard, RoomCapture } from '../../src/Community';
+import { FieldNotesCard, ReportCard } from '../../src/Handover';
 import { colors, type } from '../../src/theme';
 
 export default function Visit() {
@@ -32,6 +33,7 @@ export default function Visit() {
         <Text style={type.bodyBold}>{t('beforeYouStart')}</Text>
         <Text style={type.body}>{t('beforeYouStartBody')}</Text>
       </Card>
+      <FieldNotesCard />
       <Card>
         <Text style={type.section}>{t('consentTitle')}</Text>
         <Text style={type.body}>{home.consent.recording ? t('consentGiven', { date: formatDate(home.consent.at ?? '', lang) }) : t('consentMissing')}</Text>
@@ -52,6 +54,7 @@ export default function Visit() {
         </Pressable>
       ))}
       <Button label={t('tabAdd')} kind="secondary" icon="camera" onPress={() => router.push('/student/add')} />
+      <ReportCard />
       <ActivitiesCard mode="student" />
       <LetterCard mode="student" />
       <CallsCard mode="student" />

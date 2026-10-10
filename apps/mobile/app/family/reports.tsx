@@ -23,6 +23,7 @@ export default function Reports() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Text style={[type.bodyBold, { flex: 1 }]}>{formatDate(v.date, lang)} · {room ? (lang === 'ja' ? room.nameJa : room.name) : ''}</Text>
                   {v.status === 'planned' ? <Pill label={t('planned')} /> : null}
+                  {v.checked ? <Pill label={t('checkedBadge')} color={colors.moss} bg={colors.mossTint} /> : null}
                 </View>
                 <Text style={[type.body, { color: v.status === 'planned' ? colors.inkSoft : colors.ink }]}>{v.summary}</Text>
               </Card>

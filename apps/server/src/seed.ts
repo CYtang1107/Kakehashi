@@ -35,10 +35,10 @@ export function seedHome(): Home {
     ],
     visits: [
       { id: 'v5', date: '2026-10-24', roomId: 'washitsu', summary: 'Tatami room, part 2', status: 'planned' },
-      { id: 'v4', date: '2026-10-10', roomId: 'washitsu', summary: 'Most of the hour was stories about Osaka. She chose to keep the kimono and, when she was ready, to pass on the desk and sewing machine.', status: 'done' },
-      { id: 'v3', date: '2026-09-12', roomId: 'kitchen', summary: 'Cleared the floor by the stairs so she can walk safely. At her request, the spare rice cooker went to a student.', status: 'done' },
-      { id: 'v2', date: '2026-08-15', roomId: 'living', summary: 'Photo albums and tea; nothing left the house. The TV, broken for years, went to a licensed recycler at her request.', status: 'done' },
-      { id: 'v1', date: '2026-07-18', roomId: 'living', summary: 'First visit. Tea and photo albums, nothing sorted. That was the plan.', status: 'done' },
+      { id: 'v4', date: '2026-10-10', roomId: 'washitsu', summary: 'Most of the hour was stories about Osaka. She chose to keep the kimono and, when she was ready, to pass on the desk and sewing machine.', status: 'done', checked: 'offline' },
+      { id: 'v3', date: '2026-09-12', roomId: 'kitchen', summary: 'Cleared the floor by the stairs so she can walk safely. At her request, the spare rice cooker went to a student.', status: 'done', checked: 'offline' },
+      { id: 'v2', date: '2026-08-15', roomId: 'living', summary: 'Photo albums and tea; nothing left the house. The TV, broken for years, went to a licensed recycler at her request.', status: 'done', checked: 'offline' },
+      { id: 'v1', date: '2026-07-18', roomId: 'living', summary: 'First visit. Tea and photo albums, nothing sorted. That was the plan.', status: 'done', checked: 'offline' },
     ],
     activities: [
       { id: 'act-garden', title: 'Gardening group', titleJa: '園芸の会', interest: 'gardening', place: 'Neighbourhood gathering place (通いの場)', date: '2026-10-29 14:00', companion: 'Yui', status: 'accepted' },
@@ -51,6 +51,12 @@ export function seedHome(): Home {
     proceedsChoice: 'grandchild',
     letters: [
       { id: 'l-2026-09', month: '2026-09', itemIds: ['cooker'], note: 'Thank you for the stories about your kitchen. The stairs are clear now, so please walk safely! See you in October.', status: 'mailed', mailedAt: '2026-09-14' },
+    ],
+    fieldNotes: [
+      { id: 'n1', date: '2026-10-10', by: 'Yui', kind: 'likes', text: 'Hojicha first, always. She opens up when we ask about Osaka in the 1960s.' },
+      { id: 'n2', date: '2026-10-10', by: 'Arif', kind: 'avoid', text: 'Do not open the kimono drawer unless she offers. It belonged to her mother.' },
+      { id: 'n3', date: '2026-09-12', by: 'Yui', kind: 'tip', text: 'She tires after about an hour. Take a tea break, then decide whether to continue.' },
+      { id: 'n4', date: '2026-08-15', by: 'Arif', kind: 'likes', text: 'Loves her tomato plants on the veranda. Ask how they are doing.' },
     ],
     calls: [
       { id: 'c1', date: '2026-08-29', by: 'Yui', status: 'done', minutes: 15, mood: 'good', note: 'Talked about her tomatoes. She asked if we could look at the photo albums again next time.' },

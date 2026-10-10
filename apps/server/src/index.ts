@@ -8,6 +8,7 @@ import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } 
 import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
 import { createCheckout, paymentsMode, readCheckout } from './payments';
+import { checkReport } from './pressure';
 
 const PORT = Number(process.env.PORT ?? 4100);
 const app = express();
@@ -243,6 +244,47 @@ app.get('/payment/success', async (req, res) => {
 });
 
 app.get('/payment/cancel', (_req, res) => res.send(page('Payment cancelled', 'Nothing was charged. You can close this page and return to the app.')));
+
+// ---------- Field notes and the fresh-eyes check ----------
+
+app.post('/api/home/:id/fieldnotes', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const { kind, text, by } = req.body ?? {};
+  if (!['likes', 'avoid', 'tip'].includes(kind)) return fail(res, 400, 'Choose what kind of note this is.');
+  if (!text || !String(text).trim()) return fail(res, 400, 'Write the note first.');
+  home.fieldNotes.unshift({ id: id('note'), date: now().slice(0, 10), by: String(by || 'Student').slice(0, 40), kind, text: String(text).trim().slice(0, 300) });
+  save();
+  res.status(201).json(home.fieldNotes);
+});
+
+app.post('/api/report/check', async (req, res) => {
+  const text = String(req.body?.text ?? '').trim();
+  if (!text) return fail(res, 400, 'Write the report first.');
+  res.json(await checkReport(text));
+});
+
+// A visit report reaches the family only after it passes the fresh-eyes check.
+app.post('/api/home/:id/report', async (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const text = String(req.body?.text ?? '').trim();
+  if (!text) return fail(res, 400, 'Write the report first.');
+  const result = await checkReport(text);
+  if (!result.ok) return res.status(422).json({ error: 'Some wording could read as pressure. Please reword the flagged phrases.', ...result });
+  const today = now().slice(0, 10);
+  let visit = home.visits.find((v) => v.date === today);
+  if (!visit) {
+    visit = { id: id('visit'), date: today, roomId: home.rooms.find((r) => r.status === 'now')?.id ?? home.rooms[0].id, summary: '', status: 'done' };
+    home.visits.push(visit);
+    home.visits.sort((a, b) => b.date.localeCompare(a.date));
+  }
+  visit.summary = text.slice(0, 2000);
+  visit.status = 'done';
+  visit.checked = result.source;
+  save();
+  res.json(visit);
+});
 
 // ---------- Students: evaluation before visiting ----------
 

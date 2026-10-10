@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -41,6 +41,10 @@ export const api = {
   handover: (itemId: string, stage: HandoverStage, by: string, note?: string) =>
     call<Item>(`/api/items/${itemId}/handover`, { method: 'POST', body: { stage, by, note } }),
   estimate: (body: { base64?: string; mime?: string; name?: string }) => call<Estimate>('/api/estimate', { method: 'POST', body }),
+  addFieldNote: (homeId: string, kind: FieldNoteKind, text: string, by: string) =>
+    call<FieldNote[]>(`/api/home/${homeId}/fieldnotes`, { method: 'POST', body: { kind, text, by } }),
+  checkReport: (text: string) => call<CheckResult>('/api/report/check', { method: 'POST', body: { text } }),
+  sendReport: (homeId: string, text: string) => call<Visit>(`/api/home/${homeId}/report`, { method: 'POST', body: { text } }),
   studentStep: (homeId: string, studentId: string, step: ReadinessStep, passed: boolean) =>
     call<Student>(`/api/home/${homeId}/students/${studentId}/step`, { method: 'POST', body: { step, passed } }),
   roomPhoto: (homeId: string, roomId: string, base64: string, mime: string) =>

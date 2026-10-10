@@ -89,6 +89,8 @@ export interface Visit {
   roomId: string;
   summary: string;
   status: 'done' | 'planned';
+  // Set when the report passed the fresh-eyes check before reaching the family.
+  checked?: 'claude' | 'offline';
 }
 
 // From home to community (KizunaLink): local activities matched to her interests.
@@ -157,6 +159,29 @@ export interface Home {
   // Her own touchpoints between visits: a printed monthly letter and a phone call.
   letters: Letter[];
   calls: Call[];
+  // Notes students leave for whoever visits next (handover when a student graduates).
+  fieldNotes: FieldNote[];
+}
+
+export type FieldNoteKind = 'likes' | 'avoid' | 'tip';
+export interface FieldNote {
+  id: string;
+  date: string;
+  by: string;
+  kind: FieldNoteKind;
+  text: string;
+}
+
+// Fresh-eyes check: a reviewer that did not write the report flags pushy wording.
+export interface PressureFlag {
+  phrase: string;
+  reason: string;
+  suggestion: string;
+}
+export interface CheckResult {
+  ok: boolean;
+  flags: PressureFlag[];
+  source: 'claude' | 'offline';
 }
 
 // 思い出だより: a printed monthly letter posted to her (and shown to the family).
