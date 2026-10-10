@@ -6,12 +6,12 @@ import { TopBar } from '../src/ui';
 import { useI18n, type Key } from '../src/i18n';
 import { colors, fonts, type } from '../src/theme';
 
-const ROLES: { path: '/family' | '/student' | '/owner' | '/her' | '/stories'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
-  { path: '/her', title: 'roleHer', hint: 'roleHerHint', icon: 'sun' },
-  { path: '/family', title: 'roleFamily', hint: 'roleFamilyHint', icon: 'home' },
-  { path: '/student', title: 'roleStudents', hint: 'roleStudentsHint', icon: 'users' },
-  { path: '/owner', title: 'roleOwner', hint: 'roleOwnerHint', icon: 'gift' },
-  { path: '/stories', title: 'roleReaders', hint: 'roleReadersHint', icon: 'book-open' },
+const ROLES: { group: 'home' | 'beyond'; path: '/family' | '/student' | '/owner' | '/her' | '/stories'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
+  { group: 'home', path: '/her', title: 'roleHer', hint: 'roleHerHint', icon: 'sun' },
+  { group: 'home', path: '/family', title: 'roleFamily', hint: 'roleFamilyHint', icon: 'home' },
+  { group: 'home', path: '/student', title: 'roleStudents', hint: 'roleStudentsHint', icon: 'users' },
+  { group: 'beyond', path: '/owner', title: 'roleOwner', hint: 'roleOwnerHint', icon: 'gift' },
+  { group: 'beyond', path: '/stories', title: 'roleReaders', hint: 'roleReadersHint', icon: 'book-open' },
 ];
 
 export default function RolePicker() {
@@ -25,7 +25,10 @@ export default function RolePicker() {
           <Text style={[type.body, { color: colors.inkSoft }]}>{t('appTagline')}</Text>
         </View>
         <Text style={type.section}>{t('chooseRole')}</Text>
-        {ROLES.map((r) => (
+        {(['home', 'beyond'] as const).map((g) => (
+          <View key={g} style={{ gap: 10 }}>
+            <Text style={type.eyebrow}>{t(g === 'home' ? 'roleGroupHome' : 'roleGroupBeyond')}</Text>
+        {ROLES.filter((r) => r.group === g).map((r) => (
           <Pressable key={r.path} accessibilityRole="button" onPress={() => router.push(r.path)}
             style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet, opacity: pressed ? 0.85 : 1 })}>
             <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.aiTint, alignItems: 'center', justifyContent: 'center' }}>
@@ -37,6 +40,8 @@ export default function RolePicker() {
             </View>
             <Feather name="chevron-right" size={20} color={colors.inkSoft} />
           </Pressable>
+        ))}
+          </View>
         ))}
         <Text style={type.caption}>{t('exampleData')}</Text>
       </ScrollView>

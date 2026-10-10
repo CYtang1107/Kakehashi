@@ -80,9 +80,12 @@ export function Heading({ eyebrow, title, sub }: { eyebrow?: string; title: stri
   );
 }
 
-export function Card({ children, style, tint }: { children: React.ReactNode; style?: ViewStyle; tint?: boolean }) {
+// Three weights: a sheet (default), a tinted note (tint), and a flat group that sits on the paper (flat).
+export function Card({ children, style, tint, flat }: { children: React.ReactNode; style?: ViewStyle; tint?: boolean; flat?: boolean }) {
   return (
-    <View style={[{ backgroundColor: tint ? colors.aiTint : colors.sheet, borderRadius: 16, borderWidth: 1, borderColor: tint ? 'transparent' : colors.line, padding: 14, gap: 8 }, style]}>
+    <View style={[flat
+      ? { paddingVertical: 4, gap: 8 }
+      : { backgroundColor: tint ? colors.aiTint : colors.sheet, borderRadius: 14, borderWidth: tint ? 0 : 1, borderColor: colors.line, padding: 16, gap: 8 }, style]}>
       {children}
     </View>
   );

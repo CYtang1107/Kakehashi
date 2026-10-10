@@ -1,12 +1,12 @@
 import type { Decision, RoomStatus } from '@kakehashi/shared';
 
-// Washi paper ground, indigo (藍) accent; moss = keep, plum = family, persimmon = recycle.
+// Cool washi-grey ground (not cream), indigo (藍) accent; moss = keep, plum = family, persimmon = recycle.
 export const colors = {
-  paper: '#F3F2EE',
-  sheet: '#FBFAF7',
-  ink: '#1D2433',
-  inkSoft: '#5B6273',
-  line: '#D9D7CF',
+  paper: '#ECEEEA',
+  sheet: '#FAFBF8',
+  ink: '#1C2330',
+  inkSoft: '#59616F',
+  line: '#D5D9D1',
   ai: '#2B4C7E',
   aiTint: '#E3E9F3',
   moss: '#4F6B3A',
@@ -32,7 +32,7 @@ export const type = {
   body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22, color: colors.ink },
   bodyBold: { fontFamily: fonts.bold, fontSize: 15, lineHeight: 22, color: colors.ink },
   caption: { fontFamily: fonts.medium, fontSize: 12.5, lineHeight: 18, color: colors.inkSoft },
-  eyebrow: { fontFamily: fonts.bold, fontSize: 11.5, letterSpacing: 1, color: colors.inkSoft, textTransform: 'uppercase' as const },
+  eyebrow: { fontFamily: fonts.medium, fontSize: 13, color: colors.ai },
   story: { fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: colors.ink },
 } as const;
 
