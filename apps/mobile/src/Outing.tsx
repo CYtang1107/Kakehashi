@@ -106,13 +106,13 @@ export function LiveOutingBanner({ onOpenMap }: { onOpenMap?: () => void }) {
   const place = data.home.places.find((p) => p.id === live.placeId);
   return (
     <Pressable accessibilityRole="button" onPress={onOpenMap} disabled={!onOpenMap}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 16, backgroundColor: colors.kaki }}>
-      <Feather name="navigation" size={22} color={colors.sheet} />
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: colors.sheet }}>{t('outingFamily', { by: live.by, what: act ? pick(lang, act.title, act.titleJa) : '', place: place?.nameJa ?? '' })}</Text>
-        <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.sheet, opacity: 0.9 }}>{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</Text>
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.kakiTint, borderLeftWidth: 4, borderLeftColor: colors.kaki }}>
+      <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: colors.kaki }} />
+      <View style={{ flex: 1, gap: 1 }}>
+        <Text style={{ fontFamily: fonts.bold, fontSize: 13.5, color: colors.kaki }} numberOfLines={2}>{t('outingFamily', { by: live.by, what: act ? pick(lang, act.title, act.titleJa) : '', place: place?.nameJa ?? '' })}</Text>
+        <Text style={{ fontFamily: fonts.medium, fontSize: 11.5, color: colors.inkSoft }}>{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</Text>
       </View>
-      {onOpenMap ? <Feather name="chevron-right" size={20} color={colors.sheet} /> : null}
+      {onOpenMap ? <Feather name="chevron-right" size={18} color={colors.kaki} /> : null}
     </Pressable>
   );
 }

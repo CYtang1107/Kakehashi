@@ -32,6 +32,7 @@ export default function House() {
   const [colorBy, setColorBy] = useState<ColorBy>('none');
   const [evening, setEvening] = useState<Evening>('off');
   const [focus, setFocus] = useState<{ id: string; n: number } | undefined>();
+  const [section, setSection] = useState<'items' | 'safer' | 'future' | 'photos'>('items');
 
   const memories = data ? data.items.filter((i) => i.story || i.audioUrl) : [];
   const memory = view === 'memory';
@@ -128,11 +129,12 @@ export default function House() {
             </>
           ) : (
             <>
-              <SaferHomeCard mode="family" />
-              <HouseFutureCard mode="family" />
-              <RoomGallery />
-              <Text style={type.section}>{t('items')}</Text>
-              {data.items.map((it) => {
+              <Segment label="" value={section} onChange={setSection}
+                options={[['items', t('items')], ['safer', t('saferShort')], ['future', t('futureShort')], ['photos', t('photosShort')]]} />
+              {section === 'safer' ? <SaferHomeCard mode="family" /> : null}
+              {section === 'future' ? <HouseFutureCard mode="family" /> : null}
+              {section === 'photos' ? <RoomGallery /> : null}
+              {section === 'items' ? data.items.map((it) => {
                 const room = data.home.rooms.find((r) => r.id === it.roomId);
                 return (
                   <Pressable key={it.id} accessibilityRole="button" onPress={() => onSelect(it.id)}
@@ -145,7 +147,7 @@ export default function House() {
                     <DecisionChip decision={it.decision} />
                   </Pressable>
                 );
-              })}
+              }) : null}
             </>
           )}
         </>
@@ -197,7 +199,7 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
 function Segment<V extends string>({ label, value, options, onChange }: { label: string; value: V; options: (readonly [V, string])[]; onChange: (v: V) => void }) {
   return (
     <View style={{ gap: 6 }}>
-      <Text style={type.eyebrow}>{label}</Text>
+      {label ? <Text style={type.eyebrow}>{label}</Text> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {options.map(([v, l]) => (
           <Pressable key={v} accessibilityRole="radio" accessibilityState={{ checked: value === v }} onPress={() => onChange(v)}

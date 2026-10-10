@@ -7,12 +7,19 @@ import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { workerName } from '../../src/Services';
+import { thread } from '../../src/VisitThread';
 import { colors, fonts } from '../../src/theme';
 
 // Her own screen: large text, few choices. She asks for help in two taps; she always sees who is coming.
 const big = { fontFamily: fonts.bold, fontSize: 22, lineHeight: 30, color: colors.ink };
 const body = { fontFamily: fonts.medium, fontSize: 18, lineHeight: 27, color: colors.ink };
 const ICON: Record<ServiceKind, keyof typeof Feather.glyphMap> = { garden: 'sun', cleaning: 'droplet', repair: 'tool', lifting: 'package', builder: 'home' };
+const today = (lang: 'en' | 'ja') => {
+  const d = new Date();
+  return lang === 'ja'
+    ? `${d.getMonth() + 1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`
+    : d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+};
 const FACE: Record<ServiceFeedback, keyof typeof Feather.glyphMap> = { good: 'smile', okay: 'meh', 'not-good': 'frown' };
 
 export default function HerScreen() {
@@ -46,12 +53,55 @@ export default function HerScreen() {
 
   return (
     <Screen>
-      <Text style={{ fontFamily: fonts.display, fontSize: 32, lineHeight: 42, color: colors.ink }}>{t('herHello')}</Text>
+      <View style={{ gap: 2 }}>
+        <Text style={{ fontFamily: fonts.display, fontSize: 34, lineHeight: 44, color: colors.ink }}>{t('herHello')}</Text>
+        <Text style={[body, { color: colors.inkSoft }]}>{t('herToday', { date: today(lang) })}</Text>
+      </View>
       {next ? (
-        <Card tint>
-          <Text style={body}>{t('herNextVisit', { date: formatDate(next.date, lang), names: pair.map((s) => s.name).join(lang === 'ja' ? '・' : ' & ') })}</Text>
-        </Card>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, borderRadius: 20, backgroundColor: thread.cloth }}>
+          <View style={{ flexDirection: 'row' }}>
+            {pair.map((s, i) => (
+              <View key={s.id} style={{ width: 52, height: 52, borderRadius: 26, marginLeft: i ? -12 : 0, borderWidth: 3, borderColor: thread.cloth,
+                backgroundColor: i ? colors.mossTint : colors.plumTint, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 20, color: i ? colors.moss : colors.plum }}>{s.initial}</Text>
+              </View>
+            ))}
+          </View>
+          <Text style={{ flex: 1, fontFamily: fonts.bold, fontSize: 20, lineHeight: 28, color: thread.thread }}>
+            {t('herWithYou', { names: pair.map((s) => s.name).join(lang === 'ja' ? 'さんと' : ' and '), date: formatDate(next.date, lang) })}
+          </Text>
+        </View>
       ) : null}
+
+      {/* Who is coming, with the door rule right underneath: the most important thing on her screen */}
+      <Text style={big}>{t('whoIsComing')}</Text>
+      {coming.map((s) => {
+        const w = home.workers.find((x) => x.id === s.workerId);
+        const d = s.date ? new Date(`${s.date}T12:00:00`) : null;
+        return (
+          <Card key={s.id} style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+            {d ? (
+              <View style={{ width: 72, paddingVertical: 8, borderRadius: 14, backgroundColor: colors.aiTint, alignItems: 'center' }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: colors.ai }}>{lang === 'ja' ? `${d.getMonth() + 1}月` : d.toLocaleDateString('en-GB', { month: 'short' })}</Text>
+                <Text style={{ fontFamily: fonts.display, fontSize: 32, lineHeight: 38, color: colors.ai }}>{d.getDate()}</Text>
+              </View>
+            ) : null}
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text style={big}>{workerName(w, lang)}</Text>
+              <Text style={body}>{t(`svc_${s.kind}` as Key)}{s.hours ? `, ${t('hoursN', { n: s.hours })}` : ''}</Text>
+              {w ? <Text style={[body, { fontSize: 16, color: colors.inkSoft }]}>{pick(lang, w.from, w.fromJa)}</Text> : null}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Feather name="check-circle" size={18} color={colors.moss} />
+                <Text style={[body, { fontSize: 15, color: colors.moss, flex: 1 }]}>{t('checkedWorker')}</Text>
+              </View>
+            </View>
+          </Card>
+        );
+      })}
+      <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 16, backgroundColor: colors.kakiTint, borderLeftWidth: 5, borderLeftColor: colors.kaki }}>
+        <Feather name="shield" size={28} color={colors.kaki} />
+        <Text style={[body, { flex: 1 }]}>{t('doorRule')}</Text>
+      </View>
 
       {/* Ask for help: pick one, then when */}
       <Text style={big}>{t('askHelpTitle')}</Text>
@@ -76,29 +126,6 @@ export default function HerScreen() {
           ))}
         </Card>
       ) : null}
-
-      {/* The door rule, always visible */}
-      <View style={{ flexDirection: 'row', gap: 12, padding: 16, borderRadius: 16, backgroundColor: colors.kakiTint }}>
-        <Feather name="shield" size={28} color={colors.kaki} />
-        <Text style={[body, { flex: 1 }]}>{t('doorRule')}</Text>
-      </View>
-
-      <Text style={big}>{t('whoIsComing')}</Text>
-      {coming.map((s) => {
-        const w = home.workers.find((x) => x.id === s.workerId);
-        return (
-          <Card key={s.id} style={{ gap: 6 }}>
-            <Text style={[big, { color: colors.ai }]}>{s.date ? formatDate(s.date, lang) : ''}</Text>
-            <Text style={big}>{workerName(w, lang)}</Text>
-            <Text style={body}>{t(`svc_${s.kind}` as Key)}{s.hours ? ` · ${t('hoursN', { n: s.hours })}` : ''}</Text>
-            {w ? <Text style={[body, { color: colors.inkSoft }]}>{pick(lang, w.from, w.fromJa)}</Text> : null}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Feather name="check-circle" size={20} color={colors.moss} />
-              <Text style={[body, { fontSize: 16, color: colors.moss, flex: 1 }]}>{t('checkedWorker')}</Text>
-            </View>
-          </Card>
-        );
-      })}
 
       {waiting.length ? (
         <>

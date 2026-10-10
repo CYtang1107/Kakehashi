@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
+import { Feather } from '@expo/vector-icons';
 import { CHOICES, WISHES, pick, tagPayload, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Field, Glyph, Heading, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
@@ -53,18 +54,25 @@ export default function ItemScreen() {
 
   return (
     <Screen back>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <PixelIcon sprite={spriteFor(item)} size={56} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <View style={{ width: 84, height: 84, borderRadius: 18, backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }}>
+          <PixelIcon sprite={spriteFor(item)} size={64} />
+        </View>
         <View style={{ flex: 1 }}>
-          <Heading eyebrow={`${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? ` · ${item.year}` : ''}`} title={name} />
+          <Heading eyebrow={`${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? `, ${item.year}` : ''}`} title={name} />
         </View>
       </View>
       {item.photoUrl ? <Image source={{ uri: fileUrl(item.photoUrl) }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 14, backgroundColor: colors.line }} resizeMode="cover" accessibilityLabel={item.name} /> : null}
 
-      <Card>
-        <StoryPlayer path={item.audioUrl} />
-        {item.story ? <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, item.story, item.storyJa)}”</Text> : null}
-      </Card>
+      {/* Her words first, on the paper itself: the story is what this page is about. */}
+      {item.story ? (
+        <View style={{ gap: 10, paddingVertical: 6 }}>
+          <Text style={{ fontFamily: fonts.display, fontSize: 72, lineHeight: 64, color: colors.ai, marginBottom: -30 }}>“</Text>
+          <Text style={{ fontFamily: fonts.displaySemi, fontSize: 21, lineHeight: 34, color: colors.ink }}>{pick(lang, item.story, item.storyJa)}</Text>
+          <Text style={type.caption}>{t('inHerOwnWords', { name: data.home.seniorNameJa && lang === 'ja' ? data.home.seniorNameJa.split(' ')[1] : data.home.seniorName.split(' ')[0] })}</Text>
+        </View>
+      ) : null}
+      <StoryPlayer path={item.audioUrl} />
 
       {student ? (
         <>
@@ -118,13 +126,13 @@ export default function ItemScreen() {
         </>
       ) : (
         <>
-          <Card>
+          <View style={{ gap: 4, paddingVertical: 10, borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.line }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={[type.bodyBold, { flex: 1 }]}>{t('motherDecided')}</Text>
+              <Text style={[type.body, { flex: 1 }]}>{t('motherDecided')}</Text>
               <DecisionChip decision={item.decision} />
             </View>
             {held ? <Text style={[type.caption, { color: colors.moss }]}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text> : null}
-          </Card>
+          </View>
           <Card>
             <Text style={type.section}>{t('yourWish')}</Text>
             <Text style={type.caption}>{t('wishHint')}</Text>
@@ -144,14 +152,14 @@ export default function ItemScreen() {
         </>
       )}
 
-      <ShareCard item={item} mode={student ? 'student' : 'family'} />
-      <Worth item={item} />
-
       <Card>
         <Text style={type.section}>{isTrackable(item) ? t('whereNow') : t('journey')}</Text>
         {isTrackable(item) ? <TrackMap item={item} /> : null}
         <Journey steps={item.journey} />
       </Card>
+      <ShareCard item={item} mode={student ? 'student' : 'family'} />
+      <Worth item={item} />
+
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
     </Screen>
   );
@@ -168,7 +176,7 @@ function Worth({ item }: { item: Item }) {
     try { setShown(await api.estimate({ name: item.name })); } finally { setBusy(false); }
   };
   return (
-    <Card>
+    <Card flat style={{ paddingTop: 8 }}>
       {shown ? (
         <>
           <Text style={type.eyebrow}>{t('estimate')} · {t('estimateBy', { source: shown.source === 'claude' ? t('sourceClaude') : t('sourceOffline') })}</Text>
@@ -178,7 +186,10 @@ function Worth({ item }: { item: Item }) {
         </>
       ) : (
         <>
-          <Button label={t('whatWorth')} kind="secondary" icon="help-circle" busy={busy} onPress={reveal} />
+          <Pressable accessibilityRole="button" onPress={reveal} disabled={busy} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Feather name="help-circle" size={16} color={colors.ai} />
+            <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ai }}>{busy ? t('estimating') : t('whatWorth')}</Text>
+          </Pressable>
           <Text style={type.caption}>{t('worthHint')}</Text>
         </>
       )}
