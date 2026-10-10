@@ -6,6 +6,7 @@ import { Button, Card, DecisionChip, Glyph, Heading, Screen } from '../../src/ui
 import { FloorPlan } from '../../src/FloorPlan';
 import { Home3D, memoryColors } from '../../src/Home3D';
 import { StoryPlayer } from '../../src/Audio';
+import { RoomGallery } from '../../src/Community';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { colors, fonts, roomColor, type } from '../../src/theme';
@@ -101,6 +102,7 @@ export default function House() {
             </>
           ) : (
             <>
+              <RoomGallery />
               <Text style={type.section}>{t('items')}</Text>
               {data.items.map((it) => {
                 const room = data.home.rooms.find((r) => r.id === it.roomId);

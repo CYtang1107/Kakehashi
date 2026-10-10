@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { CHOICES, WISHES, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
+import { CHOICES, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -244,6 +244,55 @@ app.get('/payment/success', async (req, res) => {
 
 app.get('/payment/cancel', (_req, res) => res.send(page('Payment cancelled', 'Nothing was charged. You can close this page and return to the app.')));
 
+// ---------- Students: evaluation before visiting ----------
+
+app.post('/api/home/:id/students/:sid/step', (req, res) => {
+  const home = findHome(req.params.id);
+  const student = home?.students.find((s) => s.id === req.params.sid);
+  if (!home || !student) return fail(res, 404, 'Student not found.');
+  const { step, passed } = req.body ?? {};
+  if (!READINESS.includes(step)) return fail(res, 400, 'Unknown step.');
+  if (step === 'signoff' && passed && READINESS.some((r) => r !== 'signoff' && !student.passed[r])) {
+    return fail(res, 409, 'Every other step must be passed before sign-off.');
+  }
+  if (passed) student.passed[step as ReadinessStep] = now().slice(0, 10);
+  else {
+    delete student.passed[step as ReadinessStep];
+    delete student.passed.signoff; // un-passing any step withdraws sign-off
+  }
+  save();
+  res.json(student);
+});
+
+// ---------- Room photos for the digital 実家 (real captures only) ----------
+
+app.post('/api/home/:id/rooms/:rid/photos', (req, res) => {
+  const home = findHome(req.params.id);
+  const room = home?.rooms.find((r) => r.id === req.params.rid);
+  if (!home || !room) return fail(res, 404, 'Room not found.');
+  const { base64, mime } = req.body ?? {};
+  if (!base64) return fail(res, 400, 'No photo received.');
+  if (room.photos.length >= 12) return fail(res, 400, 'This room already has 12 photos.');
+  room.photos.push(saveUpload(`room-${room.id}`, base64, mime ?? 'image/jpeg'));
+  room.capturedAt = now().slice(0, 10);
+  save();
+  res.json(room);
+});
+
+// ---------- From home to community: local activities ----------
+
+app.post('/api/home/:id/activities/:aid', (req, res) => {
+  const home = findHome(req.params.id);
+  const act = home?.activities.find((a) => a.id === req.params.aid);
+  if (!home || !act) return fail(res, 404, 'Activity not found.');
+  const status = req.body?.status as ActivityStatus;
+  if (!['suggested', 'proposed', 'accepted', 'not-now', 'attended'].includes(status)) return fail(res, 400, 'Unknown status.');
+  act.status = status;
+  if (status === 'accepted' && !act.companion) act.companion = home.students.find((s) => s.role === 'pair')?.name;
+  save();
+  res.json(act);
+});
+
 // ---------- Her touchpoints between visits ----------
 
 // Gathers this month's stories and thank-yous into a draft letter (or returns the existing one).
@@ -311,7 +360,7 @@ footer { margin-top: 24px; font-size: 18px; color: #5b6273; }
 </style>
 <header><h1>思い出だより</h1><p>${y}年${m}月　${esc(first)}さんへ</p></header>
 ${blocks || '<p>今月は、お茶とお話の時間でした。</p>'}
-<div class="note"><p>${esc(letter.note || 'またお会いできるのを楽しみにしています。')}</p><p>${home.students.map((s) => esc(s.name)).join('・')}より</p></div>
+<div class="note"><p>${esc(letter.note || 'またお会いできるのを楽しみにしています。')}</p><p>${home.students.filter((s) => s.role === 'pair').map((s) => esc(s.name)).join('・')}より</p></div>
 <footer>次の訪問：${esc(home.visits.find((v) => v.status === 'planned')?.date ?? '')}　お電話：${esc(home.calls.find((c) => c.status === 'planned')?.date ?? '')}</footer>
 </html>`);
 });

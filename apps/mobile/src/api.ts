@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -41,6 +41,12 @@ export const api = {
   handover: (itemId: string, stage: HandoverStage, by: string, note?: string) =>
     call<Item>(`/api/items/${itemId}/handover`, { method: 'POST', body: { stage, by, note } }),
   estimate: (body: { base64?: string; mime?: string; name?: string }) => call<Estimate>('/api/estimate', { method: 'POST', body }),
+  studentStep: (homeId: string, studentId: string, step: ReadinessStep, passed: boolean) =>
+    call<Student>(`/api/home/${homeId}/students/${studentId}/step`, { method: 'POST', body: { step, passed } }),
+  roomPhoto: (homeId: string, roomId: string, base64: string, mime: string) =>
+    call<Room>(`/api/home/${homeId}/rooms/${roomId}/photos`, { method: 'POST', body: { base64, mime } }),
+  activity: (homeId: string, activityId: string, status: ActivityStatus) =>
+    call<CommunityActivity>(`/api/home/${homeId}/activities/${activityId}`, { method: 'POST', body: { status } }),
   prepareLetter: (homeId: string, note?: string) => call<Letter>(`/api/home/${homeId}/letters`, { method: 'POST', body: note !== undefined ? { note } : {} }),
   letterStatus: (letterId: string, status: Letter['status']) => call<Letter>(`/api/letters/${letterId}/status`, { method: 'POST', body: { status } }),
   logCall: (homeId: string, body: { by?: string; minutes?: number; mood?: CallMood; note?: string; followUp?: boolean }) =>

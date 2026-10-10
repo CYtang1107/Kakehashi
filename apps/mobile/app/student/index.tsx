@@ -7,6 +7,7 @@ import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
 import { CallsCard, LetterCard } from '../../src/Touchpoints';
+import { ActivitiesCard, RoomCapture } from '../../src/Community';
 import { colors, type } from '../../src/theme';
 
 export default function Visit() {
@@ -37,6 +38,7 @@ export default function Visit() {
         <Button label={home.consent.recording ? t('consentWithdraw') : t('consentYes')} kind={home.consent.recording ? 'secondary' : 'primary'}
           icon={home.consent.recording ? 'x-circle' : 'check-circle'} busy={busy} onPress={() => setConsent(!home.consent.recording)} />
       </Card>
+      <RoomCapture roomId={current.id} />
       <Text style={type.section}>{t('items')}</Text>
       {[...roomItems, ...otherItems].map((it) => (
         <Pressable key={it.id} accessibilityRole="button" onPress={() => router.push(`/item/${it.id}?as=student`)}
@@ -50,6 +52,7 @@ export default function Visit() {
         </Pressable>
       ))}
       <Button label={t('tabAdd')} kind="secondary" icon="camera" onPress={() => router.push('/student/add')} />
+      <ActivitiesCard mode="student" />
       <LetterCard mode="student" />
       <CallsCard mode="student" />
     </Screen>

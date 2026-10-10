@@ -19,9 +19,14 @@ function fresh(): Db {
   return { homes: [seedHome()], items: seedItems() };
 }
 
+// Older data files from earlier versions lack newer fields; demo data is simply re-seeded.
+const isCurrent = (d: Db) => d.homes.every((h) => Array.isArray(h.activities) && Array.isArray(h.letters) && h.students.every((s) => s.passed) && h.rooms.every((r) => Array.isArray(r.photos)));
+
 function load(): Db {
   try {
-    return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')) as Db;
+    const d = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')) as Db;
+    if (!isCurrent(d)) throw new Error('outdated');
+    return d;
   } catch {
     const db = fresh();
     fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));

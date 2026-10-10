@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Avatar, Button, Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
+import { ActivitiesCard, StudentsCard } from '../../src/Community';
 import { useI18n } from '../../src/i18n';
 import { colors, type } from '../../src/theme';
 
@@ -47,14 +48,8 @@ export default function FamilyHome() {
                 <Button label={lang === 'ja' && latest.nameJa ? latest.nameJa : latest.name} kind="secondary" icon="chevron-right" onPress={() => router.push(`/item/${latest.id}`)} />
               </Card>
             ) : null}
-            {home.activity ? (
-              <Card>
-                <Text style={type.eyebrow}>{t('fromHomeToCommunity')}</Text>
-                <Text style={type.bodyBold}>{home.activity.title} · {home.activity.place}</Text>
-                <Text style={type.caption}>{home.activity.date} · {t('goesWith', { who: home.activity.companion })}</Text>
-                <Pill label={home.activity.status === 'accepted' ? t('accepted') : t('proposed')} color={colors.moss} bg={colors.mossTint} />
-              </Card>
-            ) : null}
+            <StudentsCard />
+            <ActivitiesCard mode="family" />
           </>
         );
       })() : null}

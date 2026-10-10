@@ -28,6 +28,9 @@ export interface Room {
   y: number;
   w: number;
   h: number;
+  // Real photos captured on a visit (never AI-imagined rooms).
+  photos: string[];
+  capturedAt?: string;
 }
 
 export type HandoverStage = 'home' | 'sorted' | 'repair' | 'delivered' | 'recycler' | 'collected';
@@ -88,13 +91,34 @@ export interface Visit {
   status: 'done' | 'planned';
 }
 
+// From home to community (KizunaLink): local activities matched to her interests.
+export type ActivityStatus = 'suggested' | 'proposed' | 'accepted' | 'not-now' | 'attended';
 export interface CommunityActivity {
+  id: string;
   title: string;
-  date: string;
+  titleJa: string;
+  interest: string;
   place: string;
-  companion: string;
-  status: 'proposed' | 'accepted';
+  date: string;
+  companion?: string;
+  status: ActivityStatus;
 }
+
+// Every student passes these steps before visiting a senior.
+export type ReadinessStep = 'identity' | 'interview' | 'training' | 'dementia' | 'quiz' | 'shadow' | 'signoff';
+export const READINESS: ReadinessStep[] = ['identity', 'interview', 'training', 'dementia', 'quiz', 'shadow', 'signoff'];
+export interface Student {
+  id: string;
+  name: string;
+  initial: string;
+  interests: string;
+  university: string;
+  visits: number;
+  // Steps passed, with the date.
+  passed: Partial<Record<ReadinessStep, string>>;
+  role: 'pair' | 'trainee';
+}
+export const isReady = (s: Student) => READINESS.every((r) => Boolean(s.passed[r]));
 
 export interface Plan {
   id: string;
@@ -119,11 +143,13 @@ export interface Home {
   seniorName: string;
   town: string;
   childName: string;
-  students: { name: string; initial: string; interests: string }[];
+  seniorInterests: string[];
+  // The visiting pair first, then any trainee preparing to take over.
+  students: Student[];
   consent: { recording: boolean; at?: string };
   rooms: Room[];
   visits: Visit[];
-  activity?: CommunityActivity;
+  activities: CommunityActivity[];
   planId?: string;
   payments: Payment[];
   // What she wants done with money from items sold.
