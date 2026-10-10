@@ -40,6 +40,30 @@ export interface Handover {
   stage: HandoverStage;
   by: string;
   note?: string;
+  // Where this step happened. Private to the family and students; never on the public tag page.
+  pt?: TrackPoint;
+}
+// A point on an item's journey. For a new owner it is only their area (drawn as a circle), never an address.
+export interface TrackPoint {
+  lat: number;
+  lng: number;
+  label: string;
+  labelJa: string;
+  area?: boolean;
+}
+// A delivery in progress: a student or partner carrying the item to its new owner's area.
+export interface Delivery {
+  by: string;
+  from: TrackPoint;
+  to: TrackPoint;
+  startedAt: string;
+  minutes: number;
+  simulated?: boolean; // demo: the position loops along the route instead of coming from a phone
+}
+// 0..1 along the route. A simulated demo delivery loops every two minutes so the movement is visible.
+export function deliveryProgress(d: Delivery, nowMs: number) {
+  if (d.simulated) return ((nowMs / 1000) % 120) / 120;
+  return Math.min(1, Math.max(0, (nowMs - Date.parse(d.startedAt)) / (d.minutes * 60000)));
 }
 
 export interface Estimate {
@@ -83,6 +107,7 @@ export interface Item {
   // Shared on the public story feed only with her consent; she can withdraw it any time.
   share?: ItemShare;
   comments?: StoryComment[];
+  delivery?: Delivery;
   x: number;
   y: number;
 }

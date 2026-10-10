@@ -9,6 +9,7 @@ import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { Journey } from '../../src/Journey';
 import { ShareCard } from '../../src/StoryShare';
+import { TrackMap, isTrackable } from '../../src/TrackMap';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api, fileUrl } from '../../src/api';
@@ -106,6 +107,10 @@ export default function ItemScreen() {
                   <Field label={t('handoverBy')} value={handoverBy} onChangeText={setHandoverBy} placeholder={nextStage === 'recycler' || nextStage === 'collected' ? 'Licensed recycler' : 'Partner repair shop'} />
                   <Button label={t('logHandover')} kind="secondary" icon="check-circle" busy={busy === 'handover'} disabled={!handoverBy.trim()}
                     onPress={() => run('handover', () => api.handover(item.id, nextStage, handoverBy.trim()), t('handoverSaved')).then(() => setHandoverBy(''))} />
+                  {item.decision === 'pass' && !item.delivery && !item.journey.some((j) => j.stage === 'delivered') ? (
+                    <Button label={t('startDelivery')} kind="secondary" icon="truck" busy={busy === 'delivery'} disabled={!handoverBy.trim()}
+                      onPress={() => run('delivery', () => api.startDelivery(item.id, handoverBy.trim()), t('deliveryStarted')).then(() => setHandoverBy(''))} />
+                  ) : null}
                 </>
               )}
             </Card>
@@ -143,7 +148,8 @@ export default function ItemScreen() {
       <Worth item={item} />
 
       <Card>
-        <Text style={type.section}>{t('journey')}</Text>
+        <Text style={type.section}>{isTrackable(item) ? t('whereNow') : t('journey')}</Text>
+        {isTrackable(item) ? <TrackMap item={item} /> : null}
         <Journey steps={item.journey} />
       </Card>
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}

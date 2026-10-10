@@ -55,6 +55,7 @@ export const api = {
   storyComment: (itemId: string, from: string, message: string) => call(`/api/stories/${itemId}/comments`, { method: 'POST', body: { from, message } }),
   shareStory: (itemId: string, body: { share: boolean; name?: 'first' | 'anonymous'; audio?: boolean }) => call<Item>(`/api/items/${itemId}/share`, { method: 'POST', body }),
   moderate: (itemId: string, commentId: string, status: 'shown' | 'hidden') => call<Item>(`/api/items/${itemId}/comments/${commentId}`, { method: 'POST', body: { status } }),
+  startDelivery: (itemId: string, by: string, minutes?: number) => call<Item>(`/api/items/${itemId}/delivery`, { method: 'POST', body: { by, minutes } }),
   askHelp: (homeId: string, body: { kind: ServiceKind; when: 'soon' | 'next-visit'; by: 'her' | 'student'; note?: string; fixId?: string }) =>
     call<ServiceRequest[]>(`/api/home/${homeId}/services`, { method: 'POST', body }),
   bookHelp: (homeId: string, sid: string, body: { workerId: string; date: string; hours?: number }) =>

@@ -1,4 +1,4 @@
-import type { Home, Item, Place, Plan } from '@kakehashi/shared';
+import type { Delivery, Handover, Home, Item, Place, Plan, TrackPoint } from '@kakehashi/shared';
 import { NEARBY } from './nearby';
 
 // Example family used for demos. Every person here is illustrative.
@@ -113,8 +113,20 @@ export function seedHome(): Home {
 
 const at = (d: string) => `${d}T10:00:00+09:00`;
 
+// Demo points for item journeys: her home, a partner repair shop, a licensed recycler, and new owners' areas.
+export const TRACK = {
+  home: { lat: 37.9035, lng: 139.0545, label: 'Her home', labelJa: 'ご自宅' },
+  repair: { lat: 37.9150, lng: 139.0640, label: 'Partner repair shop (demo point)', labelJa: '提携の修理店（デモ）' },
+  recycler: { lat: 37.9290, lng: 139.1050, label: 'Licensed recycler (demo point)', labelJa: '認定リサイクル業者（デモ）' },
+  ownerNishi: { lat: 37.8700, lng: 138.9500, label: 'New owner’s area, Nishi-ku (area only)', labelJa: '新しい持ち主の地域・西区（地域のみ）', area: true },
+  ownerIkarashi: { lat: 37.8660, lng: 138.9420, label: 'New owner’s area, near the university (area only)', labelJa: '新しい持ち主の地域・大学の近く（地域のみ）', area: true },
+} satisfies Record<string, TrackPoint>;
+export function stagePoint(stage: Handover['stage'], owner: TrackPoint = TRACK.ownerNishi): TrackPoint {
+  return stage === 'repair' ? TRACK.repair : stage === 'recycler' ? TRACK.recycler : stage === 'delivered' ? owner : TRACK.home;
+}
+
 export function seedItems(): Item[] {
-  return [
+  return withTracks([
     { id: 'sewing', share: { at: '2026-10-10', name: 'first', audio: false }, comments: [
       { id: 'cm1', from: 'Aiko, Sendai', message: 'My mother sewed my school uniform on one just like this. Thank you for the story.', at: '2026-10-11T09:20:00Z', status: 'shown' },
       { id: 'cm2', from: 'Ken', message: 'Lovely. Is the pattern book still around? I would love to see it.', at: '2026-10-12T18:05:00Z', status: 'pending' },
@@ -156,7 +168,18 @@ export function seedItems(): Item[] {
         { at: at('2026-09-12'), stage: 'sorted', by: 'Yui and Arif', note: 'Michiko chose to pass it on' },
         { at: at('2026-09-20'), stage: 'delivered', by: 'Yui', note: 'Delivered to a first-year student' },
       ], thanks: [{ from: 'Ravi', message: 'Thank you, I cooked rice for my whole floor on the first night!', at: at('2026-09-21') }] },
-  ];
+  ]);
+}
+
+// Each journey step gets its place; the desk is on its way to its new owner with Arif (simulated for the demo).
+function withTracks(items: Item[]): Item[] {
+  return items.map((it) => {
+    const owner = it.id === 'cooker' ? TRACK.ownerIkarashi : TRACK.ownerNishi;
+    const journey = it.journey.map((j) => ({ ...j, pt: stagePoint(j.stage, owner) }));
+    const delivery: Delivery | undefined = it.id === 'desk'
+      ? { by: 'Arif', from: TRACK.home, to: TRACK.ownerNishi, startedAt: at('2026-10-10'), minutes: 35, simulated: true } : undefined;
+    return { ...it, journey, ...(delivery ? { delivery } : {}) };
+  });
 }
 
 // Her places on the neighbourhood map, lettered A, B, C… in this order, then everything else nearby.

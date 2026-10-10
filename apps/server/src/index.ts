@@ -5,11 +5,12 @@ import express, { type Request, type Response } from 'express';
 import cors from 'cors';
 import { CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
-import { plans } from './seed';
+import { TRACK, plans, stagePoint } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
 import { createCheckout, paymentsMode, readCheckout } from './payments';
 import { checkReport } from './pressure';
 import { mapPage } from './mapPage';
+import { trackPage } from './trackPage';
 
 const PORT = Number(process.env.PORT ?? 4100);
 const app = express();
@@ -57,7 +58,7 @@ function publicTag(item: Item): PublicTag {
     code: item.tagCode!, name: item.name, nameJa: item.nameJa, year: item.year, glyph: item.glyph,
     story: item.story, storyJa: item.storyJa, audioUrl: item.audioUrl, photoUrl: item.photoUrl,
     from: `${first}, ${home?.town ?? ''}`.replace(/, $/, ''),
-    journey: item.journey, thanksCount: item.thanks.length,
+    journey: item.journey.map(({ pt: _pt, ...j }) => j), thanksCount: item.thanks.length,
   };
 }
 
@@ -172,9 +173,35 @@ app.post('/api/items/:id/handover', (req, res) => {
   if (!by) return fail(res, 400, 'Say who received the item.');
   const today = new Date().toISOString().slice(0, 10);
   if (item.holdUntil && today < item.holdUntil) return fail(res, 409, `This item stays at home until ${item.holdUntil}, in case she changes her mind.`);
-  item.journey.push({ at: now(), stage, by: String(by).slice(0, 80), note: note ? String(note).slice(0, 200) : undefined });
+  const pt = stage === 'delivered' && item.delivery ? item.delivery.to : stagePoint(stage);
+  item.journey.push({ at: now(), stage, by: String(by).slice(0, 80), note: note ? String(note).slice(0, 200) : undefined, pt });
+  if (stage === 'delivered') delete item.delivery;
   save();
   res.json(item);
+});
+
+// Start a delivery to the new owner's area (shown live on the tracking map).
+app.post('/api/items/:id/delivery', (req, res) => {
+  const item = findItem(req.params.id);
+  if (!item) return fail(res, 404, 'Item not found.');
+  if (!['pass', 'family'].includes(item.decision)) return fail(res, 409, 'Only an item she chose to pass on can be delivered.');
+  const today = new Date().toISOString().slice(0, 10);
+  if (item.holdUntil && today < item.holdUntil) return fail(res, 409, `This item stays at home until ${item.holdUntil}, in case she changes her mind.`);
+  if (item.journey.some((j) => j.stage === 'delivered')) return fail(res, 409, 'This item has already been delivered.');
+  const by = String(req.body?.by ?? '').trim();
+  if (!by) return fail(res, 400, 'Say who is carrying it.');
+  const minutes = Math.round(Number(req.body?.minutes) || 30);
+  const last = [...item.journey].reverse().find((j) => j.pt)?.pt ?? stagePoint('home');
+  item.delivery = { by: by.slice(0, 40), from: last, to: TRACK.ownerNishi, startedAt: now(), minutes: Math.min(240, Math.max(5, minutes)) };
+  save();
+  res.json(item);
+});
+
+// Tracking map page for one item (family and students; never linked from the public tag page).
+app.get('/track/:itemId', (req, res) => {
+  const item = findItem(req.params.itemId);
+  if (!item) return res.status(404).send('Item not found.');
+  res.type('html').send(trackPage(item, req.query.lang === 'ja' ? 'ja' : 'en'));
 });
 
 app.post('/api/estimate', async (req, res) => {

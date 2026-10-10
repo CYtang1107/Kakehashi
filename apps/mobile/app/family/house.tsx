@@ -10,6 +10,7 @@ import { StoryPlayer } from '../../src/Audio';
 import { RoomGallery } from '../../src/Community';
 import { SaferHomeCard, fixTone } from '../../src/SaferHome';
 import { HouseFutureCard } from '../../src/HouseFuture';
+import { TrackMap, isTrackable } from '../../src/TrackMap';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
@@ -160,7 +161,7 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
       ? t('nowRecycled')
       : last.stage === 'delivered'
         ? t('nowWith', { who: item.thanks.at(-1)?.from ?? last.by })
-        : t('onItsWay');
+        : item.delivery ? t('onItsWayWith', { who: item.delivery.by }) : t('onItsWay');
   const thanks = item.thanks.at(-1);
   return (
     <View style={{ borderRadius: 16, padding: 16, gap: 10, backgroundColor: '#2A241E', borderWidth: 1, borderColor: '#4A3F33' }}>
@@ -176,6 +177,12 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
       ) : null}
       {item.audioUrl ? <StoryPlayer path={item.audioUrl} /> : null}
       <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: memoryColors.lantern }}>{now}</Text>
+      {isTrackable(item) ? (
+        <View style={{ gap: 6 }}>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1, color: '#CDBFAE' }}>{t('whereNow')}</Text>
+          <TrackMap item={item} height={220} />
+        </View>
+      ) : null}
       {thanks ? (
         <Text style={{ fontFamily: fonts.regular, fontSize: 14, lineHeight: 21, color: '#CDBFAE' }}>{t('thanksFrom', { name: thanks.from })}: “{thanks.message}”</Text>
       ) : null}
