@@ -1,15 +1,15 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { pick } from '@kakehashi/shared';
-import { Button, Card, Heading, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Fold, Heading, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { ActivitiesCard, StudentsCard } from '../../src/Community';
 import { ServicesCard } from '../../src/Services';
 import { LiveOutingBanner } from '../../src/Outing';
 import { VisitThread } from '../../src/VisitThread';
 import { useI18n } from '../../src/i18n';
-import { colors, type } from '../../src/theme';
+import { colors, fonts, type } from '../../src/theme';
 
 export default function FamilyHome() {
   const { data } = useData();
@@ -30,19 +30,26 @@ export default function FamilyHome() {
             <LiveOutingBanner onOpenMap={() => router.push('/family/house?view=map')} />
             <VisitThread visits={home.visits} names={[a.name, b.name]} initials={[a.initial, b.initial]}
               next={next ? t('threadNext', { date: formatDate(next.date, lang), room: room ? (lang === 'ja' ? room.nameJa : room.name) : '' }) : undefined}
-              stats={t('threadStats', { stories, rooms: safer, interests: pick(lang, a.interests, a.interestsJa) })} />
-            <Text style={type.caption}>{t('togetherNote')}</Text>
-            <Button label={t('openHouse')} kind="secondary" icon="box" onPress={() => router.push('/family/house')} />
+              stats={t('threadStats', { stories, rooms: safer, interests: pick(lang, a.interests, a.interestsJa) })}
+              onPress={() => router.push('/family/house')} />
             {latest ? (
               <Card>
                 <Text style={type.eyebrow}>{t('latestStory')}</Text>
-                <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, latest.story, latest.storyJa)}”</Text>
-                <Button label={lang === 'ja' && latest.nameJa ? latest.nameJa : latest.name} kind="secondary" icon="chevron-right" onPress={() => router.push(`/item/${latest.id}`)} />
+                <Text numberOfLines={3} style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, latest.story, latest.storyJa)}”</Text>
+                <Pressable accessibilityRole="link" onPress={() => router.push(`/item/${latest.id}`)} style={{ alignSelf: 'flex-start', paddingVertical: 2 }}>
+                  <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ai }}>{lang === 'ja' && latest.nameJa ? latest.nameJa : latest.name}</Text>
+                </Pressable>
               </Card>
             ) : null}
-            <StudentsCard />
-            <ActivitiesCard mode="family" />
-            <ServicesCard mode="family" />
+            <Fold title={t('studentsTitleShort')} icon="award" summary={t('foldStudents', { a: a.name, b: b.name })}>
+              <StudentsCard />
+            </Fold>
+            <Fold title={t('fromHomeToCommunity')} icon="map-pin" summary={t('foldActivities', { n: home.activities.filter((x) => x.status === 'accepted').length })}>
+              <ActivitiesCard mode="family" />
+            </Fold>
+            <Fold title={t('servicesTitle')} icon="tool" summary={t('foldHelp', { booked: home.services.filter((s) => s.status === 'booked').length, asked: home.services.filter((s) => s.status === 'requested').length })}>
+              <ServicesCard mode="family" />
+            </Fold>
           </>
         );
       })() : null}

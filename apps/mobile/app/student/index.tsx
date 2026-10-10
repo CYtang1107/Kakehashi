@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { Button, Card, DecisionChip, Glyph, Heading, Screen, formatDate } from '../../src/ui';
+import { Button, Card, DecisionChip, Fold, Glyph, Heading, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
-import { useI18n } from '../../src/i18n';
+import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { CallsCard, LetterCard } from '../../src/Touchpoints';
 import { ActivitiesCard, RoomCapture } from '../../src/Community';
@@ -56,10 +56,6 @@ export default function Visit() {
         </>
       ) : step === 'with' ? (
         <>
-      <RoomCapture roomId={current.id} />
-      <SaferHomeCard mode="student" roomId={current.id} />
-      <ServicesCard mode="student" />
-      <HouseFutureCard mode="student" />
       <Text style={type.section}>{t('items')}</Text>
       {[...roomItems, ...otherItems].map((it) => (
         <Pressable key={it.id} accessibilityRole="button" onPress={() => router.push(`/item/${it.id}?as=student`)}
@@ -73,8 +69,23 @@ export default function Visit() {
         </Pressable>
       ))}
       <Button label={t('tabAdd')} kind="secondary" icon="camera" onPress={() => router.push('/student/add')} />
-      <ActivitiesCard mode="student" />
-      <OutingCard />
+      <Text style={[type.section, { marginTop: 6 }]}>{t('moreWithHer')}</Text>
+      <Fold title={t('roomPhotosTitle')} icon="image" summary={t('foldPhotos', { n: current.photos.length })}>
+        <RoomCapture roomId={current.id} />
+      </Fold>
+      <Fold title={t('saferTitle')} icon="shield" summary={t('foldSafer', { agreed: home.safety.filter((f) => f.status === 'agreed').length, suggested: home.safety.filter((f) => f.status === 'suggested').length })}>
+        <SaferHomeCard mode="student" roomId={current.id} />
+      </Fold>
+      <Fold title={t('servicesTitle')} icon="tool" summary={t('foldHelp', { booked: home.services.filter((s) => s.status === 'booked').length, asked: home.services.filter((s) => s.status === 'requested').length })}>
+        <ServicesCard mode="student" />
+      </Fold>
+      <Fold title={t('futureTitle')} icon="home" summary={t('foldFuture', { wish: t(`hwish_${home.future.wish}` as Key) })}>
+        <HouseFutureCard mode="student" />
+      </Fold>
+      <Fold title={t('fromHomeToCommunity')} icon="map-pin" summary={t('foldActivities', { n: home.activities.filter((a) => a.status === 'accepted').length })}>
+        <ActivitiesCard mode="student" />
+        <OutingCard />
+      </Fold>
           <Button label={t('stepNextAfter')} icon="chevron-right" onPress={() => setStep('after')} />
         </>
       ) : (

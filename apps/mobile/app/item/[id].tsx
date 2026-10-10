@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
 import { Feather } from '@expo/vector-icons';
 import { CHOICES, WISHES, pick, tagPayload, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
-import { Button, Card, DecisionChip, Field, Glyph, Heading, Screen, formatDate } from '../../src/ui';
+import { Button, Card, DecisionChip, Field, Fold, Glyph, Heading, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
@@ -136,13 +136,13 @@ export default function ItemScreen() {
           <Card>
             <Text style={type.section}>{t('yourWish')}</Text>
             <Text style={type.caption}>{t('wishHint')}</Text>
-            <View style={{ gap: 8 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {WISHES.map((w) => {
                 const on = item.wish?.kind === w;
                 return (
                   <Pressable key={w} accessibilityRole="radio" accessibilityState={{ checked: on }}
                     onPress={() => run('wish', () => api.wish(item.id, w), t('wishSent'))}
-                    style={{ paddingVertical: 11, paddingHorizontal: 14, borderRadius: 12, borderWidth: on ? 2 : 1, borderColor: on ? colors.plum : colors.line, backgroundColor: on ? colors.plumTint : colors.sheet }}>
+                    style={{ paddingVertical: 9, paddingHorizontal: 13, borderRadius: 99, borderWidth: on ? 2 : 1, borderColor: on ? colors.plum : colors.line, backgroundColor: on ? colors.plumTint : colors.sheet }}>
                     <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: on ? colors.plum : colors.ink }}>{t(wishKey(w))}</Text>
                   </Pressable>
                 );
@@ -154,8 +154,10 @@ export default function ItemScreen() {
 
       <Card>
         <Text style={type.section}>{isTrackable(item) ? t('whereNow') : t('journey')}</Text>
-        {isTrackable(item) ? <TrackMap item={item} /> : null}
-        <Journey steps={item.journey} />
+        {isTrackable(item) ? <TrackMap item={item} height={210} /> : null}
+        {isTrackable(item)
+          ? <Fold title={t('everyStep', { n: item.journey.length })} icon="list"><Journey steps={item.journey} /></Fold>
+          : <Journey steps={item.journey} />}
       </Card>
       <ShareCard item={item} mode={student ? 'student' : 'family'} />
       <Worth item={item} />

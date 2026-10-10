@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -88,6 +88,37 @@ export function Card({ children, style, tint, flat }: { children: React.ReactNod
       : { backgroundColor: tint ? colors.aiTint : colors.sheet, borderRadius: 14, borderWidth: tint ? 0 : 1, borderColor: colors.line, padding: 16, gap: 8 }, style]}>
       {children}
     </View>
+  );
+}
+
+// A section folded to one line (title + status) until tapped, to keep long screens short.
+export function Fold({ title, summary, icon, children, open: initiallyOpen = false }: {
+  title: string; summary?: string; icon?: keyof typeof Feather.glyphMap; children: React.ReactNode; open?: boolean;
+}) {
+  const [open, setOpen] = useState(initiallyOpen);
+  const { t } = useI18n();
+  if (open) {
+    return (
+      <View style={{ gap: 6 }}>
+        {children}
+        <Pressable accessibilityRole="button" onPress={() => setOpen(false)} style={{ alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4 }}>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.ai }}>{t('showLess')}</Text>
+          <Feather name="chevron-up" size={15} color={colors.ai} />
+        </Pressable>
+      </View>
+    );
+  }
+  return (
+    <Pressable accessibilityRole="button" accessibilityState={{ expanded: false }} onPress={() => setOpen(true)}
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, paddingHorizontal: 14, borderRadius: 14,
+        backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line, opacity: pressed ? 0.85 : 1 })}>
+      {icon ? <Feather name={icon} size={19} color={colors.ai} /> : null}
+      <View style={{ flex: 1, gap: 1 }}>
+        <Text style={type.bodyBold} numberOfLines={1}>{title}</Text>
+        {summary ? <Text style={type.caption} numberOfLines={1}>{summary}</Text> : null}
+      </View>
+      <Feather name="chevron-down" size={18} color={colors.inkSoft} />
+    </Pressable>
   );
 }
 
