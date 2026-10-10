@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicTag } from '@kakehashi/shared';
+import { CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { plans } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -321,6 +321,64 @@ app.post('/api/home/:id/future/step', (req, res) => {
   else delete home.future.steps[step as HouseStep];
   save();
   res.json(home.future);
+});
+
+// ---------- Public story feed: only stories she agreed to share ----------
+
+function publicStory(item: Item): PublicStory {
+  const home = findHome(item.homeId);
+  const first = home?.seniorName.split(' ')[0] ?? '';
+  const firstJa = home?.seniorNameJa?.split(' ')[1] ?? first;
+  const anonymous = item.share?.name !== 'first';
+  return {
+    id: item.id, name: item.name, nameJa: item.nameJa, year: item.year, glyph: item.glyph, story: item.story, storyJa: item.storyJa,
+    audioUrl: item.share?.audio ? item.audioUrl : undefined,
+    teller: anonymous ? `Someone in ${home?.town ?? 'Japan'}` : `${first}, ${home?.town ?? ''}`,
+    tellerJa: anonymous ? `${home?.townJa ?? ''}の方` : `${firstJa}さん（${home?.townJa ?? ''}）`,
+    sharedAt: item.share!.at,
+    comments: (item.comments ?? []).filter((c) => c.status === 'shown').map(({ from, message, at }) => ({ from, message, at })),
+  };
+}
+const sharedItem = (id: string) => db.items.find((i) => i.id === id && i.share && (i.story || i.storyJa));
+const CONTACT = /(https?:\/\/|www\.|@[a-z0-9-]+\.|\b\d{2,4}[-\s]?\d{3,4}[-\s]?\d{4}\b|line\s*id)/i;
+
+app.get('/api/stories', (_req, res) => {
+  res.json(db.items.filter((i) => i.share && (i.story || i.storyJa)).sort((a, b) => b.share!.at.localeCompare(a.share!.at)).map(publicStory));
+});
+
+app.post('/api/stories/:itemId/comments', (req, res) => {
+  const item = sharedItem(req.params.itemId);
+  if (!item) return fail(res, 404, 'This story is not shared.');
+  const from = String(req.body?.from ?? '').trim().slice(0, 40);
+  const message = String(req.body?.message ?? '').trim();
+  if (!from) return fail(res, 400, 'Add your first name.');
+  if (message.length < 2 || message.length > 400) return fail(res, 400, 'Write a short message (up to 400 characters).');
+  if (CONTACT.test(message) || CONTACT.test(from)) return fail(res, 400, 'Please leave out links, phone numbers and emails. Messages are only for kind words.');
+  (item.comments ??= []).push({ id: id('cm'), from, message, at: now(), status: 'pending' });
+  save();
+  res.status(201).json({ ok: true, pending: true });
+});
+
+app.post('/api/items/:id/share', (req, res) => {
+  const item = findItem(req.params.id);
+  if (!item) return fail(res, 404, 'Item not found.');
+  const { share, name, audio } = req.body ?? {};
+  if (!share) { delete item.share; save(); return res.json(item); }
+  if (!item.story && !item.storyJa) return fail(res, 400, 'Save her story first.');
+  if (audio && !item.audioUrl) return fail(res, 400, 'There is no recording to share.');
+  item.share = { at: now().slice(0, 10), name: name === 'first' ? 'first' : 'anonymous', audio: Boolean(audio) };
+  save();
+  res.json(item);
+});
+
+app.post('/api/items/:id/comments/:cid', (req, res) => {
+  const item = findItem(req.params.id);
+  const c = item?.comments?.find((x) => x.id === req.params.cid);
+  if (!item || !c) return fail(res, 404, 'Message not found.');
+  if (!['shown', 'hidden'].includes(req.body?.status)) return fail(res, 400, 'Show or hide the message.');
+  c.status = req.body.status;
+  save();
+  res.json(item);
 });
 
 // ---------- Help at home: she asks, a checked worker is booked, she says how it went ----------

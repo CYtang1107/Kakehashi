@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { PublicStory, ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -51,6 +51,10 @@ export const api = {
   houseCondition: (homeId: string, part: ConditionPart, level: ConditionLevel) =>
     call<HouseFuture>(`/api/home/${homeId}/future/condition`, { method: 'POST', body: { part, level } }),
   houseStep: (homeId: string, step: HouseStep, done: boolean) => call<HouseFuture>(`/api/home/${homeId}/future/step`, { method: 'POST', body: { step, done } }),
+  stories: () => call<PublicStory[]>('/api/stories'),
+  storyComment: (itemId: string, from: string, message: string) => call(`/api/stories/${itemId}/comments`, { method: 'POST', body: { from, message } }),
+  shareStory: (itemId: string, body: { share: boolean; name?: 'first' | 'anonymous'; audio?: boolean }) => call<Item>(`/api/items/${itemId}/share`, { method: 'POST', body }),
+  moderate: (itemId: string, commentId: string, status: 'shown' | 'hidden') => call<Item>(`/api/items/${itemId}/comments/${commentId}`, { method: 'POST', body: { status } }),
   askHelp: (homeId: string, body: { kind: ServiceKind; when: 'soon' | 'next-visit'; by: 'her' | 'student'; note?: string; fixId?: string }) =>
     call<ServiceRequest[]>(`/api/home/${homeId}/services`, { method: 'POST', body }),
   bookHelp: (homeId: string, sid: string, body: { workerId: string; date: string; hours?: number }) =>

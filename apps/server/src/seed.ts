@@ -112,7 +112,10 @@ const at = (d: string) => `${d}T10:00:00+09:00`;
 
 export function seedItems(): Item[] {
   return [
-    { id: 'sewing', homeId: HOME_ID, roomId: 'washitsu', name: 'Sewing machine', nameJa: 'ミシン', year: '1972', glyph: '縫', decision: 'pass',
+    { id: 'sewing', share: { at: '2026-10-10', name: 'first', audio: false }, comments: [
+      { id: 'cm1', from: 'Aiko, Sendai', message: 'My mother sewed my school uniform on one just like this. Thank you for the story.', at: '2026-10-11T09:20:00Z', status: 'shown' },
+      { id: 'cm2', from: 'Ken', message: 'Lovely. Is the pattern book still around? I would love to see it.', at: '2026-10-12T18:05:00Z', status: 'pending' },
+    ], homeId: HOME_ID, roomId: 'washitsu', name: 'Sewing machine', nameJa: 'ミシン', year: '1972', glyph: '縫', decision: 'pass',
       story: "I sewed all three children's school bags on this machine. Kenji's had a rocket on it. I'd like it to go to a young person who will make something with it.", storyJa: 'このミシンで、子ども三人の通園かばんを縫いました。健二のにはロケットの刺しゅう。何かを作ってくれる若い人に使ってほしいです。',
       tagCode: 'KK-0472-SEW', x: 228, y: 148,
       estimate: { category: 'Household sewing machine', priceLowJpy: 3000, priceHighJpy: 8000, routeIfLetGo: 'pass', reason: 'Older mechanical machines are still useful after a service.', source: 'offline' },
@@ -122,7 +125,7 @@ export function seedItems(): Item[] {
         { at: at('2026-10-10'), stage: 'sorted', by: 'Yui and Arif', note: 'Michiko chose to pass it on' },
         { at: at('2026-10-16'), stage: 'repair', by: 'Partner repair shop', note: 'Serviced and tested' },
       ], thanks: [] },
-    { id: 'desk', homeId: HOME_ID, roomId: 'washitsu', name: 'Writing desk', nameJa: '文机', year: '1968', glyph: '机', decision: 'pass',
+    { id: 'desk', share: { at: '2026-10-10', name: 'anonymous', audio: false }, comments: [], homeId: HOME_ID, roomId: 'washitsu', name: 'Writing desk', nameJa: '文机', year: '1968', glyph: '机', decision: 'pass',
       story: 'This is where I wrote letters to my husband when he worked in Osaka. Every Sunday night, one letter.', storyJa: '夫が大阪で働いていた頃、この机で手紙を書きました。毎週日曜の夜に一通ずつ。',
       tagCode: 'KK-0472-DSK', x: 282, y: 200,
       journey: [

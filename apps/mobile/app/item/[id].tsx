@@ -8,6 +8,7 @@ import { StoryPlayer, StoryRecorder } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { Journey } from '../../src/Journey';
+import { ShareCard } from '../../src/StoryShare';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api, fileUrl } from '../../src/api';
@@ -138,6 +139,7 @@ export default function ItemScreen() {
         </>
       )}
 
+      <ShareCard item={item} mode={student ? 'student' : 'family'} />
       <Worth item={item} />
 
       <Card>

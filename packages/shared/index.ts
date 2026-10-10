@@ -80,6 +80,9 @@ export interface Item {
   estimate?: Estimate;
   journey: Handover[];
   thanks: Thanks[];
+  // Shared on the public story feed only with her consent; she can withdraw it any time.
+  share?: ItemShare;
+  comments?: StoryComment[];
   x: number;
   y: number;
 }
@@ -390,4 +393,35 @@ export interface ServiceRequest {
   hours?: number;
   priceJpy?: number;
   feedback?: ServiceFeedback;
+}
+
+// ---------- Public story feed (物語の広場) ----------
+// Stories stay private unless she agrees to share one. She picks how she is named and whether her voice is heard.
+// Visitors can read and send kind words; messages wait until a student approves them, and messages with links,
+// phone numbers or emails are refused, so nobody can use the feed to contact her.
+export interface ItemShare {
+  at: string; // when she agreed
+  name: 'first' | 'anonymous';
+  audio: boolean;
+}
+export interface StoryComment {
+  id: string;
+  from: string;
+  message: string;
+  at: string;
+  status: 'pending' | 'shown' | 'hidden';
+}
+export interface PublicStory {
+  id: string;
+  name: string;
+  nameJa?: string;
+  year?: string;
+  glyph: string;
+  story?: string;
+  storyJa?: string;
+  audioUrl?: string;
+  teller: string;
+  tellerJa: string;
+  sharedAt: string;
+  comments: { from: string; message: string; at: string }[];
 }
