@@ -10,9 +10,8 @@ TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an examp
 | --- | --- |
 | **Michiko** (her own screen) | Large text, few choices. See who is visiting next and who is coming to help, with the door rule against repair scams. Ask for help in two taps. Say how a job went. |
 | **Family** | The visit thread (every visit as a knot on a thread). The **digital 実家**: 3D house, floor plan, memory mode, neighbourhood map. Item stories and recordings. Share a **wish** about an item (never a vote). Safer home plan with costs, the house's future, help bookings, live outings. Plan and payment, visit reports, the monthly letter, call notes. |
-| **Students** | A **Wallet** of earnings and a savings goal. A visit in three steps: **Before** (field notes, consent), **With her** (items, story tags, room photos, safer home, help, the house's future, activities, outing sharing), **After** (visit report with a fresh-eyes check, monthly letter, calls). **Team** tab: the seven-step evaluation every student passes. |
+| **Students** | A **Wallet** of earnings and a savings goal. A visit in three steps: **Before** (field notes, consent), **With her** (items, her stories, item photos, room photos, safer home, help, the house's future, activities, outing sharing), **After** (visit report with a fresh-eyes check, monthly letter, calls). **Team** tab: the seven-step evaluation every student passes. |
 | **Helpers** | Checked local workers find jobs on the **job board**, at a price set beforehand, and see what they receive after the 15% fee. |
-| **New owner** | Scan the item's QR (or type the code), hear its story, send a thank-you. |
 | **Story readers** | Anyone: read stories she chose to share, and send kind words that students approve. |
 
 Every screen switches between Japanese and English.
@@ -29,7 +28,7 @@ npm run dev
 This starts the API server on port 4100 and the Expo app on port 8081.
 
 - **Browser:** open http://localhost:8081
-- **Phone:** install **Expo Go** and scan the QR code Expo prints (phone and laptop on the same Wi-Fi). Camera scanning, audio recording and location sharing work best here.
+- **Phone:** install **Expo Go** and scan the QR code Expo prints (phone and laptop on the same Wi-Fi). Taking photos, audio recording and location sharing work best here.
 - If the phone can't reach the server, copy `apps/mobile/.env.example` to `apps/mobile/.env` and set `EXPO_PUBLIC_API_URL` to the address the server prints (for example `http://192.168.1.20:4100`).
 - The maps need an internet connection.
 - An "error installing React Native DevTools" line at start-up is harmless; the app runs without the debugger.
@@ -40,7 +39,8 @@ To start over with the example family: `npm run reset` (while the server runs).
 
 ### Visits, stories and her choice
 
-- Story tags: the story behind an item in her words, her real voice (with consent), and a QR code that travels with the item.
+- Her stories: the story behind an item in her words and her real voice (with consent), kept for the family even after the item has gone.
+- **Item photo album:** swipe through an item's pictures like a post: a photo of the item today, old family photos, a **pixel version** made automatically from each real photo (56×42, the photo's own 16 colours), and illustrations, which always carry an "Illustration (AI-made)" label so nothing imagined passes as a real memory. Photos stay private to the family.
 - Her choice for each item, with **Not now** first. An item she agrees to let go stays home until the next visit, in case she changes her mind.
 - Visit reports pass a **fresh-eyes check** for pushy or disrespectful wording, then the student ticks **"I read this report myself"** before it can be sent. The family sees "Read by Yui before sending". The monthly letter can't be marked printed until a student confirms they read the whole letter.
 - Between visits: a printed monthly letter (思い出だより) and a phone call, logged for the family with her agreement.
@@ -103,7 +103,6 @@ With her consent, a story can be shared publicly, named as she chooses (her firs
 ## Privacy and AI defaults
 
 - Story recordings need her consent; the server refuses uploads without it.
-- The public story-tag page shows her first name and town only, and no locations.
 - Public stories need her consent per story; visitors' messages are moderated.
 - Job listings show the area only; item tracking shows the new owner's area only.
 - Live location only during an outing she agreed to, deleted when it ends.
@@ -138,9 +137,10 @@ apps/server            Express API, JSON-file storage (apps/server/data, not com
   src/mapPage.ts       Neighbourhood map page (/map/:homeId)
   src/trackPage.ts     Item tracking page (/track/:itemId)
   src/weather.ts       Live JMA weather warnings
+  src/pixelize.ts      Pixel versions of item photos (sharp)
   src/nearby.ts        Real nearby places from OpenStreetMap
 apps/mobile            Expo Router app (iOS, Android, web)
-  app/                 Screens per role: her/, family/, student/, worker/, owner/, stories/, item/
+  app/                 Screens per role: her/, family/, student/, worker/, stories/, item/
   src/                 Shared components (3D house, maps, cards, i18n)
 packages/shared        Types and rules shared by both
 ```
