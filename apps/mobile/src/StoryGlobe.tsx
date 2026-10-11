@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { PanResponder, Pressable, View } from 'react-native';
+import { PanResponder, Platform, Pressable, View, type GestureResponderEvent } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -25,7 +25,8 @@ const LAND = (() => {
   });
   return grid;
 })();
-const isLand = (lat: number, lng: number) => LAND[Math.min(H - 1, Math.floor((90 - lat) / STEP)) * W + Math.min(W - 1, Math.floor((lng + 180) / STEP))] === 1;
+// Nothing north of 83.7°N is land (the polar rows of the source data are noisy).
+const isLand = (lat: number, lng: number) => lat < 83.7 && LAND[Math.min(H - 1, Math.floor((90 - lat) / STEP)) * W + Math.min(W - 1, Math.floor((lng + 180) / STEP))] === 1;
 
 const toVec = (lat: number, lng: number, r: number) => {
   const phi = (90 - lat) * (Math.PI / 180);
@@ -158,11 +159,42 @@ export function StoryGlobe({ stories, selected, onSelect, height = 360, labels }
   sizeRef.current = size;
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
+  const clampZoom = (z: number) => Math.max(ZOOM.min, Math.min(ZOOM.max, z));
+  // Pinch to zoom on phones: the distance between two fingers, compared with where the pinch began.
+  const pinch = useRef<{ dist: number; zoom: number } | null>(null);
+  const pinched = useRef(false);
+  const fingers = (e: GestureResponderEvent) => {
+    const t = e.nativeEvent.touches;
+    return t.length >= 2 ? Math.hypot(t[0].pageX - t[1].pageX, t[0].pageY - t[1].pageY) : 0;
+  };
+
+  // Scroll (mouse wheel or trackpad) to zoom on the web. The page does not scroll while the pointer is on the globe.
+  const surface = useRef<View>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const el = surface.current as unknown as HTMLElement | null;
+    if (!el?.addEventListener) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const px = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; // lines to pixels
+      zoom.current = clampZoom(zoom.current * Math.exp(px * (e.ctrlKey ? 0.01 : 0.0015)));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
 
   const pan = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => true,
-    onPanResponderGrant: () => { drag.current.active = true; start.current = { x: drag.current.x, y: drag.current.y }; },
-    onPanResponderMove: (_, g) => {
+    onPanResponderGrant: () => { drag.current.active = true; pinch.current = null; pinched.current = false; start.current = { x: drag.current.x, y: drag.current.y }; },
+    onPanResponderMove: (e, g) => {
+      const d = fingers(e);
+      if (d) {
+        pinched.current = true;
+        if (!pinch.current) pinch.current = { dist: d, zoom: zoom.current };
+        else zoom.current = clampZoom(pinch.current.zoom * (pinch.current.dist / d));
+        return;
+      }
+      if (pinched.current) return; // lifting one finger after a pinch should not spin the globe
       // Slower when zoomed in, so a small drag doesn't fling Japan off the screen.
       const k = zoom.current / ZOOM.max;
       drag.current.y = start.current.y + g.dx * 0.011 * k;
@@ -170,7 +202,7 @@ export function StoryGlobe({ stories, selected, onSelect, height = 360, labels }
     },
     onPanResponderRelease: (e, g) => {
       drag.current.active = false;
-      if (Math.abs(g.dx) < 6 && Math.abs(g.dy) < 6) {
+      if (!pinched.current && Math.abs(g.dx) < 6 && Math.abs(g.dy) < 6) {
         const { w, h } = sizeRef.current;
         const { locationX, locationY } = e.nativeEvent;
         onSelectRef.current(picker.current?.((locationX / w) * 2 - 1, -(locationY / h) * 2 + 1) ?? null);
@@ -179,7 +211,7 @@ export function StoryGlobe({ stories, selected, onSelect, height = 360, labels }
     onPanResponderTerminate: () => { drag.current.active = false; },
   }), []);
 
-  const zoomBy = (f: number) => { zoom.current = Math.max(ZOOM.min, Math.min(ZOOM.max, zoom.current * f)); };
+  const zoomBy = (f: number) => { zoom.current = clampZoom(zoom.current * f); };
   const home = () => { Object.assign(drag.current, facing(JAPAN.lat, JAPAN.lng)); zoom.current = ZOOM.start; };
 
   return (
@@ -187,7 +219,7 @@ export function StoryGlobe({ stories, selected, onSelect, height = 360, labels }
       <Canvas camera={{ position: [0, 0, ZOOM.start], fov: 40 }}>
         <Globe stories={stories} selected={selected} drag={drag} zoom={zoom} picker={picker} />
       </Canvas>
-      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} {...pan.panHandlers} />
+      <View ref={surface} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} {...pan.panHandlers} />
       <View style={{ position: 'absolute', right: 10, top: 10, gap: 8 }}>
         <GlobeButton icon="plus" label={labels.zoomIn} onPress={() => zoomBy(0.8)} />
         <GlobeButton icon="minus" label={labels.zoomOut} onPress={() => zoomBy(1.25)} />
