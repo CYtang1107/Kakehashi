@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, Pressable, Share, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, Share, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick, type PublicStory } from '@kakehashi/shared';
 import { Heading, Screen, formatDate } from '../../src/ui';
@@ -130,11 +130,10 @@ function StoryPost({ story }: { story: PublicStory }) {
 
         {writing ? (
           <View style={{ gap: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
-            <TextInput value={from} onChangeText={setFrom} placeholder={t('feedNameOptional')} placeholderTextColor={colors.inkSoft} maxLength={40}
-              accessibilityLabel={t('feedNameOptional')} style={inputStyle} />
+            <Input value={from} onChangeText={setFrom} placeholder={t('feedNameOptional')} maxLength={40} accessibilityLabel={t('feedNameOptional')} />
             <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-              <TextInput ref={messageRef} value={message} onChangeText={setMessage} placeholder={t('feedMessage')} placeholderTextColor={colors.inkSoft} multiline maxLength={400}
-                accessibilityLabel={t('feedMessage')} style={[inputStyle, { flex: 1, minHeight: 44, textAlignVertical: 'top' }]} />
+              <Input ref={messageRef} value={message} onChangeText={setMessage} placeholder={t('feedMessage')} multiline maxLength={400}
+                accessibilityLabel={t('feedMessage')} style={{ flex: 1, minHeight: 44, textAlignVertical: 'top' }} />
               <Pressable accessibilityRole="button" accessibilityLabel={t('send')} disabled={busy || message.trim().length < 2} onPress={send}
                 style={{ height: 44, paddingHorizontal: 14, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: message.trim().length >= 2 ? colors.ai : colors.line }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: '#fff' }}>{busy ? '…' : t('send')}</Text>
@@ -152,7 +151,16 @@ function StoryPost({ story }: { story: PublicStory }) {
   );
 }
 
-const inputStyle = { borderWidth: 1, borderColor: colors.line, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontFamily: fonts.regular, fontSize: 15, color: colors.ink, backgroundColor: colors.paper } as const;
+// A text box that shows focus with the app's blue border instead of the browser's black outline.
+const Input = React.forwardRef<TextInput, TextInputProps>(function Input({ style, ...props }, ref) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <TextInput ref={ref} placeholderTextColor={colors.inkSoft} {...props}
+      onFocus={(e) => { setFocused(true); props.onFocus?.(e); }} onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
+      style={[{ borderWidth: focused ? 2 : 1, borderColor: focused ? colors.ai : colors.line, borderRadius: 12, paddingHorizontal: focused ? 11 : 12, paddingVertical: focused ? 9 : 10,
+        fontFamily: fonts.regular, fontSize: 15, color: colors.ink, backgroundColor: colors.paper }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]} />
+  );
+});
 
 function Action({ icon, label, count, on, onPress }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; count?: number; on?: boolean; onPress: () => void }) {
   return (
