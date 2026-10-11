@@ -10,7 +10,7 @@ import { api, fileUrl } from './api';
 import { colors, fonts, type } from './theme';
 
 // Every picture of an item: the album, plus the single photo older items were logged with.
-export function itemPhotos(item: Item): ItemPhoto[] {
+export function itemPhotos(item: Pick<Item, 'photos' | 'photoUrl'>): ItemPhoto[] {
   const album = item.photos ?? [];
   return item.photoUrl && !album.some((p) => p.url === item.photoUrl)
     ? [{ id: 'main', url: item.photoUrl, kind: 'photo', by: '', at: '' }, ...album]
@@ -18,7 +18,7 @@ export function itemPhotos(item: Item): ItemPhoto[] {
 }
 
 // Swipe through an item's pictures, like a post. Illustrations always carry a label saying they are not real photos.
-export function PhotoCarousel({ item, dark, onMakePixel }: { item: Item; dark?: boolean; onMakePixel?: (photoId: string) => void }) {
+export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'name' | 'photos' | 'photoUrl' | 'icon'>; dark?: boolean; onMakePixel?: (photoId: string) => void }) {
   const { t, lang } = useI18n();
   const photos = itemPhotos(item);
   const [w, setW] = useState(0);

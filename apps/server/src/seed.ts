@@ -146,7 +146,7 @@ export function stagePoint(stage: Handover['stage'], owner: TrackPoint = TRACK.o
 
 export function seedItems(): Item[] {
   return withTracks([
-    { id: 'sewing', share: { at: '2026-10-10', name: 'first', audio: false }, comments: [
+    { id: 'sewing', share: { at: '2026-10-10', name: 'first', audio: false, photos: true }, hearts: 128, comments: [
       { id: 'cm1', from: 'Aiko, Sendai', message: 'My mother sewed my school uniform on one just like this. Thank you for the story.', at: '2026-10-11T09:20:00Z', status: 'shown' },
       { id: 'cm2', from: 'Ken', message: 'Lovely. Is the pattern book still around? I would love to see it.', at: '2026-10-12T18:05:00Z', status: 'pending' },
     ], homeId: HOME_ID, roomId: 'washitsu', name: 'Sewing machine', nameJa: 'ミシン', year: '1972', glyph: '縫', decision: 'pass',
@@ -159,7 +159,9 @@ export function seedItems(): Item[] {
         { at: at('2026-10-10'), stage: 'sorted', by: 'Yui and Arif', note: 'Michiko chose to pass it on' },
         { at: at('2026-10-16'), stage: 'repair', by: 'Partner repair shop', note: 'Serviced and tested' },
       ], thanks: [] },
-    { id: 'desk', share: { at: '2026-10-10', name: 'anonymous', audio: false }, comments: [], homeId: HOME_ID, roomId: 'washitsu', name: 'Writing desk', nameJa: '文机', year: '1968', glyph: '机', decision: 'pass',
+    { id: 'desk', share: { at: '2026-10-10', name: 'anonymous', audio: false }, hearts: 46, comments: [
+      { id: 'cm3', from: '', message: 'My father wrote to us the same way from Nagoya. Thank you for sharing this.', at: '2026-10-11T12:40:00Z', status: 'shown' },
+    ], homeId: HOME_ID, roomId: 'washitsu', name: 'Writing desk', nameJa: '文机', year: '1968', glyph: '机', decision: 'pass',
       story: 'This is where I wrote letters to my husband when he worked in Osaka. Every Sunday night, one letter.', storyJa: '夫が大阪で働いていた頃、この机で手紙を書きました。毎週日曜の夜に一通ずつ。',
       x: 282, y: 200,
       journey: [

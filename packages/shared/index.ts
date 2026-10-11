@@ -106,6 +106,7 @@ export interface Item {
   // Shared on the public story feed only with her consent; she can withdraw it any time.
   share?: ItemShare;
   comments?: StoryComment[];
+  hearts?: number; // hearts from story-feed readers
   delivery?: Delivery;
   // A small album, swiped like a post: the item today, old family photos, and clearly labelled illustrations.
   photos?: ItemPhoto[];
@@ -463,6 +464,7 @@ export interface ItemShare {
   at: string; // when she agreed
   name: 'first' | 'anonymous';
   audio: boolean;
+  photos?: boolean; // her OK to show photos of the item (old family photos are never shown)
 }
 export interface StoryComment {
   id: string;
@@ -483,7 +485,10 @@ export interface PublicStory {
   teller: string;
   tellerJa: string;
   sharedAt: string;
-  comments: { from: string; message: string; at: string }[];
+  photos: ItemPhoto[]; // only photos of the item and labelled illustrations, with her OK
+  icon?: ItemIcon;
+  hearts: number;
+  comments: { from: string; message: string; at: string }[]; // from '' = anonymous
 }
 
 // ---------- Outing sharing (お出かけの見守り) ----------

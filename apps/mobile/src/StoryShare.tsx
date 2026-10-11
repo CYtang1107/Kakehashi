@@ -6,6 +6,7 @@ import { Button, Card, Pill, formatDate } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
 import { api } from './api';
+import { itemPhotos } from './PhotoCarousel';
 import { colors, fonts, type } from './theme';
 
 // Sharing one story on the public feed: only with her consent, named as she chooses, and she can withdraw.
@@ -15,6 +16,9 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
   const { t, lang } = useI18n();
   const [name, setName] = useState<'first' | 'anonymous'>(item.share?.name ?? 'anonymous');
   const [audio, setAudio] = useState(item.share?.audio ?? false);
+  const [photos, setPhotos] = useState(item.share?.photos ?? true);
+  // Old family photos never go public; photos of the item and labelled illustrations can, with her OK.
+  const hasPhotos = itemPhotos(item).some((p) => p.kind === 'photo' || p.kind === 'illustration');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const hasStory = Boolean(item.story || item.storyJa);
@@ -33,7 +37,7 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
       <Card>
         <Text style={type.section}>{t('shareTitle')}</Text>
         <Text style={type.body}>{item.share ? t('sharedOn', { date: formatDate(item.share.at, lang) }) : t('notShared')}</Text>
-        {shown.map((c) => <Text key={c.id} style={type.caption}>{c.from}: “{c.message}”</Text>)}
+        {shown.map((c) => <Text key={c.id} style={type.caption}>{c.from || t('feedAnon')}: “{c.message}”</Text>)}
       </Card>
     );
   }
@@ -45,7 +49,7 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
       {item.share ? (
         <>
           <Pill label={t('sharedOn', { date: formatDate(item.share.at, lang) })} color={colors.moss} bg={colors.mossTint} />
-          <Text style={type.caption}>{item.share.name === 'first' ? t('shareNameFirst') : t('shareNameAnon')}{item.share.audio ? ` · ${t('shareVoice')}` : ''}</Text>
+          <Text style={type.caption}>{item.share.name === 'first' ? t('shareNameFirst') : t('shareNameAnon')}{item.share.audio ? ` · ${t('shareVoice')}` : ''}{item.share.photos ? ` · ${t('sharePhotos')}` : ''}</Text>
           <Button label={t('shareWithdraw')} kind="secondary" icon="eye-off" busy={busy === 'share'} onPress={() => run('share', () => api.shareStory(item.id, { share: false }), t('saved'))} />
         </>
       ) : hasStory ? (
@@ -55,8 +59,9 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
               <Chip key={n} label={n === 'first' ? t('shareNameFirst') : t('shareNameAnon')} on={name === n} onPress={() => setName(n)} />
             ))}
             {item.audioUrl ? <Chip label={t('shareVoice')} on={audio} onPress={() => setAudio(!audio)} /> : null}
+            {hasPhotos ? <Chip label={t('sharePhotos')} on={photos} onPress={() => setPhotos(!photos)} /> : null}
           </View>
-          <Button label={t('shareAgree')} icon="check" busy={busy === 'share'} onPress={() => run('share', () => api.shareStory(item.id, { share: true, name, audio }), t('saved'))} />
+          <Button label={t('shareAgree')} icon="check" busy={busy === 'share'} onPress={() => run('share', () => api.shareStory(item.id, { share: true, name, audio, photos: hasPhotos && photos }), t('saved'))} />
         </>
       ) : (
         <Text style={type.caption}>{t('shareNeedsStory')}</Text>
@@ -67,7 +72,7 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
           <Text style={type.eyebrow}>{t('messagesWaiting', { n: pending.length })}</Text>
           {pending.map((c) => (
             <View key={c.id} style={{ gap: 6 }}>
-              <Text style={type.body}><Text style={type.bodyBold}>{c.from}: </Text>{c.message}</Text>
+              <Text style={type.body}><Text style={type.bodyBold}>{c.from || t('feedAnon')}: </Text>{c.message}</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <Button label={t('showMessage')} kind="secondary" icon="check" busy={busy === c.id} onPress={() => run(c.id, () => api.moderate(item.id, c.id, 'shown'))} />
                 <Button label={t('hideMessage')} kind="secondary" icon="x" onPress={() => run(c.id, () => api.moderate(item.id, c.id, 'hidden'))} />

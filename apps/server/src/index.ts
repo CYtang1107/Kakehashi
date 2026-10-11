@@ -551,8 +551,18 @@ function publicStory(item: Item): PublicStory {
     teller: anonymous ? `Someone in ${home?.town ?? 'Japan'}` : `${first}, ${home?.town ?? ''}`,
     tellerJa: anonymous ? `${home?.townJa ?? ''}の方` : `${firstJa}さん（${home?.townJa ?? ''}）`,
     sharedAt: item.share!.at,
+    photos: item.share?.photos ? shareablePhotos(item) : [],
+    icon: item.share?.photos ? item.icon : undefined,
+    hearts: item.hearts ?? 0,
     comments: (item.comments ?? []).filter((c) => c.status === 'shown').map(({ from, message, at }) => ({ from, message, at })),
   };
+}
+// Pictures that may go on the public feed: photos of the item and labelled illustrations, never old family photos.
+function shareablePhotos(item: Item) {
+  const album = item.photos ?? [];
+  const all = item.photoUrl && !album.some((p) => p.url === item.photoUrl)
+    ? [{ id: 'main', url: item.photoUrl, kind: 'photo' as const, by: '', at: '' }, ...album] : album;
+  return all.filter((p) => p.kind === 'photo' || p.kind === 'illustration').map((p) => ({ ...p, by: '' }));
 }
 const sharedItem = (id: string) => db.items.find((i) => i.id === id && i.share && (i.story || i.storyJa));
 const CONTACT = /(https?:\/\/|www\.|@[a-z0-9-]+\.|\b\d{2,4}[-\s]?\d{3,4}[-\s]?\d{4}\b|line\s*id)/i;
@@ -566,7 +576,6 @@ app.post('/api/stories/:itemId/comments', (req, res) => {
   if (!item) return fail(res, 404, 'This story is not shared.');
   const from = String(req.body?.from ?? '').trim().slice(0, 40);
   const message = String(req.body?.message ?? '').trim();
-  if (!from) return fail(res, 400, 'Add your first name.');
   if (message.length < 2 || message.length > 400) return fail(res, 400, 'Write a short message (up to 400 characters).');
   if (CONTACT.test(message) || CONTACT.test(from)) return fail(res, 400, 'Please leave out links, phone numbers and emails. Messages are only for kind words.');
   (item.comments ??= []).push({ id: id('cm'), from, message, at: now(), status: 'pending' });
@@ -574,14 +583,22 @@ app.post('/api/stories/:itemId/comments', (req, res) => {
   res.status(201).json({ ok: true, pending: true });
 });
 
+app.post('/api/stories/:itemId/heart', (req, res) => {
+  const item = sharedItem(req.params.itemId);
+  if (!item) return fail(res, 404, 'This story is not shared.');
+  item.hearts = Math.max(0, (item.hearts ?? 0) + (req.body?.undo ? -1 : 1));
+  save();
+  res.json({ hearts: item.hearts });
+});
+
 app.post('/api/items/:id/share', (req, res) => {
   const item = findItem(req.params.id);
   if (!item) return fail(res, 404, 'Item not found.');
-  const { share, name, audio } = req.body ?? {};
+  const { share, name, audio, photos } = req.body ?? {};
   if (!share) { delete item.share; save(); return res.json(item); }
   if (!item.story && !item.storyJa) return fail(res, 400, 'Save her story first.');
   if (audio && !item.audioUrl) return fail(res, 400, 'There is no recording to share.');
-  item.share = { at: now().slice(0, 10), name: name === 'first' ? 'first' : 'anonymous', audio: Boolean(audio) };
+  item.share = { at: now().slice(0, 10), name: name === 'first' ? 'first' : 'anonymous', audio: Boolean(audio), photos: Boolean(photos) && shareablePhotos(item).length > 0 };
   save();
   res.json(item);
 });
