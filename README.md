@@ -42,7 +42,7 @@ To start over with the example family: `npm run reset` (while the server runs).
 
 - Story tags: the story behind an item in her words, her real voice (with consent), and a QR code that travels with the item.
 - Her choice for each item, with **Not now** first. An item she agrees to let go stays home until the next visit, in case she changes her mind.
-- Visit reports pass a **fresh-eyes check** for pushy or disrespectful wording before reaching the family.
+- Visit reports pass a **fresh-eyes check** for pushy or disrespectful wording, then the student ticks **"I read this report myself"** before it can be sent. The family sees "Read by Yui before sending". The monthly letter can't be marked printed until a student confirms they read the whole letter.
 - Between visits: a printed monthly letter (思い出だより) and a phone call, logged for the family with her agreement.
 
 ### Digital 実家
@@ -96,13 +96,14 @@ With her consent, a story can be shared publicly, named as she chooses (her firs
 - **Value is shown only when someone asks.**
 - **Progress is measured in visits, stories and safer rooms**, never in items removed.
 
-## Privacy defaults
+## Privacy and AI defaults
 
 - Story recordings need her consent; the server refuses uploads without it.
 - The public story-tag page shows her first name and town only, and no locations.
 - Public stories need her consent per story; visitors' messages are moderated.
 - Job listings show the area only; item tracking shows the new owner's area only.
 - Live location only during an outing she agreed to, deleted when it ends.
+- AI works behind the scenes and never talks to her: it checks reports, helps with letters and estimates value only when asked, and a person confirms they read anything before it goes out. The server refuses reports and letter printing without that confirmation.
 
 ## Design
 
