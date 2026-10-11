@@ -13,7 +13,7 @@ import { createCheckout, paymentsMode, readCheckout } from './payments';
 import { checkReport } from './pressure';
 import { mapPage } from './mapPage';
 import { trackPage } from './trackPage';
-import { pixelPhoto } from './pixelize';
+import { pixelIcon } from './pixelize';
 import { jstDate, weatherFor } from './weather';
 
 const PORT = Number(process.env.PORT ?? 4100);
@@ -101,7 +101,7 @@ app.post('/api/items', async (req, res) => {
   };
   if (photo?.base64) {
     item.photoUrl = saveUpload(itemId, photo.base64, photo.mime ?? 'image/jpeg');
-    await addPixelVersion(item, { id: 'main', url: item.photoUrl }, 'Student').catch(() => undefined);
+    await setIconFrom(item, { id: 'main', url: item.photoUrl }).catch(() => undefined);
   }
   db.items.push(item);
   save();
@@ -178,29 +178,24 @@ app.post('/api/items/:id/photos', async (req, res) => {
   if (photos.length >= 12) return fail(res, 400, 'An item can have up to 12 pictures.');
   const url = saveUpload(item.id, String(base64), String(mime));
   photos.push({ id: id('ph'), url, kind, caption: caption ? String(caption).trim().slice(0, 140) : undefined, by: String(by || 'Student').slice(0, 40), at: now() });
-  if (kind === 'photo') await addPixelVersion(item, photos.at(-1)!, String(by || 'Student').slice(0, 40)).catch(() => undefined);
+  if (kind === 'photo' && !item.icon) await setIconFrom(item, photos.at(-1)!).catch(() => undefined);
   save();
   res.status(201).json(item);
 });
 
-// Pixel version of a real photo, added to the album right after it.
-async function addPixelVersion(item: Item, photo: { id: string; url: string }, by: string) {
-  const photos = (item.photos ??= []);
-  if (photos.some((p) => p.kind === 'pixel' && p.fromId === photo.id)) return;
-  const png = await pixelPhoto(fs.readFileSync(path.join(UPLOAD_DIR, path.basename(photo.url))));
-  const url = saveUpload(`${item.id}-pixel`, png.toString('base64'), 'image/png');
-  const at = photos.findIndex((p) => p.id === photo.id);
-  const entry = { id: id('ph'), url, kind: 'pixel' as const, fromId: photo.id, caption: 'Pixel version of the photo', captionJa: '写真のピクセル版', by, at: now() };
-  if (at >= 0) photos.splice(at + 1, 0, entry); else photos.unshift(entry);
+// The item's icon from one of its real photos (or back to the drawn icon with reset).
+async function setIconFrom(item: Item, photo: { id: string; url: string }) {
+  item.icon = await pixelIcon(fs.readFileSync(path.join(UPLOAD_DIR, path.basename(photo.url))), photo.id);
 }
-app.post('/api/items/:id/pixel', async (req, res) => {
+app.post('/api/items/:id/icon', async (req, res) => {
   const item = findItem(req.params.id);
   if (!item) return fail(res, 404, 'Item not found.');
+  if (req.body?.reset) { delete item.icon; save(); return res.json(item); }
   const all = [...(item.photoUrl ? [{ id: 'main', url: item.photoUrl, kind: 'photo' }] : []), ...(item.photos ?? [])];
   const photo = all.find((p) => p.id === req.body?.photoId) ?? all.find((p) => p.kind === 'photo');
   if (!photo) return fail(res, 400, 'Add a photo of the item first.');
-  if (photo.kind !== 'photo' && photo.kind !== 'old-photo') return fail(res, 400, 'Make a pixel version from a real photo, not an illustration.');
-  try { await addPixelVersion(item, photo, String(req.body?.by || 'Student').slice(0, 40)); }
+  if (photo.kind !== 'photo') return fail(res, 400, 'Make the icon from a photo of the item itself.');
+  try { await setIconFrom(item, photo); }
   catch { return fail(res, 422, 'Could not read that picture.'); }
   save();
   res.json(item);

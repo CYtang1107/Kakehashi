@@ -1,4 +1,4 @@
-import { PIXEL_PALETTE, type Item } from '@kakehashi/shared';
+import { PIXEL_PALETTE, type Item, type ItemIcon } from '@kakehashi/shared';
 
 // Pixel-art sprites drawn as character grids: one character per pixel, '.' is transparent.
 // The same grids feed the 3D house (as textures) and the item lists (as SVG icons).
@@ -143,7 +143,22 @@ const BY_NAME: [RegExp, string][] = [
   [/cooker|炊飯器/i, 'cooker'],
 ];
 
-export function spriteFor(item: Pick<Item, 'id' | 'name' | 'nameJa'>): string {
+// Icons made from photos: rows of palette keys with their own colours, registered under 'icon-<item id>'.
+export const PHOTO_ICONS: Record<string, ItemIcon> = {};
+const KEYS = '0123456789abcdef';
+// Rows and colours for any sprite key: a photo icon, or a drawn sprite in the shared palette.
+export function spriteGrid(key: string): { rows: string[]; colour: (ch: string) => string | undefined } {
+  const icon = PHOTO_ICONS[key];
+  if (icon) return { rows: icon.rows, colour: (ch) => icon.palette[KEYS.indexOf(ch)] };
+  return { rows: SPRITES[key] ?? SPRITES.box, colour: (ch) => PALETTE[ch] };
+}
+
+export function spriteFor(item: Pick<Item, 'id' | 'name' | 'nameJa'> & { icon?: ItemIcon }): string {
+  if (item.icon) {
+    const key = `icon-${item.id}-${item.icon.fromId}`;
+    PHOTO_ICONS[key] = item.icon;
+    return key;
+  }
   if (SPRITES[item.id]) return item.id;
   const label = `${item.name} ${item.nameJa ?? ''}`;
   return BY_NAME.find(([re]) => re.test(label))?.[1] ?? 'box';
@@ -153,11 +168,11 @@ const hex = (h: string) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5),
 
 // RGBA pixels, top row first.
 export function spritePixels(key: string): { data: Uint8Array; w: number; h: number } {
-  const grid = SPRITES[key] ?? SPRITES.box;
+  const { rows: grid, colour } = spriteGrid(key);
   const h = grid.length, w = grid[0].length;
   const data = new Uint8Array(w * h * 4);
   grid.forEach((row, y) => [...row].forEach((ch, x) => {
-    const c = PALETTE[ch];
+    const c = colour(ch);
     if (!c) return;
     const [r, g, b] = hex(c);
     data.set([r, g, b, 255], (y * w + x) * 4);

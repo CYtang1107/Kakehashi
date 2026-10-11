@@ -87,7 +87,7 @@ function RoomBlock({ room, memory, evening }: { room: Room; memory: boolean; eve
 function ItemSprite({ item, selected, memory, colorBy, evening, onSelect }: { item: Item; selected: boolean; memory: boolean; colorBy: ColorBy; evening: boolean; onSelect: (id: string) => void }) {
   const ref = useRef<THREE.Group>(null);
   const story = hasStory(item);
-  const tex = useMemo(() => makeTexture(spritePixels(spriteFor(item))), [item.id, item.name]);
+  const tex = useMemo(() => makeTexture(spritePixels(spriteFor(item))), [item.id, item.name, item.icon?.fromId]);
   useFrame((state) => {
     if (!ref.current) return;
     const t = state.clock.elapsedTime;

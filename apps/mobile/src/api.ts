@@ -73,7 +73,7 @@ export const api = {
     call<Wallet>(`/api/home/${homeId}/students/${sid}/goal`, { method: 'POST', body }),
   payout: (homeId: string, sid: string) => call<Wallet>(`/api/home/${homeId}/students/${sid}/payout`, { method: 'POST' }),
   addPhoto: (itemId: string, body: { base64: string; mime: string; kind: PhotoKind; caption?: string; by: string }) => call<Item>(`/api/items/${itemId}/photos`, { method: 'POST', body }),
-  makePixel: (itemId: string, photoId: string) => call<Item>(`/api/items/${itemId}/pixel`, { method: 'POST', body: { photoId } }),
+  setIcon: (itemId: string, body: { photoId?: string; reset?: boolean }) => call<Item>(`/api/items/${itemId}/icon`, { method: 'POST', body }),
   askHelp: (homeId: string, body: { kind: ServiceKind; when: 'soon' | 'next-visit'; by: 'her' | 'student'; note?: string; fixId?: string }) =>
     call<ServiceRequest[]>(`/api/home/${homeId}/services`, { method: 'POST', body }),
   bookHelp: (homeId: string, sid: string, body: { workerId: string; date: string; hours?: number }) =>

@@ -62,7 +62,12 @@ export default function ItemScreen() {
           <Heading eyebrow={`${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? `, ${item.year}` : ''}`} title={name} />
         </View>
       </View>
-      <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('pixel', () => api.makePixel(item.id, photoId), t('photoPixelMade')) : undefined} />
+      <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('icon', () => api.setIcon(item.id, { photoId }), t('photoPixelMade')) : undefined} />
+      {student && item.icon ? (
+        <Pressable accessibilityRole="button" onPress={() => run('icon', () => api.setIcon(item.id, { reset: true }), t('saved'))} style={{ alignSelf: 'flex-start', paddingVertical: 2 }}>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.inkSoft }}>{t('iconReset')}</Text>
+        </Pressable>
+      ) : null}
 
       {/* Her words first, on the paper itself: the story is what this page is about. */}
       {item.story ? (

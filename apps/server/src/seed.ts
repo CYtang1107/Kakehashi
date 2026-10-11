@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Delivery, Handover, Home, Item, ItemPhoto, Place, Plan, TrackPoint } from '@kakehashi/shared';
+import type { Delivery, Handover, Home, Item, ItemIcon, ItemPhoto, Place, Plan, TrackPoint } from '@kakehashi/shared';
 // Same folder as db.ts's UPLOAD_DIR (not imported, to avoid a circular import).
 const UPLOAD_DIR = path.resolve(__dirname, '..', 'data', 'uploads');
 import { NEARBY } from './nearby';
@@ -195,13 +195,12 @@ export function seedItems(): Item[] {
 const DEMO_PHOTOS: Record<string, { file: string; kind: ItemPhoto['kind']; caption: string; captionJa: string }[]> = {
   sewing: [
     { file: 'demo-sewing-photo.webp', kind: 'photo', caption: 'The machine today, in the tatami room', captionJa: '今のミシン（和室にて）' },
-    { file: 'demo-sewing-pixel.png', kind: 'pixel', caption: 'Pixel version of the photo', captionJa: '写真のピクセル版' },
     { file: 'demo-sewing-illustration.webp', kind: 'illustration', caption: 'Illustration of her sewing the school bags', captionJa: '通園バッグを縫う様子のイラスト' },
   ],
 };
 function demoPhotos(itemId: string): ItemPhoto[] {
   return (DEMO_PHOTOS[itemId] ?? []).filter((p) => fs.existsSync(path.join(UPLOAD_DIR, p.file)))
-    .map((p, i) => ({ id: `ph-${itemId}-${i}`, url: `/files/${p.file}`, kind: p.kind, caption: p.caption, captionJa: p.captionJa, by: 'Yui', at: at('2026-10-10'), ...(p.kind === 'pixel' ? { fromId: `ph-${itemId}-0` } : {}) }));
+    .map((p, i) => ({ id: `ph-${itemId}-${i}`, url: `/files/${p.file}`, kind: p.kind, caption: p.caption, captionJa: p.captionJa, by: 'Yui', at: at('2026-10-10') }));
 }
 
 function withTracks(items: Item[]): Item[] {
@@ -211,7 +210,9 @@ function withTracks(items: Item[]): Item[] {
     const delivery: Delivery | undefined = it.id === 'desk'
       ? { by: 'Arif', from: TRACK.home, to: TRACK.ownerNishi, startedAt: at('2026-10-10'), minutes: 35, simulated: true } : undefined;
     const photos = demoPhotos(it.id);
-    return { ...it, journey, ...(delivery ? { delivery } : {}), ...(photos.length ? { photos } : {}) };
+    const iconFile = path.join(UPLOAD_DIR, `demo-${it.id}-icon.json`);
+    const icon: ItemIcon | undefined = fs.existsSync(iconFile) ? JSON.parse(fs.readFileSync(iconFile, 'utf8')) : undefined;
+    return { ...it, journey, ...(delivery ? { delivery } : {}), ...(photos.length ? { photos } : {}), ...(icon ? { icon } : {}) };
   });
 }
 

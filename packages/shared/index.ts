@@ -109,6 +109,8 @@ export interface Item {
   delivery?: Delivery;
   // A small album, swiped like a post: the item today, old family photos, and clearly labelled illustrations.
   photos?: ItemPhoto[];
+  // A pixel icon made from one of the real photos; replaces the drawn icon in lists, the floor plan and the 3D house.
+  icon?: ItemIcon;
   x: number;
   y: number;
 }
@@ -621,8 +623,7 @@ export interface Wallet {
 // ---------- Item photos (思い出の写真) ----------
 // 'illustration' marks a picture that is not a real photo (e.g. AI-made): always labelled in the app, never passed
 // off as a real memory. Photos are private to the family and students; the public story feed shows none.
-// 'pixel' = a pixel-art version made from one of the real photos (fromId).
-export type PhotoKind = 'photo' | 'old-photo' | 'illustration' | 'pixel';
+export type PhotoKind = 'photo' | 'old-photo' | 'illustration';
 export interface ItemPhoto {
   id: string;
   url: string;
@@ -631,7 +632,6 @@ export interface ItemPhoto {
   captionJa?: string;
   by: string;
   at: string;
-  fromId?: string; // for a pixel version: the photo it was made from
 }
 
 // ---------- Pixel art palette (shared by the app's sprites and the photo-to-pixel converter) ----------
@@ -654,3 +654,12 @@ export const PIXEL_PALETTE: Record<string, string> = {
   L: '#4F6B8A', // glass
   H: '#FFFFFF', // highlight
 };
+
+// 32x32 pixel icon from a photo: each row is a string of palette keys ('0'-'f').
+export interface ItemIcon {
+  w: number;
+  h: number;
+  palette: string[];
+  rows: string[];
+  fromId: string; // the photo it was made from ('main' = the photo the item was logged with)
+}
