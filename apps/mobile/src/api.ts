@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { PhotoKind, Wallet, CheckResult2, WeatherStatus, JobListing, Outing, PublicStory, ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { PhotoKind, Wallet, CheckResult2, WeatherStatus, JobListing, Outing, PublicStory, ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -73,6 +73,7 @@ export const api = {
     call<Wallet>(`/api/home/${homeId}/students/${sid}/goal`, { method: 'POST', body }),
   payout: (homeId: string, sid: string) => call<Wallet>(`/api/home/${homeId}/students/${sid}/payout`, { method: 'POST' }),
   addPhoto: (itemId: string, body: { base64: string; mime: string; kind: PhotoKind; caption?: string; by: string }) => call<Item>(`/api/items/${itemId}/photos`, { method: 'POST', body }),
+  makePixel: (itemId: string, photoId: string) => call<Item>(`/api/items/${itemId}/pixel`, { method: 'POST', body: { photoId } }),
   askHelp: (homeId: string, body: { kind: ServiceKind; when: 'soon' | 'next-visit'; by: 'her' | 'student'; note?: string; fixId?: string }) =>
     call<ServiceRequest[]>(`/api/home/${homeId}/services`, { method: 'POST', body }),
   bookHelp: (homeId: string, sid: string, body: { workerId: string; date: string; hours?: number }) =>
@@ -93,8 +94,6 @@ export const api = {
   letterStatus: (letterId: string, status: Letter['status'], opts?: { by: string; readConfirmed: boolean }) => call<Letter>(`/api/letters/${letterId}/status`, { method: 'POST', body: { status, ...opts } }),
   logCall: (homeId: string, body: { by?: string; minutes?: number; mood?: CallMood; note?: string; followUp?: boolean }) =>
     call<Call[]>(`/api/home/${homeId}/calls`, { method: 'POST', body }),
-  publicTag: (code: string) => call<PublicTag>(`/api/tags/${encodeURIComponent(code)}`),
-  thanks: (code: string, from: string, message: string) => call<PublicTag>(`/api/tags/${encodeURIComponent(code)}/thanks`, { method: 'POST', body: { from, message } }),
   checkout: (homeId: string, planId: string) => call<CheckoutResult>('/api/checkout', { method: 'POST', body: { homeId, planId } }),
 };
 

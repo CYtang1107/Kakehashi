@@ -1,27 +1,9 @@
-import type { Item } from '@kakehashi/shared';
+import { PIXEL_PALETTE, type Item } from '@kakehashi/shared';
 
 // Pixel-art sprites drawn as character grids: one character per pixel, '.' is transparent.
 // The same grids feed the 3D house (as textures) and the item lists (as SVG icons).
 
-export const PALETTE: Record<string, string> = {
-  K: '#2A2230', // outline
-  A: '#F2E8D5', // cream
-  B: '#D8C6A4', // beige
-  C: '#A88F6C', // tan shadow
-  I: '#2B4C7E', // indigo
-  G: '#E0B356', // gold
-  M: '#D3D8DF', // metal light
-  N: '#858D9B', // metal dark
-  W: '#8E5B3A', // wood
-  X: '#5E3A24', // dark wood
-  R: '#C8463A', // red
-  Q: '#8B2D28', // dark red
-  P: '#7A4A6E', // plum
-  p: '#C98BB0', // pink
-  S: '#1E2A3A', // black body
-  L: '#4F6B8A', // glass
-  H: '#FFFFFF', // highlight
-};
+export const PALETTE: Record<string, string> = PIXEL_PALETTE;
 
 export const SPRITES: Record<string, string[]> = {
   sewing: [

@@ -151,7 +151,7 @@ export function seedItems(): Item[] {
       { id: 'cm2', from: 'Ken', message: 'Lovely. Is the pattern book still around? I would love to see it.', at: '2026-10-12T18:05:00Z', status: 'pending' },
     ], homeId: HOME_ID, roomId: 'washitsu', name: 'Sewing machine', nameJa: 'ミシン', year: '1972', glyph: '縫', decision: 'pass',
       story: "I sewed all three children's school bags on this machine. Kenji's had a rocket on it. I'd like it to go to a young person who will make something with it.", storyJa: 'このミシンで、子ども三人の通園かばんを縫いました。健二のにはロケットの刺しゅう。何かを作ってくれる若い人に使ってほしいです。',
-      tagCode: 'KK-0472-SEW', x: 228, y: 148,
+      x: 228, y: 148,
       estimate: { category: 'Household sewing machine', priceLowJpy: 3000, priceHighJpy: 8000, routeIfLetGo: 'pass', reason: 'Older mechanical machines are still useful after a service.', source: 'offline' },
       proceedsJpy: 3000,
       journey: [
@@ -161,7 +161,7 @@ export function seedItems(): Item[] {
       ], thanks: [] },
     { id: 'desk', share: { at: '2026-10-10', name: 'anonymous', audio: false }, comments: [], homeId: HOME_ID, roomId: 'washitsu', name: 'Writing desk', nameJa: '文机', year: '1968', glyph: '机', decision: 'pass',
       story: 'This is where I wrote letters to my husband when he worked in Osaka. Every Sunday night, one letter.', storyJa: '夫が大阪で働いていた頃、この机で手紙を書きました。毎週日曜の夜に一通ずつ。',
-      tagCode: 'KK-0472-DSK', x: 282, y: 200,
+      x: 282, y: 200,
       journey: [
         { at: at('2026-10-10'), stage: 'home', by: 'Michiko Tanaka' },
         { at: at('2026-10-10'), stage: 'sorted', by: 'Yui and Arif', note: 'Michiko chose to pass it on' },
@@ -181,7 +181,7 @@ export function seedItems(): Item[] {
         { at: at('2026-08-22'), stage: 'recycler', by: 'Licensed recycler', note: 'Received, weight matches' },
       ], thanks: [] },
     { id: 'cooker', homeId: HOME_ID, roomId: 'kitchen', name: 'Rice cooker', nameJa: '炊飯器', year: '2015', glyph: '炊', decision: 'pass',
-      story: 'It still works perfectly. I only cook for one now, and this one is for a family.', storyJa: 'まだちゃんと炊けます。今は一人分しか炊かないから、家族向けのこれは誰かに使ってほしい。', tagCode: 'KK-0472-RCE', x: 244, y: 50,
+      story: 'It still works perfectly. I only cook for one now, and this one is for a family.', storyJa: 'まだちゃんと炊けます。今は一人分しか炊かないから、家族向けのこれは誰かに使ってほしい。', x: 244, y: 50,
       journey: [
         { at: at('2026-09-12'), stage: 'home', by: 'Michiko Tanaka' },
         { at: at('2026-09-12'), stage: 'sorted', by: 'Yui and Arif', note: 'Michiko chose to pass it on' },
@@ -195,12 +195,13 @@ export function seedItems(): Item[] {
 const DEMO_PHOTOS: Record<string, { file: string; kind: ItemPhoto['kind']; caption: string; captionJa: string }[]> = {
   sewing: [
     { file: 'demo-sewing-photo.webp', kind: 'photo', caption: 'The machine today, in the tatami room', captionJa: '今のミシン（和室にて）' },
+    { file: 'demo-sewing-pixel.png', kind: 'pixel', caption: 'Pixel version of the photo', captionJa: '写真のピクセル版' },
     { file: 'demo-sewing-illustration.webp', kind: 'illustration', caption: 'Illustration of her sewing the school bags', captionJa: '通園バッグを縫う様子のイラスト' },
   ],
 };
 function demoPhotos(itemId: string): ItemPhoto[] {
   return (DEMO_PHOTOS[itemId] ?? []).filter((p) => fs.existsSync(path.join(UPLOAD_DIR, p.file)))
-    .map((p, i) => ({ id: `ph-${itemId}-${i}`, url: `/files/${p.file}`, kind: p.kind, caption: p.caption, captionJa: p.captionJa, by: 'Yui', at: at('2026-10-10') }));
+    .map((p, i) => ({ id: `ph-${itemId}-${i}`, url: `/files/${p.file}`, kind: p.kind, caption: p.caption, captionJa: p.captionJa, by: 'Yui', at: at('2026-10-10'), ...(p.kind === 'pixel' ? { fromId: `ph-${itemId}-0` } : {}) }));
 }
 
 function withTracks(items: Item[]): Item[] {

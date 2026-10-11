@@ -67,7 +67,7 @@ export default function Visit() {
             <Text style={type.bodyBold}>{lang === 'ja' && it.nameJa ? it.nameJa : it.name}</Text>
             <DecisionChip decision={it.decision} />
           </View>
-          <Feather name={it.tagCode ? 'grid' : 'chevron-right'} size={18} color={it.tagCode ? colors.ai : colors.inkSoft} />
+          <Feather name="chevron-right" size={18} color={colors.inkSoft} />
         </Pressable>
       ))}
       <Button label={t('tabAdd')} kind="secondary" icon="camera" onPress={() => router.push('/student/add')} />

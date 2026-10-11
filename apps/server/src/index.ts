@@ -1,16 +1,19 @@
+import path from 'node:path';
+import fs from 'node:fs';
 import 'dotenv/config';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { STUDENT_PAY, type PayEntry, type PayKind, type Wallet, JMA_CODES, workerTake, type JobListing, type ServiceRequest, metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
-import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
+import { STUDENT_PAY, type PayEntry, type PayKind, type Wallet, JMA_CODES, workerTake, type JobListing, type ServiceRequest, metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory } from '@kakehashi/shared';
+import { db, findHome, findItem, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { TRACK, plans, stagePoint } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
 import { createCheckout, paymentsMode, readCheckout } from './payments';
 import { checkReport } from './pressure';
 import { mapPage } from './mapPage';
 import { trackPage } from './trackPage';
+import { pixelPhoto } from './pixelize';
 import { jstDate, weatherFor } from './weather';
 
 const PORT = Number(process.env.PORT ?? 4100);
@@ -52,17 +55,6 @@ function bundle(homeId: string): HomeBundle | null {
   };
 }
 
-function publicTag(item: Item): PublicTag {
-  const home = findHome(item.homeId);
-  const first = home?.seniorName.split(' ')[0] ?? 'A neighbour';
-  return {
-    code: item.tagCode!, name: item.name, nameJa: item.nameJa, year: item.year, glyph: item.glyph,
-    story: item.story, storyJa: item.storyJa, audioUrl: item.audioUrl, photoUrl: item.photoUrl,
-    from: `${first}, ${home?.town ?? ''}`.replace(/, $/, ''),
-    journey: item.journey.map(({ pt: _pt, ...j }) => j), thanksCount: item.thanks.length,
-  };
-}
-
 const baseUrl = (req: Request) => `${req.protocol}://${req.get('host')}`;
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, ai: aiEnabled() ? 'claude' : 'offline', payments: paymentsMode() }));
@@ -91,7 +83,7 @@ app.post('/api/home/:id/consent', (req, res) => {
   res.json(home.consent);
 });
 
-app.post('/api/items', (req, res) => {
+app.post('/api/items', async (req, res) => {
   const { homeId, roomId, name, nameJa, photo, estimate } = req.body ?? {};
   const home = findHome(homeId);
   if (!home) return fail(res, 404, 'Home not found.');
@@ -107,7 +99,10 @@ app.post('/api/items', (req, res) => {
     journey: [{ at: now(), stage: 'home', by: home.seniorName, note: 'Logged on a visit' }],
     thanks: [],
   };
-  if (photo?.base64) item.photoUrl = saveUpload(itemId, photo.base64, photo.mime ?? 'image/jpeg');
+  if (photo?.base64) {
+    item.photoUrl = saveUpload(itemId, photo.base64, photo.mime ?? 'image/jpeg');
+    await addPixelVersion(item, { id: 'main', url: item.photoUrl }, 'Student').catch(() => undefined);
+  }
   db.items.push(item);
   save();
   res.status(201).json(item);
@@ -156,16 +151,6 @@ app.post('/api/items/:id/audio', (req, res) => {
   res.json(item);
 });
 
-app.post('/api/items/:id/tag', (req, res) => {
-  const item = findItem(req.params.id);
-  if (!item) return fail(res, 404, 'Item not found.');
-  if (!item.tagCode) {
-    item.tagCode = `KK-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
-    save();
-  }
-  res.json(item);
-});
-
 app.post('/api/items/:id/handover', (req, res) => {
   const item = findItem(req.params.id);
   if (!item) return fail(res, 404, 'Item not found.');
@@ -182,7 +167,7 @@ app.post('/api/items/:id/handover', (req, res) => {
 });
 
 // Add a photo to an item's album (students). Illustrations are labelled in the app; photos are never public.
-app.post('/api/items/:id/photos', (req, res) => {
+app.post('/api/items/:id/photos', async (req, res) => {
   const item = findItem(req.params.id);
   if (!item) return fail(res, 404, 'Item not found.');
   const { base64, mime, kind, caption, by } = req.body ?? {};
@@ -191,9 +176,34 @@ app.post('/api/items/:id/photos', (req, res) => {
   if (String(base64).length > 12_000_000) return fail(res, 413, 'That picture is too large.');
   const photos = (item.photos ??= []);
   if (photos.length >= 12) return fail(res, 400, 'An item can have up to 12 pictures.');
-  photos.push({ id: id('ph'), url: saveUpload(item.id, String(base64), String(mime)), kind, caption: caption ? String(caption).trim().slice(0, 140) : undefined, by: String(by || 'Student').slice(0, 40), at: now() });
+  const url = saveUpload(item.id, String(base64), String(mime));
+  photos.push({ id: id('ph'), url, kind, caption: caption ? String(caption).trim().slice(0, 140) : undefined, by: String(by || 'Student').slice(0, 40), at: now() });
+  if (kind === 'photo') await addPixelVersion(item, photos.at(-1)!, String(by || 'Student').slice(0, 40)).catch(() => undefined);
   save();
   res.status(201).json(item);
+});
+
+// Pixel version of a real photo, added to the album right after it.
+async function addPixelVersion(item: Item, photo: { id: string; url: string }, by: string) {
+  const photos = (item.photos ??= []);
+  if (photos.some((p) => p.kind === 'pixel' && p.fromId === photo.id)) return;
+  const png = await pixelPhoto(fs.readFileSync(path.join(UPLOAD_DIR, path.basename(photo.url))));
+  const url = saveUpload(`${item.id}-pixel`, png.toString('base64'), 'image/png');
+  const at = photos.findIndex((p) => p.id === photo.id);
+  const entry = { id: id('ph'), url, kind: 'pixel' as const, fromId: photo.id, caption: 'Pixel version of the photo', captionJa: '写真のピクセル版', by, at: now() };
+  if (at >= 0) photos.splice(at + 1, 0, entry); else photos.unshift(entry);
+}
+app.post('/api/items/:id/pixel', async (req, res) => {
+  const item = findItem(req.params.id);
+  if (!item) return fail(res, 404, 'Item not found.');
+  const all = [...(item.photoUrl ? [{ id: 'main', url: item.photoUrl, kind: 'photo' }] : []), ...(item.photos ?? [])];
+  const photo = all.find((p) => p.id === req.body?.photoId) ?? all.find((p) => p.kind === 'photo');
+  if (!photo) return fail(res, 400, 'Add a photo of the item first.');
+  if (photo.kind !== 'photo' && photo.kind !== 'old-photo') return fail(res, 400, 'Make a pixel version from a real photo, not an illustration.');
+  try { await addPixelVersion(item, photo, String(req.body?.by || 'Student').slice(0, 40)); }
+  catch { return fail(res, 422, 'Could not read that picture.'); }
+  save();
+  res.json(item);
 });
 
 // Start a delivery to the new owner's area (shown live on the tracking map).
@@ -229,22 +239,6 @@ app.post('/api/estimate', async (req, res) => {
     console.warn('AI estimate failed, using offline estimate:', err instanceof Error ? err.message : err);
     res.json({ ...offlineEstimate(name), reason: 'The AI estimate was unavailable, so this is a rough rule-based estimate.' });
   }
-});
-
-app.get('/api/tags/:code', (req, res) => {
-  const item = findTag(req.params.code);
-  if (!item) return fail(res, 404, 'No story tag with this code.');
-  res.json(publicTag(item));
-});
-
-app.post('/api/tags/:code/thanks', (req, res) => {
-  const item = findTag(req.params.code);
-  if (!item) return fail(res, 404, 'No story tag with this code.');
-  const { from, message } = req.body ?? {};
-  if (!message || !String(message).trim()) return fail(res, 400, 'Write a message first.');
-  item.thanks.push({ from: String(from || 'New owner').slice(0, 40), message: String(message).slice(0, 500), at: now() });
-  save();
-  res.status(201).json(publicTag(item));
 });
 
 app.post('/api/checkout', async (req, res) => {

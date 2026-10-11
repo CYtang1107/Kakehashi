@@ -51,7 +51,6 @@ export function reset() {
 
 export const findHome = (id: string) => db.homes.find((h) => h.id === id);
 export const findItem = (id: string) => db.items.find((i) => i.id === id);
-export const findTag = (code: string) => db.items.find((i) => i.tagCode?.toUpperCase() === code.toUpperCase());
 
 const EXT: Record<string, string> = {
   'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',

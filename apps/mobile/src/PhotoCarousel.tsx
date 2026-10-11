@@ -18,7 +18,7 @@ export function itemPhotos(item: Item): ItemPhoto[] {
 }
 
 // Swipe through an item's pictures, like a post. Illustrations always carry a label saying they are not real photos.
-export function PhotoCarousel({ item, dark }: { item: Item; dark?: boolean }) {
+export function PhotoCarousel({ item, dark, onMakePixel }: { item: Item; dark?: boolean; onMakePixel?: (photoId: string) => void }) {
   const { t, lang } = useI18n();
   const photos = itemPhotos(item);
   const [w, setW] = useState(0);
@@ -38,7 +38,7 @@ export function PhotoCarousel({ item, dark }: { item: Item; dark?: boolean }) {
                 <Image source={{ uri: fileUrl(p.url) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel={pick(lang, p.caption, p.captionJa) || item.name} />
                 {p.kind !== 'photo' ? (
                   <View style={{ position: 'absolute', left: 10, top: 10, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 99, backgroundColor: p.kind === 'illustration' ? 'rgba(181,86,43,0.92)' : 'rgba(28,35,48,0.75)' }}>
-                    <Text style={{ fontFamily: fonts.bold, fontSize: 11.5, color: '#fff' }}>{t(p.kind === 'illustration' ? 'photoIllustrationBadge' : 'photoOldBadge')}</Text>
+                    <Text style={{ fontFamily: fonts.bold, fontSize: 11.5, color: '#fff' }}>{t(p.kind === 'illustration' ? 'photoIllustrationBadge' : p.kind === 'pixel' ? 'photoPixelBadge' : 'photoOldBadge')}</Text>
                   </View>
                 ) : null}
                 {photos.length > 1 ? (
@@ -58,6 +58,12 @@ export function PhotoCarousel({ item, dark }: { item: Item; dark?: boolean }) {
       ) : null}
       {caption ? <Text style={{ fontFamily: fonts.medium, fontSize: 13, lineHeight: 19, color: ink }}>{caption}</Text> : null}
       {cur.kind === 'illustration' ? <Text style={{ fontFamily: fonts.medium, fontSize: 12, lineHeight: 17, color: soft }}>{t('photoIllustrationNote')}</Text> : null}
+      {onMakePixel && (cur.kind === 'photo' || cur.kind === 'old-photo') && !photos.some((p) => p.kind === 'pixel' && p.fromId === cur.id) ? (
+        <Pressable accessibilityRole="button" onPress={() => onMakePixel(cur.id)} style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 }}>
+          <Feather name="grid" size={15} color={colors.ai} />
+          <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: colors.ai }}>{t('photoMakePixel')}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -66,7 +72,7 @@ export function PhotoCarousel({ item, dark }: { item: Item; dark?: boolean }) {
 export function AddPhotoCard({ item }: { item: Item }) {
   const { data, replaceItem, showToast } = useData();
   const { t } = useI18n();
-  const [kind, setKind] = useState<PhotoKind>('photo');
+  const [kind, setKind] = useState<Exclude<PhotoKind, 'pixel'>>('photo');
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

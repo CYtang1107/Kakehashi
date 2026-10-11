@@ -100,7 +100,6 @@ export interface Item {
   storyJa?: string;
   audioUrl?: string;
   photoUrl?: string;
-  tagCode?: string;
   estimate?: Estimate;
   journey: Handover[];
   thanks: Thanks[];
@@ -307,35 +306,9 @@ export interface HomeBundle {
   services: Services;
 }
 
-// What a new owner sees after scanning a story tag: no surname, no address.
-export interface PublicTag {
-  code: string;
-  name: string;
-  nameJa?: string;
-  year?: string;
-  glyph: string;
-  story?: string;
-  storyJa?: string;
-  audioUrl?: string;
-  photoUrl?: string;
-  from: string;
-  journey: Handover[];
-  thanksCount: number;
-}
-
 export type CheckoutResult =
   | { mode: 'demo'; payment: Payment }
   | { mode: 'stripe-test'; url: string };
-
-// QR payload printed on a story tag.
-export const TAG_PREFIX = 'kakehashi:tag:';
-export const tagPayload = (code: string) => `${TAG_PREFIX}${code}`;
-export const parseTag = (data: string): string | null => {
-  const t = data.trim();
-  if (t.startsWith(TAG_PREFIX)) return t.slice(TAG_PREFIX.length);
-  const m = t.match(/\/tag\/([A-Z0-9-]+)/i);
-  return m ? m[1] : null;
-};
 
 // Picks the Japanese text when Japanese is selected and a translation exists.
 export const pick = (lang: 'en' | 'ja', en?: string, ja?: string) => (lang === 'ja' && ja ? ja : en ?? ja ?? '');
@@ -648,7 +621,8 @@ export interface Wallet {
 // ---------- Item photos (思い出の写真) ----------
 // 'illustration' marks a picture that is not a real photo (e.g. AI-made): always labelled in the app, never passed
 // off as a real memory. Photos are private to the family and students; the public story feed shows none.
-export type PhotoKind = 'photo' | 'old-photo' | 'illustration';
+// 'pixel' = a pixel-art version made from one of the real photos (fromId).
+export type PhotoKind = 'photo' | 'old-photo' | 'illustration' | 'pixel';
 export interface ItemPhoto {
   id: string;
   url: string;
@@ -657,4 +631,26 @@ export interface ItemPhoto {
   captionJa?: string;
   by: string;
   at: string;
+  fromId?: string; // for a pixel version: the photo it was made from
 }
+
+// ---------- Pixel art palette (shared by the app's sprites and the photo-to-pixel converter) ----------
+export const PIXEL_PALETTE: Record<string, string> = {
+  K: '#2A2230', // outline
+  A: '#F2E8D5', // cream
+  B: '#D8C6A4', // beige
+  C: '#A88F6C', // tan shadow
+  I: '#2B4C7E', // indigo
+  G: '#E0B356', // gold
+  M: '#D3D8DF', // metal light
+  N: '#858D9B', // metal dark
+  W: '#8E5B3A', // wood
+  X: '#5E3A24', // dark wood
+  R: '#C8463A', // red
+  Q: '#8B2D28', // dark red
+  P: '#7A4A6E', // plum
+  p: '#C98BB0', // pink
+  S: '#1E2A3A', // black body
+  L: '#4F6B8A', // glass
+  H: '#FFFFFF', // highlight
+};

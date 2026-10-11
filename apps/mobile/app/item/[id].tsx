@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import QRCode from 'react-native-qrcode-svg';
 import { Feather } from '@expo/vector-icons';
-import { CHOICES, WISHES, pick, tagPayload, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
+import { CHOICES, WISHES, pick, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Field, Fold, Glyph, Heading, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
@@ -63,7 +62,7 @@ export default function ItemScreen() {
           <Heading eyebrow={`${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? `, ${item.year}` : ''}`} title={name} />
         </View>
       </View>
-      <PhotoCarousel item={item} />
+      <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('pixel', () => api.makePixel(item.id, photoId), t('photoPixelMade')) : undefined} />
 
       {/* Her words first, on the paper itself: the story is what this page is about. */}
       {item.story ? (
@@ -95,17 +94,6 @@ export default function ItemScreen() {
             <Field label={t('storyInHerWords')} multiline value={story} onChangeText={setStory} />
             <Button label={t('saveStory')} kind="secondary" busy={busy === 'story'} onPress={() => run('story', () => api.update(item.id, { story }), t('saved'))} />
             <StoryRecorder item={item} consent={data.home.consent.recording} onSaved={(it) => { replaceItem(it); showToast(t('recordingSaved')); }} />
-            {item.tagCode ? (
-              <View style={{ alignItems: 'center', gap: 8, paddingTop: 8 }}>
-                <View style={{ backgroundColor: '#FFFFFF', padding: 12, borderRadius: 12 }}>
-                  <QRCode value={tagPayload(item.tagCode)} size={150} color={colors.ink} backgroundColor="#FFFFFF" />
-                </View>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 15, letterSpacing: 1, color: colors.ink }}>{item.tagCode}</Text>
-                <Text style={[type.caption, { textAlign: 'center' }]}>{t('tagHint')}</Text>
-              </View>
-            ) : (
-              <Button label={t('createTag')} icon="grid" busy={busy === 'tag'} onPress={() => run('tag', () => api.tag(item.id))} />
-            )}
           </Card>
           {item.decision === 'pass' || item.decision === 'recycle' ? (
             <Card>
