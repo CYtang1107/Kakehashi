@@ -35,6 +35,17 @@ This starts the API server on port 4100 and the Expo app on port 8081.
 
 To start over with the example family: `npm run reset` (while the server runs).
 
+### Public demo link (Render)
+
+`render.yaml` sets up one free Render web service: the server is the API and also serves the built web app, so there is a single link to share. On [render.com](https://render.com), sign in with GitHub, choose **New → Blueprint**, pick this repository and apply.
+
+- The free service sleeps after about 15 minutes without visitors; the first visit after that takes up to a minute.
+- Demo data resets to the example family whenever the service restarts, and changes visitors make are shared by everyone using the link.
+- No API keys are set: AI estimates run offline and payments stay in demo mode. Don't add live keys to a public demo.
+- Demo photos kept only on a local machine (`apps/server/data/uploads`) are not part of the hosted demo.
+
+To try the hosted build locally: `EXPO_PUBLIC_API_URL=same-origin npm run build:hosted`, then `npm run start:hosted` and open http://localhost:4100.
+
 ## Features
 
 ### Visits, stories and her choice

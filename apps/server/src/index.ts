@@ -923,6 +923,13 @@ app.post('/api/reset', (_req, res) => {
   res.json({ ok: true });
 });
 
+// Hosted demo: the built web app (npm run build:web) is served from the same address as the API.
+const WEB_DIR = path.resolve(__dirname, '..', '..', 'mobile', 'dist');
+if (fs.existsSync(path.join(WEB_DIR, 'index.html'))) {
+  app.use(express.static(WEB_DIR, { maxAge: '1h', index: false }));
+  app.get(/^\/(?!api\/|files\/|map\/|track\/|letters\/).*/, (_req, res) => res.sendFile(path.join(WEB_DIR, 'index.html')));
+}
+
 function lanIp() {
   for (const list of Object.values(os.networkInterfaces())) {
     for (const a of list ?? []) if (a.family === 'IPv4' && !a.internal) return a.address;

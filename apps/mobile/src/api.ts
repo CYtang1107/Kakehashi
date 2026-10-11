@@ -7,6 +7,8 @@ const PORT = 4100;
 // Finds the server: an explicit EXPO_PUBLIC_API_URL wins, then the machine that serves the app.
 function resolveBase(): string {
   const env = process.env.EXPO_PUBLIC_API_URL;
+  // 'same-origin': the hosted build, where the server also serves this app.
+  if (env === 'same-origin' && typeof window !== 'undefined') return window.location.origin;
   if (env) return env.replace(/\/$/, '');
   if (Platform.OS === 'web' && typeof window !== 'undefined') return `${window.location.protocol}//${window.location.hostname}:${PORT}`;
   const host = Constants.expoConfig?.hostUri?.split(':')[0];

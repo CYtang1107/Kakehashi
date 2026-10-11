@@ -1,0 +1,18 @@
+# Render Blueprint: the public demo of KAKEHASHI as one free web service.
+# The server is the API and also serves the built web app, so there is a single link to share.
+# Demo data lives on the service's disk and resets when it restarts. No API keys are needed:
+# without them, estimates run offline and payments stay in demo mode.
+services:
+  - type: web
+    name: kakehashi
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build:hosted
+    startCommand: npm run start:hosted
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # The app calls the API at its own address.
+      - key: EXPO_PUBLIC_API_URL
+        value: same-origin

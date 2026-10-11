@@ -9,7 +9,9 @@
     "dev": "concurrently -n server,app -c blue,green \"npm run dev -w apps/server\" \"npm run start -w apps/mobile\"",
     "server": "npm run dev -w apps/server",
     "app": "npm run start -w apps/mobile",
-    "reset": "curl -s -X POST http://localhost:4100/api/reset"
+    "reset": "curl -s -X POST http://localhost:4100/api/reset",
+    "build:hosted": "npm run build:web -w apps/mobile",
+    "start:hosted": "npm run start -w apps/server"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
@@ -18,5 +20,8 @@
     "react-native": "0.86.3",
     "react": "19.2.3",
     "react-dom": "19.2.3"
+  },
+  "engines": {
+    "node": ">=20.19"
   }
 }
