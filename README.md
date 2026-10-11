@@ -10,7 +10,7 @@ TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an examp
 | --- | --- |
 | **Michiko** (her own screen) | Large text, few choices. See who is visiting next and who is coming to help, with the door rule against repair scams. Ask for help in two taps. Say how a job went. |
 | **Family** | The visit thread (every visit as a knot on a thread). The **digital 実家**: 3D house, floor plan, memory mode, neighbourhood map. Item stories and recordings. Share a **wish** about an item (never a vote). Safer home plan with costs, the house's future, help bookings, live outings. Plan and payment, visit reports, the monthly letter, call notes. |
-| **Students** | A visit in three steps: **Before** (field notes, consent), **With her** (items, story tags, room photos, safer home, help, the house's future, activities, outing sharing), **After** (visit report with a fresh-eyes check, monthly letter, calls). **Team** tab: the seven-step evaluation every student passes. |
+| **Students** | A **Wallet** of earnings and a savings goal. A visit in three steps: **Before** (field notes, consent), **With her** (items, story tags, room photos, safer home, help, the house's future, activities, outing sharing), **After** (visit report with a fresh-eyes check, monthly letter, calls). **Team** tab: the seven-step evaluation every student passes. |
 | **Helpers** | Checked local workers find jobs on the **job board**, at a price set beforehand, and see what they receive after the 15% fee. |
 | **New owner** | Scan the item's QR (or type the code), hear its story, send a thank-you. |
 | **Story readers** | Anyone: read stories she chose to share, and send kind words that students approve. |
@@ -83,6 +83,10 @@ While a student walks her to an activity, the family follows the walk live on th
 ### Weather check-in (天気の見守り)
 
 Official warnings for her area come live from the Japan Meteorological Agency (気象庁, `/bosai/warning/data/r8/` feed since the 2026 warning revision), refreshed every 10 minutes. On any warning or emergency warning, and on heavy-snow or low-temperature advisories, students see "Call her today" and log the call: she's fine, needs help, or no answer. The family sees who called and when, with clear next steps if she needs help or did not answer; her screen shows one calm line of advice. If the weather service can't be reached the app says so. A labelled demo switch simulates a warning outside the season.
+
+### Student wallet (学生の報酬)
+
+A **Wallet** tab for students, like EVE's points screen. Pay is added automatically when the work is logged: each visit (when the report is sent), check-in call, weather check-in call and outing. It shows this month, waiting to be paid and paid so far, with a demo payday that pays to the student's own bank account. Students can set a **savings goal** (what for, a target, and the share of each payment to put aside) and watch it add up. A folded **long-term saving** section gives neutral information about NISA and links to the Financial Services Agency's official guide. KAKEHASHI never holds or invests students' money and gives no investment advice. Pay rates (¥1,300 an hour, ¥500 a call) are example assumptions.
 
 ### Story feed (物語の広場)
 

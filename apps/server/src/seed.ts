@@ -22,7 +22,7 @@ export function seedHome(): Home {
     childNameJa: '健二',
     seniorInterests: ['gardening', 'cooking', 'letters'],
     students: [
-      { id: 'yui', name: 'Yui', initial: 'Y', interests: 'gardening, cooking', interestsJa: '園芸・料理', university: 'Niigata University', universityJa: '新潟大学', visits: 4, role: 'pair',
+      { id: 'yui', name: 'Yui', initial: 'Y', interests: 'gardening, cooking', interestsJa: '園芸・料理', university: 'Niigata University', universityJa: '新潟大学', visits: 4, role: 'pair', goal: { name: 'Driving licence', targetJpy: 300000, setAsidePct: 20 },
         passed: { identity: '2026-06-20', interview: '2026-06-24', training: '2026-07-02', dementia: '2026-07-05', quiz: '2026-07-06', shadow: '2026-07-11', signoff: '2026-07-12' } },
       { id: 'arif', name: 'Arif', initial: 'A', interests: 'photography, repairs', interestsJa: '写真・修理', university: 'Niigata University', universityJa: '新潟大学', visits: 4, role: 'pair',
         passed: { identity: '2026-06-21', interview: '2026-06-24', training: '2026-07-02', dementia: '2026-07-05', quiz: '2026-07-07', shadow: '2026-07-11', signoff: '2026-07-12' } },
@@ -65,6 +65,14 @@ export function seedHome(): Home {
     ],
     // Her home is a demo point; every other place is real, from OpenStreetMap (see nearby.ts). Her places come first, in letter order.
     places: herPlaces(),
+    pay: [
+      ...['2026-07-18', '2026-08-15', '2026-09-12', '2026-10-10'].flatMap((date) => ['yui', 'arif'].map((sid) => ({
+        id: `pay-${sid}-${date}`, studentId: sid, date, kind: 'visit' as const, hours: 3, amountJpy: 3900,
+        status: date < '2026-10-01' ? 'paid' as const : 'pending' as const, ...(date < '2026-10-01' ? { paidAt: '2026-10-05' } : {}) }))),
+      { id: 'pay-yui-call-1', studentId: 'yui', date: '2026-08-29', kind: 'call', amountJpy: 500, status: 'paid', paidAt: '2026-09-05' },
+      { id: 'pay-yui-call-2', studentId: 'yui', date: '2026-09-26', kind: 'call', amountJpy: 500, status: 'paid', paidAt: '2026-10-05' },
+      { id: 'pay-arif-outing-1', studentId: 'arif', date: '2026-09-18', kind: 'outing', hours: 2, amountJpy: 2600, status: 'paid', paidAt: '2026-10-05' },
+    ],
     weather: { office: '150000', area: '1510000', areaName: 'Niigata City', areaNameJa: '新潟市', checks: [], demo: null },
     // Demo: Yui is walking with her to the gardening group right now (simulated, so it moves on any screen).
     outings: [

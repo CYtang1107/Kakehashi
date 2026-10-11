@@ -13,6 +13,7 @@ export default function StudentTabs() {
       tabBarStyle: { backgroundColor: colors.sheet, borderTopColor: colors.line }, tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 } }}>
       <Tabs.Screen name="index" options={{ title: t('tabVisit'), tabBarIcon: icon('check-square') }} />
       <Tabs.Screen name="add" options={{ title: t('tabAdd'), tabBarIcon: icon('camera') }} />
+      <Tabs.Screen name="wallet" options={{ title: t('tabWallet'), tabBarIcon: icon('credit-card') }} />
       <Tabs.Screen name="team" options={{ title: t('tabTeam'), tabBarIcon: icon('award') }} />
     </Tabs>
   );

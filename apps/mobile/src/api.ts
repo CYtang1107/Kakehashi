@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { CheckResult2, WeatherStatus, JobListing, Outing, PublicStory, ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { Wallet, CheckResult2, WeatherStatus, JobListing, Outing, PublicStory, ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -68,6 +68,10 @@ export const api = {
   weatherCheck: (homeId: string, result: CheckResult2, by: string, note?: string) =>
     call<WeatherStatus>(`/api/home/${homeId}/weather/check`, { method: 'POST', body: { result, by, note } }),
   weatherDemo: (homeId: string, code: string | null) => call<WeatherStatus>(`/api/home/${homeId}/weather/demo`, { method: 'POST', body: { code } }),
+  wallet: (homeId: string, sid: string) => call<Wallet>(`/api/home/${homeId}/students/${sid}/wallet`),
+  setGoal: (homeId: string, sid: string, body: { name?: string; targetJpy?: number; setAsidePct?: number; clear?: boolean }) =>
+    call<Wallet>(`/api/home/${homeId}/students/${sid}/goal`, { method: 'POST', body }),
+  payout: (homeId: string, sid: string) => call<Wallet>(`/api/home/${homeId}/students/${sid}/payout`, { method: 'POST' }),
   askHelp: (homeId: string, body: { kind: ServiceKind; when: 'soon' | 'next-visit'; by: 'her' | 'student'; note?: string; fixId?: string }) =>
     call<ServiceRequest[]>(`/api/home/${homeId}/services`, { method: 'POST', body }),
   bookHelp: (homeId: string, sid: string, body: { workerId: string; date: string; hours?: number }) =>

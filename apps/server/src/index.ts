@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { JMA_CODES, workerTake, type JobListing, type ServiceRequest, metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
+import { STUDENT_PAY, type PayEntry, type PayKind, type Wallet, JMA_CODES, workerTake, type JobListing, type ServiceRequest, metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { TRACK, plans, stagePoint } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -352,6 +352,67 @@ app.post('/api/home/:id/future/step', (req, res) => {
   res.json(home.future);
 });
 
+// ---------- Student wallet: pay logged with the work, paid to the student's own bank ----------
+
+// Adds a pay entry for a student (by id or name); one visit entry per student per day.
+function addPay(home: Home, who: string, kind: PayKind, hours?: number) {
+  const s = home.students.find((x) => x.id === who || x.name === who);
+  if (!s) return;
+  const date = now().slice(0, 10);
+  if (kind === 'visit' && home.pay.some((p) => p.studentId === s.id && p.kind === 'visit' && p.date === date)) return;
+  const amountJpy = kind === 'call' || kind === 'weather-call' ? STUDENT_PAY.callJpy : Math.round((hours ?? 0) * STUDENT_PAY.hourJpy);
+  if (amountJpy <= 0) return;
+  home.pay.unshift({ id: id('pay'), studentId: s.id, date, kind, hours, amountJpy, status: 'pending' });
+}
+
+function wallet(home: Home, sid: string): Wallet | null {
+  const s = home.students.find((x) => x.id === sid);
+  if (!s) return null;
+  const entries = home.pay.filter((p) => p.studentId === s.id).sort((a, b) => b.date.localeCompare(a.date));
+  const month = now().slice(0, 7);
+  const sum = (xs: PayEntry[]) => xs.reduce((t, p) => t + p.amountJpy, 0);
+  const paidJpy = sum(entries.filter((p) => p.status === 'paid'));
+  return {
+    student: { id: s.id, name: s.name }, entries,
+    monthJpy: sum(entries.filter((p) => p.date.startsWith(month))),
+    pendingJpy: sum(entries.filter((p) => p.status === 'pending')),
+    paidJpy, goal: s.goal, setAsideJpy: Math.round(paidJpy * (s.goal?.setAsidePct ?? 0) / 100), rates: STUDENT_PAY,
+  };
+}
+
+app.get('/api/home/:id/students/:sid/wallet', (req, res) => {
+  const home = findHome(req.params.id);
+  const w = home && wallet(home, req.params.sid);
+  if (!w) return fail(res, 404, 'Student not found.');
+  res.json(w);
+});
+
+app.post('/api/home/:id/students/:sid/goal', (req, res) => {
+  const home = findHome(req.params.id);
+  const s = home?.students.find((x) => x.id === req.params.sid);
+  if (!home || !s) return fail(res, 404, 'Student not found.');
+  if (req.body?.clear) { delete s.goal; save(); return res.json(wallet(home, s.id)); }
+  const name = String(req.body?.name ?? '').trim().slice(0, 60);
+  const targetJpy = Math.round(Number(req.body?.targetJpy));
+  const setAsidePct = Math.round(Number(req.body?.setAsidePct));
+  if (!name) return fail(res, 400, 'Name your goal.');
+  if (!(targetJpy >= 1000 && targetJpy <= 10000000)) return fail(res, 400, 'Set a target between ¥1,000 and ¥10,000,000.');
+  if (!(setAsidePct >= 0 && setAsidePct <= 50)) return fail(res, 400, 'Put aside between 0% and 50% of each payment.');
+  s.goal = { name, targetJpy, setAsidePct };
+  save();
+  res.json(wallet(home, s.id));
+});
+
+// Demo payday: pending pay is marked as paid to the student's own bank account. No real money moves.
+app.post('/api/home/:id/students/:sid/payout', (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home || !home.students.some((x) => x.id === req.params.sid)) return fail(res, 404, 'Student not found.');
+  const at = now().slice(0, 10);
+  home.pay.filter((p) => p.studentId === req.params.sid && p.status === 'pending').forEach((p) => { p.status = 'paid'; p.paidAt = at; });
+  save();
+  res.json(wallet(home, req.params.sid));
+});
+
 // ---------- Weather check-in: official warnings for her area, and the call a student makes that day ----------
 
 app.get('/api/home/:id/weather', async (req, res) => {
@@ -371,6 +432,7 @@ app.post('/api/home/:id/weather/check', async (req, res) => {
     note: req.body?.note ? String(req.body.note).trim().slice(0, 300) : undefined,
     alerts: status.alerts.map((a) => a.nameJa),
   };
+  addPay(home, check.by, 'weather-call');
   home.weather.checks = [check, ...home.weather.checks.filter((c) => !(c.date === check.date && c.result === 'fine' && result === 'fine'))].slice(0, 100);
   save();
   res.status(201).json(await weatherFor(home));
@@ -443,7 +505,10 @@ app.post('/api/home/:id/outings/:oid/end', (req, res) => {
   const home = findHome(req.params.id);
   const o = home?.outings.find((x) => x.id === req.params.oid);
   if (!home || !o) return fail(res, 404, 'Outing not found.');
-  if (o.status === 'live') endOuting(o);
+  if (o.status === 'live') {
+    endOuting(o);
+    if (!o.simulated) addPay(home, o.by, 'outing', Math.max(0.5, Math.round((o.minutes ?? 0) / 30) / 2));
+  }
   save();
   res.json(o);
 });
@@ -688,6 +753,7 @@ app.post('/api/home/:id/report', async (req, res) => {
   visit.checked = result.source;
   visit.readBy = String(req.body?.by || home.students.find((s) => s.role === 'pair')?.name || 'Student').slice(0, 40);
   visit.readAt = now();
+  home.students.filter((s) => s.role === 'pair').forEach((s) => addPay(home, s.id, 'visit', STUDENT_PAY.visitHours));
   save();
   res.json(visit);
 });
@@ -836,6 +902,7 @@ app.post('/api/home/:id/calls', (req, res) => {
     followUp: Boolean(followUp),
   });
   if (!planned) home.calls.unshift(call);
+  addPay(home, call.by, 'call');
   // Book the next call two weeks after the next visit.
   const next = home.visits.find((v) => v.status === 'planned');
   if (next && !home.calls.some((c) => c.status === 'planned')) {

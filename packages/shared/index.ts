@@ -157,6 +157,7 @@ export interface Student {
   // Steps passed, with the date.
   passed: Partial<Record<ReadinessStep, string>>;
   role: 'pair' | 'trainee';
+  goal?: SavingsGoal; // a savings goal the student set; the money stays in their own bank
 }
 export const isReady = (s: Student) => READINESS.every((r) => Boolean(s.passed[r]));
 
@@ -215,6 +216,8 @@ export interface Home {
   outings: Outing[];
   // Weather check-in: official warnings for her area, and the calls students made on those days.
   weather: HomeWeather;
+  // Students' pay: each visit, call, weather check-in call and outing, logged when the work is logged.
+  pay: PayEntry[];
 }
 
 export type PlaceKind = 'home' | 'community' | 'library' | 'care' | 'clinic' | 'pharmacy' | 'shop';
@@ -608,3 +611,34 @@ export const JMA_CODES: Record<string, { level: AlertLevel; kind: AlertKind; nam
   '37': { level: 'emergency', kind: 'sea', name: 'High wave emergency warning', nameJa: '波浪特別警報' },
   '38': { level: 'emergency', kind: 'sea', name: 'Storm surge emergency warning', nameJa: '高潮特別警報' },
 };
+
+// ---------- Student wallet (学生の報酬) ----------
+// Pay is logged automatically when work is logged, and paid to the student's own bank account.
+// KAKEHASHI does not hold or invest students' money; the savings goal is a tracker only.
+export const STUDENT_PAY = { hourJpy: 1300, visitHours: 3, callJpy: 500 }; // example rates for the pilot [assumption]
+export type PayKind = 'visit' | 'call' | 'weather-call' | 'outing';
+export interface PayEntry {
+  id: string;
+  studentId: string;
+  date: string;
+  kind: PayKind;
+  hours?: number;
+  amountJpy: number;
+  status: 'pending' | 'paid';
+  paidAt?: string;
+}
+export interface SavingsGoal {
+  name: string;
+  targetJpy: number;
+  setAsidePct: number; // share of each payment the student plans to put aside, 0-50
+}
+export interface Wallet {
+  student: { id: string; name: string };
+  entries: PayEntry[];
+  monthJpy: number;
+  pendingJpy: number;
+  paidJpy: number;
+  goal?: SavingsGoal;
+  setAsideJpy: number;
+  rates: typeof STUDENT_PAY;
+}
