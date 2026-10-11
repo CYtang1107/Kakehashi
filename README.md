@@ -102,7 +102,7 @@ A **Wallet** tab for students, like EVE's points screen. Pay is added automatica
 
 ### Story feed (物語の広場)
 
-With her consent, a story can be shared publicly, named as she chooses (her first name or "someone in Niigata"), with or without her voice. She can take it down any time. Each story shows as a post: the item's photos to swipe through (only if she agrees; old family photos are never public, and illustrations keep their label), or the story itself as the post when there are none, with hearts, messages and a share link. Visitors can leave their name blank to post as "Anonymous". Messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
+With her consent, a story can be shared publicly, named as she chooses (her first name or "someone in Niigata"), with or without her voice. She can take it down any time. Each story shows as a post: the item's photos to swipe through (only photos of the item itself, and only if she agrees; old family photos and illustrations stay with the family), or the story itself as the post when there are none, with hearts, messages and a share link. Visitors can leave their name blank to post as "Anonymous". Messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
 
 ## No pressure to let go
 

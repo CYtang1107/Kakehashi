@@ -17,8 +17,8 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
   const [name, setName] = useState<'first' | 'anonymous'>(item.share?.name ?? 'anonymous');
   const [audio, setAudio] = useState(item.share?.audio ?? false);
   const [photos, setPhotos] = useState(item.share?.photos ?? true);
-  // Old family photos never go public; photos of the item and labelled illustrations can, with her OK.
-  const hasPhotos = itemPhotos(item).some((p) => p.kind === 'photo' || p.kind === 'illustration');
+  // Only photos of the item itself can go public, with her OK; old family photos and illustrations stay with the family.
+  const hasPhotos = itemPhotos(item).some((p) => p.kind === 'photo');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const hasStory = Boolean(item.story || item.storyJa);

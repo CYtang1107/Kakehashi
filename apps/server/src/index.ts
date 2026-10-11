@@ -557,12 +557,12 @@ function publicStory(item: Item): PublicStory {
     comments: (item.comments ?? []).filter((c) => c.status === 'shown').map(({ from, message, at }) => ({ from, message, at })),
   };
 }
-// Pictures that may go on the public feed: photos of the item and labelled illustrations, never old family photos.
+// Pictures that may go on the public feed: only photos of the item itself (no illustrations, never old family photos).
 function shareablePhotos(item: Item) {
   const album = item.photos ?? [];
   const all = item.photoUrl && !album.some((p) => p.url === item.photoUrl)
     ? [{ id: 'main', url: item.photoUrl, kind: 'photo' as const, by: '', at: '' }, ...album] : album;
-  return all.filter((p) => p.kind === 'photo' || p.kind === 'illustration').map((p) => ({ ...p, by: '' }));
+  return all.filter((p) => p.kind === 'photo').map((p) => ({ ...p, by: '' }));
 }
 const sharedItem = (id: string) => db.items.find((i) => i.id === id && i.share && (i.story || i.storyJa));
 const CONTACT = /(https?:\/\/|www\.|@[a-z0-9-]+\.|\b\d{2,4}[-\s]?\d{3,4}[-\s]?\d{4}\b|line\s*id)/i;

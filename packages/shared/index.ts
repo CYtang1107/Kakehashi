@@ -485,7 +485,7 @@ export interface PublicStory {
   teller: string;
   tellerJa: string;
   sharedAt: string;
-  photos: ItemPhoto[]; // only photos of the item and labelled illustrations, with her OK
+  photos: ItemPhoto[]; // only photos of the item itself, with her OK
   icon?: ItemIcon;
   hearts: number;
   comments: { from: string; message: string; at: string }[]; // from '' = anonymous
