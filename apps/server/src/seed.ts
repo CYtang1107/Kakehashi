@@ -1,4 +1,8 @@
-import type { Delivery, Handover, Home, Item, Place, Plan, TrackPoint } from '@kakehashi/shared';
+import fs from 'node:fs';
+import path from 'node:path';
+import type { Delivery, Handover, Home, Item, ItemPhoto, Place, Plan, TrackPoint } from '@kakehashi/shared';
+// Same folder as db.ts's UPLOAD_DIR (not imported, to avoid a circular import).
+const UPLOAD_DIR = path.resolve(__dirname, '..', 'data', 'uploads');
 import { NEARBY } from './nearby';
 
 // Example family used for demos. Every person here is illustrative.
@@ -187,13 +191,26 @@ export function seedItems(): Item[] {
 }
 
 // Each journey step gets its place; the desk is on its way to its new owner with Arif (simulated for the demo).
+// Demo photos live only in the local, git-ignored uploads folder; the seed uses them when they are there.
+const DEMO_PHOTOS: Record<string, { file: string; kind: ItemPhoto['kind']; caption: string; captionJa: string }[]> = {
+  sewing: [
+    { file: 'demo-sewing-photo.webp', kind: 'photo', caption: 'The machine today, in the tatami room', captionJa: '今のミシン（和室にて）' },
+    { file: 'demo-sewing-illustration.webp', kind: 'illustration', caption: 'Illustration of her sewing the school bags', captionJa: '通園バッグを縫う様子のイラスト' },
+  ],
+};
+function demoPhotos(itemId: string): ItemPhoto[] {
+  return (DEMO_PHOTOS[itemId] ?? []).filter((p) => fs.existsSync(path.join(UPLOAD_DIR, p.file)))
+    .map((p, i) => ({ id: `ph-${itemId}-${i}`, url: `/files/${p.file}`, kind: p.kind, caption: p.caption, captionJa: p.captionJa, by: 'Yui', at: at('2026-10-10') }));
+}
+
 function withTracks(items: Item[]): Item[] {
   return items.map((it) => {
     const owner = it.id === 'cooker' ? TRACK.ownerIkarashi : TRACK.ownerNishi;
     const journey = it.journey.map((j) => ({ ...j, pt: stagePoint(j.stage, owner) }));
     const delivery: Delivery | undefined = it.id === 'desk'
       ? { by: 'Arif', from: TRACK.home, to: TRACK.ownerNishi, startedAt: at('2026-10-10'), minutes: 35, simulated: true } : undefined;
-    return { ...it, journey, ...(delivery ? { delivery } : {}) };
+    const photos = demoPhotos(it.id);
+    return { ...it, journey, ...(delivery ? { delivery } : {}), ...(photos.length ? { photos } : {}) };
   });
 }
 

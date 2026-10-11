@@ -181,6 +181,21 @@ app.post('/api/items/:id/handover', (req, res) => {
   res.json(item);
 });
 
+// Add a photo to an item's album (students). Illustrations are labelled in the app; photos are never public.
+app.post('/api/items/:id/photos', (req, res) => {
+  const item = findItem(req.params.id);
+  if (!item) return fail(res, 404, 'Item not found.');
+  const { base64, mime, kind, caption, by } = req.body ?? {};
+  if (!['photo', 'old-photo', 'illustration'].includes(kind)) return fail(res, 400, 'Say what kind of picture this is.');
+  if (!base64 || !String(mime ?? '').startsWith('image/')) return fail(res, 400, 'Choose a picture.');
+  if (String(base64).length > 12_000_000) return fail(res, 413, 'That picture is too large.');
+  const photos = (item.photos ??= []);
+  if (photos.length >= 12) return fail(res, 400, 'An item can have up to 12 pictures.');
+  photos.push({ id: id('ph'), url: saveUpload(item.id, String(base64), String(mime)), kind, caption: caption ? String(caption).trim().slice(0, 140) : undefined, by: String(by || 'Student').slice(0, 40), at: now() });
+  save();
+  res.status(201).json(item);
+});
+
 // Start a delivery to the new owner's area (shown live on the tracking map).
 app.post('/api/items/:id/delivery', (req, res) => {
   const item = findItem(req.params.id);

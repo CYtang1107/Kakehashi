@@ -10,6 +10,7 @@ import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { Journey } from '../../src/Journey';
 import { ShareCard } from '../../src/StoryShare';
+import { AddPhotoCard, PhotoCarousel } from '../../src/PhotoCarousel';
 import { TrackMap, isTrackable } from '../../src/TrackMap';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
@@ -62,7 +63,7 @@ export default function ItemScreen() {
           <Heading eyebrow={`${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? `, ${item.year}` : ''}`} title={name} />
         </View>
       </View>
-      {item.photoUrl ? <Image source={{ uri: fileUrl(item.photoUrl) }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 14, backgroundColor: colors.line }} resizeMode="cover" accessibilityLabel={item.name} /> : null}
+      <PhotoCarousel item={item} />
 
       {/* Her words first, on the paper itself: the story is what this page is about. */}
       {item.story ? (
@@ -88,6 +89,7 @@ export default function ItemScreen() {
             <ChoiceGrid value={item.decision} onPick={(d) => run('decision', () => api.update(item.id, { decision: d }), t('saved'))} />
             {held ? <Text style={[type.caption, { color: colors.moss }]}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text> : null}
           </Card>
+          <AddPhotoCard item={item} />
           <Card>
             <Text style={type.section}>{t('storyTag')}</Text>
             <Field label={t('storyInHerWords')} multiline value={story} onChangeText={setStory} />

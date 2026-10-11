@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import type { Wallet, CheckResult2, WeatherStatus, JobListing, Outing, PublicStory, ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
+import type { PhotoKind, Wallet, CheckResult2, WeatherStatus, JobListing, Outing, PublicStory, ServiceFeedback, ServiceKind, ServiceRequest, ConditionLevel, ConditionPart, HouseFuture, HouseStep, HouseWish, FixKind, FixStatus, SafetyFix, CheckResult, FieldNote, FieldNoteKind, Visit, ActivityStatus, CommunityActivity, ReadinessStep, Room, Student, Call, CallMood, CheckoutResult, Decision, Estimate, HandoverStage, HomeBundle, Home, Item, Letter, PublicTag, WishKind } from '@kakehashi/shared';
 
 const PORT = 4100;
 
@@ -72,6 +72,7 @@ export const api = {
   setGoal: (homeId: string, sid: string, body: { name?: string; targetJpy?: number; setAsidePct?: number; clear?: boolean }) =>
     call<Wallet>(`/api/home/${homeId}/students/${sid}/goal`, { method: 'POST', body }),
   payout: (homeId: string, sid: string) => call<Wallet>(`/api/home/${homeId}/students/${sid}/payout`, { method: 'POST' }),
+  addPhoto: (itemId: string, body: { base64: string; mime: string; kind: PhotoKind; caption?: string; by: string }) => call<Item>(`/api/items/${itemId}/photos`, { method: 'POST', body }),
   askHelp: (homeId: string, body: { kind: ServiceKind; when: 'soon' | 'next-visit'; by: 'her' | 'student'; note?: string; fixId?: string }) =>
     call<ServiceRequest[]>(`/api/home/${homeId}/services`, { method: 'POST', body }),
   bookHelp: (homeId: string, sid: string, body: { workerId: string; date: string; hours?: number }) =>

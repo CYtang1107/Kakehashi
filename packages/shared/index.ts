@@ -108,6 +108,8 @@ export interface Item {
   share?: ItemShare;
   comments?: StoryComment[];
   delivery?: Delivery;
+  // A small album, swiped like a post: the item today, old family photos, and clearly labelled illustrations.
+  photos?: ItemPhoto[];
   x: number;
   y: number;
 }
@@ -641,4 +643,18 @@ export interface Wallet {
   goal?: SavingsGoal;
   setAsideJpy: number;
   rates: typeof STUDENT_PAY;
+}
+
+// ---------- Item photos (思い出の写真) ----------
+// 'illustration' marks a picture that is not a real photo (e.g. AI-made): always labelled in the app, never passed
+// off as a real memory. Photos are private to the family and students; the public story feed shows none.
+export type PhotoKind = 'photo' | 'old-photo' | 'illustration';
+export interface ItemPhoto {
+  id: string;
+  url: string;
+  kind: PhotoKind;
+  caption?: string;
+  captionJa?: string;
+  by: string;
+  at: string;
 }

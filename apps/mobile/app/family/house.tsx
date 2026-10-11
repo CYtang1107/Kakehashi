@@ -12,6 +12,7 @@ import { SaferHomeCard, fixTone } from '../../src/SaferHome';
 import { HouseFutureCard } from '../../src/HouseFuture';
 import { TrackMap, isTrackable } from '../../src/TrackMap';
 import { LiveOutingBanner } from '../../src/Outing';
+import { PhotoCarousel } from '../../src/PhotoCarousel';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
@@ -178,6 +179,7 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
           <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: '#CDBFAE' }}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{item.year ? ` · ${item.year}` : ''}</Text>
         </View>
       </View>
+      <PhotoCarousel item={item} dark />
       {item.story || item.storyJa ? (
         <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', borderLeftWidth: 3, borderLeftColor: memoryColors.lantern, paddingLeft: 12 }}>“{pick(lang, item.story, item.storyJa)}”</Text>
       ) : null}
