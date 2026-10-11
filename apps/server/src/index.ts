@@ -3,7 +3,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import express, { type Request, type Response } from 'express';
 import cors from 'cors';
-import { workerTake, type JobListing, type ServiceRequest, metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
+import { JMA_CODES, workerTake, type JobListing, type ServiceRequest, metresBetween, outingIsLive, OUTING_MAX_HOURS, type Home, type Outing, CHOICES, HELP_KINDS, SERVICE_CATALOG, isCleared, fixCost, type ServiceKind, CONDITION_PARTS, FIX_KINDS, HOUSE_STEPS, HOUSE_WISHES, type ConditionPart, type HouseStep, READINESS, WISHES, type ActivityStatus, type ReadinessStep, type Decision, type HandoverStage, type HomeBundle, type Item, type Payment, type PublicStory, type PublicTag } from '@kakehashi/shared';
 import { db, findHome, findItem, findTag, reset, save, saveUpload, UPLOAD_DIR } from './db';
 import { TRACK, plans, stagePoint } from './seed';
 import { aiEnabled, estimateWithClaude, offlineEstimate } from './estimate';
@@ -11,6 +11,7 @@ import { createCheckout, paymentsMode, readCheckout } from './payments';
 import { checkReport } from './pressure';
 import { mapPage } from './mapPage';
 import { trackPage } from './trackPage';
+import { jstDate, weatherFor } from './weather';
 
 const PORT = Number(process.env.PORT ?? 4100);
 const app = express();
@@ -349,6 +350,42 @@ app.post('/api/home/:id/future/step', (req, res) => {
   else delete home.future.steps[step as HouseStep];
   save();
   res.json(home.future);
+});
+
+// ---------- Weather check-in: official warnings for her area, and the call a student makes that day ----------
+
+app.get('/api/home/:id/weather', async (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  res.json(await weatherFor(home));
+});
+
+app.post('/api/home/:id/weather/check', async (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const result = req.body?.result;
+  if (!['fine', 'needs-help', 'no-answer'].includes(result)) return fail(res, 400, 'Say how the call went.');
+  const status = await weatherFor(home);
+  const check = {
+    id: id('wx'), date: jstDate(), at: now(), by: String(req.body?.by || 'Student').slice(0, 40), result,
+    note: req.body?.note ? String(req.body.note).trim().slice(0, 300) : undefined,
+    alerts: status.alerts.map((a) => a.nameJa),
+  };
+  home.weather.checks = [check, ...home.weather.checks.filter((c) => !(c.date === check.date && c.result === 'fine' && result === 'fine'))].slice(0, 100);
+  save();
+  res.status(201).json(await weatherFor(home));
+});
+
+// Demo only: simulate a warning so the flow can be shown outside the season. Clearly labelled as a demo in the app.
+app.post('/api/home/:id/weather/demo', async (req, res) => {
+  const home = findHome(req.params.id);
+  if (!home) return fail(res, 404, 'Home not found.');
+  const code = req.body?.code;
+  if (code !== null && !JMA_CODES[code]) return fail(res, 400, 'Unknown warning code.');
+  home.weather.demo = code;
+  if (code === null) home.weather.checks = home.weather.checks.filter((c) => c.date !== jstDate());
+  save();
+  res.json(await weatherFor(home));
 });
 
 // ---------- Outing sharing: live location during an outing, with her consent ----------

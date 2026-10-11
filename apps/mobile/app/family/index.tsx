@@ -7,6 +7,7 @@ import { useData } from '../../src/data';
 import { ActivitiesCard, StudentsCard } from '../../src/Community';
 import { ServicesCard } from '../../src/Services';
 import { LiveOutingBanner } from '../../src/Outing';
+import { WeatherBanner } from '../../src/Weather';
 import { VisitThread } from '../../src/VisitThread';
 import { useI18n } from '../../src/i18n';
 import { colors, fonts, type } from '../../src/theme';
@@ -28,6 +29,7 @@ export default function FamilyHome() {
           <>
             <Heading eyebrow={t('mothersHome', { town: pick(lang, home.town, home.townJa) })} title={t('greeting', { name: pick(lang, home.childName, home.childNameJa) })} />
             <LiveOutingBanner onOpenMap={() => router.push('/family/house?view=map')} />
+            <WeatherBanner />
             <VisitThread visits={home.visits} names={[a.name, b.name]} initials={[a.initial, b.initial]}
               next={next ? t('threadNext', { date: formatDate(next.date, lang), room: room ? (lang === 'ja' ? room.nameJa : room.name) : '' }) : undefined}
               stats={t('threadStats', { stories, rooms: safer, interests: pick(lang, a.interests, a.interestsJa) })}

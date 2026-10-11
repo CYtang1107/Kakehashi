@@ -65,6 +65,7 @@ export function seedHome(): Home {
     ],
     // Her home is a demo point; every other place is real, from OpenStreetMap (see nearby.ts). Her places come first, in letter order.
     places: herPlaces(),
+    weather: { office: '150000', area: '1510000', areaName: 'Niigata City', areaNameJa: '新潟市', checks: [], demo: null },
     // Demo: Yui is walking with her to the gardening group right now (simulated, so it moves on any screen).
     outings: [
       { id: 'o-demo', activityId: 'act-garden', placeId: 'osm-n12880273263', by: 'Yui', consentAt: new Date().toISOString(),

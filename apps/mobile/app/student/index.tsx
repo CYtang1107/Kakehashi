@@ -14,6 +14,7 @@ import { SaferHomeCard } from '../../src/SaferHome';
 import { HouseFutureCard } from '../../src/HouseFuture';
 import { ServicesCard } from '../../src/Services';
 import { OutingCard } from '../../src/Outing';
+import { WeatherCheckCard } from '../../src/Weather';
 import { spriteFor } from '../../src/pixelArt';
 import { colors, fonts, type } from '../../src/theme';
 
@@ -41,6 +42,7 @@ export default function Visit() {
       <VisitSteps step={step} onChange={setStep} />
       {step === 'before' ? (
         <>
+      <WeatherCheckCard />
       <Card tint>
         <Text style={type.bodyBold}>{t('beforeYouStart')}</Text>
         <Text style={type.body}>{t('beforeYouStartBody')}</Text>

@@ -8,6 +8,7 @@ import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { workerName } from '../../src/Services';
 import { thread } from '../../src/VisitThread';
+import { WeatherNote } from '../../src/Weather';
 import { colors, fonts } from '../../src/theme';
 
 // Her own screen: large text, few choices. She asks for help in two taps; she always sees who is coming.
@@ -57,6 +58,7 @@ export default function HerScreen() {
         <Text style={{ fontFamily: fonts.display, fontSize: 34, lineHeight: 44, color: colors.ink }}>{t('herHello')}</Text>
         <Text style={[body, { color: colors.inkSoft }]}>{t('herToday', { date: today(lang) })}</Text>
       </View>
+      <WeatherNote />
       {next ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, borderRadius: 20, backgroundColor: thread.cloth }}>
           <View style={{ flexDirection: 'row' }}>

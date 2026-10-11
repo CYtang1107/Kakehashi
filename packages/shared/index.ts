@@ -210,6 +210,8 @@ export interface Home {
   places: Place[];
   // Live location while a student takes her to an activity: with her consent, only during that outing.
   outings: Outing[];
+  // Weather check-in: official warnings for her area, and the calls students made on those days.
+  weather: HomeWeather;
 }
 
 export type PlaceKind = 'home' | 'community' | 'library' | 'care' | 'clinic' | 'pharmacy' | 'shop';
@@ -526,3 +528,78 @@ export interface Outing {
 export const OUTING_MAX_HOURS = 4;
 export const outingIsLive = (o: Outing, nowMs: number) =>
   o.status === 'live' && (o.simulated || nowMs - Date.parse(o.startedAt) < OUTING_MAX_HOURS * 3600000);
+
+// ---------- Weather check-in (天気の見守り) ----------
+// When the Japan Meteorological Agency issues a warning for her area (or a heavy-snow or low-temperature advisory),
+// a student calls her that day and logs how she is; the family sees it.
+export type AlertLevel = 'advisory' | 'warning' | 'emergency';
+export type AlertKind = 'snow' | 'cold' | 'rain' | 'wind' | 'sea' | 'other';
+export interface WeatherAlert {
+  code: string;
+  level: AlertLevel;
+  name: string;
+  nameJa: string;
+  kind: AlertKind;
+  callHer: boolean;
+}
+export type CheckResult2 = 'fine' | 'needs-help' | 'no-answer';
+export interface WeatherCheck {
+  id: string;
+  date: string; // Japan date of the call
+  at: string;
+  by: string;
+  result: CheckResult2;
+  note?: string;
+  alerts: string[]; // names of the alerts in force when she was called
+}
+export interface HomeWeather {
+  office: string; // JMA office code, e.g. 150000 Niigata
+  area: string; // JMA city code, e.g. 1510000 Niigata City
+  areaName: string;
+  areaNameJa: string;
+  checks: WeatherCheck[];
+  demo?: string | null; // a JMA code simulated for demos; shown as a demo
+}
+export interface WeatherStatus {
+  area: string;
+  areaJa: string;
+  checkedAt: string;
+  reportAt?: string;
+  source: 'jma' | 'demo' | 'unavailable';
+  alerts: WeatherAlert[];
+  callNeeded: boolean;
+  today?: WeatherCheck;
+  error?: string;
+}
+// JMA warning codes (unchanged by the 2026 revision for these kinds; checked against the live feed).
+export const JMA_CODES: Record<string, { level: AlertLevel; kind: AlertKind; name: string; nameJa: string }> = {
+  '02': { level: 'warning', kind: 'snow', name: 'Snowstorm warning', nameJa: '暴風雪警報' },
+  '03': { level: 'warning', kind: 'rain', name: 'Heavy rain warning', nameJa: '大雨警報' },
+  '04': { level: 'warning', kind: 'rain', name: 'Flood warning', nameJa: '洪水警報' },
+  '05': { level: 'warning', kind: 'wind', name: 'Storm warning', nameJa: '暴風警報' },
+  '06': { level: 'warning', kind: 'snow', name: 'Heavy snow warning', nameJa: '大雪警報' },
+  '07': { level: 'warning', kind: 'sea', name: 'High wave warning', nameJa: '波浪警報' },
+  '08': { level: 'warning', kind: 'sea', name: 'Storm surge warning', nameJa: '高潮警報' },
+  '10': { level: 'advisory', kind: 'rain', name: 'Heavy rain advisory', nameJa: '大雨注意報' },
+  '12': { level: 'advisory', kind: 'snow', name: 'Heavy snow advisory', nameJa: '大雪注意報' },
+  '13': { level: 'advisory', kind: 'snow', name: 'Snowstorm advisory', nameJa: '風雪注意報' },
+  '14': { level: 'advisory', kind: 'rain', name: 'Thunderstorm advisory', nameJa: '雷注意報' },
+  '15': { level: 'advisory', kind: 'wind', name: 'Strong wind advisory', nameJa: '強風注意報' },
+  '16': { level: 'advisory', kind: 'sea', name: 'High wave advisory', nameJa: '波浪注意報' },
+  '17': { level: 'advisory', kind: 'snow', name: 'Snowmelt advisory', nameJa: '融雪注意報' },
+  '18': { level: 'advisory', kind: 'rain', name: 'Flood advisory', nameJa: '洪水注意報' },
+  '19': { level: 'advisory', kind: 'sea', name: 'Storm surge advisory', nameJa: '高潮注意報' },
+  '20': { level: 'advisory', kind: 'other', name: 'Dense fog advisory', nameJa: '濃霧注意報' },
+  '21': { level: 'advisory', kind: 'other', name: 'Dry air advisory', nameJa: '乾燥注意報' },
+  '22': { level: 'advisory', kind: 'snow', name: 'Avalanche advisory', nameJa: 'なだれ注意報' },
+  '23': { level: 'advisory', kind: 'cold', name: 'Low temperature advisory', nameJa: '低温注意報' },
+  '24': { level: 'advisory', kind: 'cold', name: 'Frost advisory', nameJa: '霜注意報' },
+  '25': { level: 'advisory', kind: 'snow', name: 'Icing advisory', nameJa: '着氷注意報' },
+  '26': { level: 'advisory', kind: 'snow', name: 'Snow accretion advisory', nameJa: '着雪注意報' },
+  '32': { level: 'emergency', kind: 'snow', name: 'Snowstorm emergency warning', nameJa: '暴風雪特別警報' },
+  '33': { level: 'emergency', kind: 'rain', name: 'Heavy rain emergency warning', nameJa: '大雨特別警報' },
+  '35': { level: 'emergency', kind: 'wind', name: 'Storm emergency warning', nameJa: '暴風特別警報' },
+  '36': { level: 'emergency', kind: 'snow', name: 'Heavy snow emergency warning', nameJa: '大雪特別警報' },
+  '37': { level: 'emergency', kind: 'sea', name: 'High wave emergency warning', nameJa: '波浪特別警報' },
+  '38': { level: 'emergency', kind: 'sea', name: 'Storm surge emergency warning', nameJa: '高潮特別警報' },
+};

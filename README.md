@@ -80,6 +80,10 @@ Each item's journey on a map: her home, the partner repair shop, the licensed re
 
 While a student walks her to an activity, the family follows the walk live on the neighbourhood map. It uses the **student's** phone, starts only after the student ticks that she agreed for this outing, stops when the outing ends or after 4 hours, and the route is then deleted (only its length is kept). Locations far from her home are refused. The demo walk is simulated and labelled.
 
+### Weather check-in (天気の見守り)
+
+Official warnings for her area come live from the Japan Meteorological Agency (気象庁, `/bosai/warning/data/r8/` feed since the 2026 warning revision), refreshed every 10 minutes. On any warning or emergency warning, and on heavy-snow or low-temperature advisories, students see "Call her today" and log the call: she's fine, needs help, or no answer. The family sees who called and when, with clear next steps if she needs help or did not answer; her screen shows one calm line of advice. If the weather service can't be reached the app says so. A labelled demo switch simulates a warning outside the season.
+
 ### Story feed (物語の広場)
 
 With her consent, a story can be shared publicly, named as she chooses (her first name or "someone in Niigata"), with or without her voice. She can take it down any time. Visitors' messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
@@ -128,6 +132,7 @@ apps/server            Express API, JSON-file storage (apps/server/data, not com
   src/seed.ts          The example family
   src/mapPage.ts       Neighbourhood map page (/map/:homeId)
   src/trackPage.ts     Item tracking page (/track/:itemId)
+  src/weather.ts       Live JMA weather warnings
   src/nearby.ts        Real nearby places from OpenStreetMap
 apps/mobile            Expo Router app (iOS, Android, web)
   app/                 Screens per role: her/, family/, student/, worker/, owner/, stories/, item/
@@ -144,4 +149,4 @@ packages/shared        Types and rules shared by both
 
 ## Data and credits
 
-Map data © OpenStreetMap contributors (ODbL). Map tiles by OpenFreeMap. Places near the demo home were copied on 10 October 2026.
+Map data © OpenStreetMap contributors (ODbL). Map tiles by OpenFreeMap. Weather warnings: Japan Meteorological Agency (気象庁). Places near the demo home were copied on 10 October 2026.
