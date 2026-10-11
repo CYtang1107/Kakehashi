@@ -554,6 +554,8 @@ function publicStory(item: Item): PublicStory {
     photos: item.share?.photos ? shareablePhotos(item) : [],
     icon: item.share?.photos ? item.icon : undefined,
     hearts: item.hearts ?? 0,
+    ...townPoint(home),
+    journey: item.journey.map((j) => ({ stage: j.stage, at: j.at.slice(0, 10) })),
     comments: (item.comments ?? []).filter((c) => c.status === 'shown').map(({ from, message, at }) => ({ from, message, at })),
   };
 }
@@ -564,14 +566,21 @@ function shareablePhotos(item: Item) {
     ? [{ id: 'main', url: item.photoUrl, kind: 'photo' as const, by: '', at: '' }, ...album] : album;
   return all.filter((p) => p.kind === 'photo').map((p) => ({ ...p, by: '' }));
 }
+// The town on the story globe: her first place, rounded to 0.1 degrees (about 10 km), so the home is never shown.
+function townPoint(home: Home | undefined) {
+  const p = home?.places.find((x) => x.mine) ?? { lat: 35.68, lng: 139.77 };
+  return { lat: Math.round(p.lat * 10) / 10, lng: Math.round(p.lng * 10) / 10 };
+}
 const sharedItem = (id: string) => db.items.find((i) => i.id === id && i.share && (i.story || i.storyJa));
 const CONTACT = /(https?:\/\/|www\.|@[a-z0-9-]+\.|\b\d{2,4}[-\s]?\d{3,4}[-\s]?\d{4}\b|line\s*id)/i;
 
 app.get('/api/stories', (_req, res) => {
-  res.json(db.items.filter((i) => i.share && (i.story || i.storyJa)).sort((a, b) => b.share!.at.localeCompare(a.share!.at)).map(publicStory));
+  const real = db.items.filter((i) => i.share && (i.story || i.storyJa)).sort((a, b) => b.share!.at.localeCompare(a.share!.at)).map(publicStory);
+  res.json([...real, ...db.examples]);
 });
 
 app.post('/api/stories/:itemId/comments', (req, res) => {
+  if (db.examples.some((x) => x.id === req.params.itemId)) return fail(res, 400, 'This is an example story, so it cannot take messages.');
   const item = sharedItem(req.params.itemId);
   if (!item) return fail(res, 404, 'This story is not shared.');
   const from = String(req.body?.from ?? '').trim().slice(0, 40);
@@ -584,6 +593,12 @@ app.post('/api/stories/:itemId/comments', (req, res) => {
 });
 
 app.post('/api/stories/:itemId/heart', (req, res) => {
+  const example = db.examples.find((x) => x.id === req.params.itemId);
+  if (example) {
+    example.hearts = Math.max(0, example.hearts + (req.body?.undo ? -1 : 1));
+    save();
+    return res.json({ hearts: example.hearts });
+  }
   const item = sharedItem(req.params.itemId);
   if (!item) return fail(res, 404, 'This story is not shared.');
   item.hearts = Math.max(0, (item.hearts ?? 0) + (req.body?.undo ? -1 : 1));

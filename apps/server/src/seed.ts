@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Delivery, Handover, Home, Item, ItemIcon, ItemPhoto, Place, Plan, TrackPoint } from '@kakehashi/shared';
+import type { Delivery, Handover, Home, Item, ItemIcon, ItemPhoto, Place, Plan, PublicStory, TrackPoint } from '@kakehashi/shared';
 // Same folder as db.ts's UPLOAD_DIR (not imported, to avoid a circular import).
 const UPLOAD_DIR = path.resolve(__dirname, '..', 'data', 'uploads');
 import { NEARBY } from './nearby';
@@ -231,4 +231,44 @@ function herPlaces(): Place[] {
   const home: Place = { id: 'p-home', kind: 'home', name: 'Her home (demo point)', nameJa: 'ご自宅（デモ）', lat: 37.9035, lng: 139.0545 };
   const mine = MINE.map((id) => ({ ...NEARBY.find((p) => p.id === id)!, mine: true }));
   return [home, ...mine, ...NEARBY.filter((p) => !MINE.includes(p.id))];
+}
+
+// Invented example stories from other towns, so the demo story globe shows how it fills up.
+// They are labelled "Example" in the app and take no messages.
+export function exampleStories(): PublicStory[] {
+  const ex = (id: string, o: Omit<PublicStory, 'id' | 'photos' | 'example' | 'comments' | 'audioUrl'> & { comments?: PublicStory['comments'] }): PublicStory =>
+    ({ id: `ex-${id}`, photos: [], comments: [], example: true, ...o });
+  return [
+    ex('kotatsu', { name: 'Kotatsu table', nameJa: 'こたつ', year: '1985', glyph: '炬', lat: 39.7, lng: 140.1, hearts: 73, sharedAt: '2026-10-08',
+      teller: 'Someone in Akita', tellerJa: '秋田の方',
+      story: 'Every winter all four of us did homework under it and peeled mikan until our fingers were orange.',
+      storyJa: '冬になると、家族四人でこの中で宿題をして、指が黄色くなるまでみかんをむきました。',
+      journey: [{ stage: 'home', at: '2026-09-20' }, { stage: 'sorted', at: '2026-09-20' }, { stage: 'delivered', at: '2026-10-04' }] }),
+    ex('bicycle', { name: 'Delivery bicycle', nameJa: '自転車', year: '1990', glyph: '輪', lat: 38.3, lng: 140.9, hearts: 41, sharedAt: '2026-10-06',
+      teller: 'Takeshi, Sendai', tellerJa: '武さん（仙台）',
+      story: 'I rode it to the fish market before sunrise for thirty years. The bell still works.',
+      storyJa: '三十年、夜明け前の魚市場へこれで通いました。ベルはまだ鳴ります。',
+      journey: [{ stage: 'home', at: '2026-09-12' }, { stage: 'sorted', at: '2026-09-12' }, { stage: 'repair', at: '2026-09-26' }] }),
+    ex('teaset', { name: 'Kutani tea set', nameJa: '九谷焼の茶器', year: '1979', glyph: '茶', lat: 36.6, lng: 136.7, hearts: 58, sharedAt: '2026-10-05',
+      teller: 'Someone in Kanazawa', tellerJa: '金沢の方',
+      story: 'A wedding gift from my teacher. We only used it when someone came to say thank you.',
+      storyJa: '恩師からの結婚祝いです。誰かがお礼を言いに来た時だけ使いました。',
+      journey: [{ stage: 'home', at: '2026-09-28' }] }),
+    ex('records', { name: 'Record player', nameJa: 'レコードプレーヤー', year: '1974', glyph: '音', lat: 34.4, lng: 133.2, hearts: 96, sharedAt: '2026-10-03',
+      teller: 'Fumiko, Onomichi', tellerJa: '文子さん（尾道）',
+      story: 'My husband played the same jazz record every Sunday morning. I still know where it skips.',
+      storyJa: '夫は毎週日曜の朝、同じジャズのレコードをかけました。どこで音が飛ぶか、今も覚えています。',
+      journey: [{ stage: 'home', at: '2026-09-15' }, { stage: 'sorted', at: '2026-09-15' }, { stage: 'repair', at: '2026-09-22' }, { stage: 'delivered', at: '2026-10-01' }],
+      comments: [{ from: '', message: 'Now I want to know which record it was.', at: '2026-10-04T10:00:00Z' }] }),
+    ex('tansu', { name: 'Clothes chest', nameJa: '桐たんす', year: '1958', glyph: '箪', lat: 31.6, lng: 130.6, hearts: 34, sharedAt: '2026-09-30',
+      teller: 'Someone in Kagoshima', tellerJa: '鹿児島の方',
+      story: 'It came with my mother when she married. The drawers still close with a soft puff of air.',
+      storyJa: '母が嫁入りの時に持ってきたたんすです。引き出しは今も、ふっと空気の音をさせて閉まります。',
+      journey: [{ stage: 'home', at: '2026-09-10' }, { stage: 'sorted', at: '2026-09-10' }] }),
+    ex('knitting', { name: 'Knitting basket', nameJa: '編み物かご', year: '1981', glyph: '編', lat: 43.1, lng: 141.4, hearts: 62, sharedAt: '2026-09-27',
+      teller: 'Setsuko, Sapporo', tellerJa: '節子さん（札幌）',
+      story: 'Every grandchild got a scarf from this basket before their first snow.',
+      storyJa: '孫たちはみんな、初雪の前にこのかごから編んだマフラーをもらいました。',
+      journey: [{ stage: 'home', at: '2026-09-05' }, { stage: 'sorted', at: '2026-09-05' }, { stage: 'delivered', at: '2026-09-21' }] }),
+  ];
 }

@@ -102,7 +102,9 @@ A **Wallet** tab for students, like EVE's points screen. Pay is added automatica
 
 ### Story feed (物語の広場)
 
-With her consent, a story can be shared publicly, named as she chooses (her first name or "someone in Niigata"), with or without her voice. She can take it down any time. Each story shows as a post: the item's photos to swipe through (only photos of the item itself, and only if she agrees; old family photos and illustrations stay with the family), or the story itself as the post when there are none, with hearts, messages and a share link. Visitors can leave their name blank to post as "Anonymous". Messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
+With her consent, a story can be shared publicly, named as she chooses (her first name or "someone in Niigata"), with or without her voice. She can take it down any time. Each story shows as a post: the item's photos to swipe through (only photos of the item itself, and only if she agrees; old family photos and illustrations stay with the family), or the story itself as the post when there are none, with hearts, messages and a share link. Visitors can leave their name blank to post as "Anonymous".
+
+Above the posts, a **story globe** (adapted from EVE's EVEth) shows every shared story as a light on its town, rounded to about 10 km and never the home. Drag to spin, zoom in and out, and tap a light to open the story with "Where it went": the stages and dates of its journey, with no names or places. The demo adds six invented example stories from other towns (Akita, Sendai, Kanazawa, Onomichi, Kagoshima, Sapporo) so the globe shows how it fills up; they are marked "Example" in gold and take no messages. Messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
 
 ## No pressure to let go
 
@@ -166,4 +168,4 @@ packages/shared        Types and rules shared by both
 
 ## Data and credits
 
-Map data © OpenStreetMap contributors (ODbL). Map tiles by OpenFreeMap. Weather warnings: Japan Meteorological Agency (気象庁). Places near the demo home were copied on 10 October 2026.
+Map data © OpenStreetMap contributors (ODbL). Map tiles by OpenFreeMap. Weather warnings: Japan Meteorological Agency (気象庁). Places near the demo home were copied on 10 October 2026. Story globe coastlines: Natural Earth 1:50m land (public domain), via the world-atlas package.

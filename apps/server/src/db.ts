@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Home, Item } from '@kakehashi/shared';
-import { seedHome, seedItems } from './seed';
+import type { Home, Item, PublicStory } from '@kakehashi/shared';
+import { exampleStories, seedHome, seedItems } from './seed';
 
 // A small JSON-file store. Good enough for a pilot with a handful of families.
 export const DATA_DIR = path.resolve(__dirname, '..', 'data');
@@ -11,16 +11,17 @@ const DB_FILE = path.join(DATA_DIR, 'db.json');
 interface Db {
   homes: Home[];
   items: Item[];
+  examples: PublicStory[]; // invented stories from other towns, so the demo globe is not empty
 }
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 function fresh(): Db {
-  return { homes: [seedHome()], items: seedItems() };
+  return { homes: [seedHome()], items: seedItems(), examples: exampleStories() };
 }
 
 // Older data files from earlier versions lack newer fields; demo data is simply re-seeded.
-const isCurrent = (d: Db) => d.homes.every((h) => Array.isArray(h.activities) && Array.isArray(h.letters) && Array.isArray(h.fieldNotes) && Array.isArray(h.safety) && Array.isArray(h.future?.familyNotes) && Array.isArray(h.services) && Array.isArray(h.places) && h.places.some((p) => p.mine) && Array.isArray(h.outings) && Array.isArray(h.weather?.checks) && Array.isArray(h.pay) && h.services.some((s) => s.status === 'open') && d.items.some((i) => i.share) && d.items.some((i) => typeof i.hearts === 'number') && d.items.some((i) => i.delivery) && h.students.every((s) => s.passed) && h.rooms.every((r) => Array.isArray(r.photos)));
+const isCurrent = (d: Db) => Array.isArray(d.examples) && d.homes.every((h) => Array.isArray(h.activities) && Array.isArray(h.letters) && Array.isArray(h.fieldNotes) && Array.isArray(h.safety) && Array.isArray(h.future?.familyNotes) && Array.isArray(h.services) && Array.isArray(h.places) && h.places.some((p) => p.mine) && Array.isArray(h.outings) && Array.isArray(h.weather?.checks) && Array.isArray(h.pay) && h.services.some((s) => s.status === 'open') && d.items.some((i) => i.share) && d.items.some((i) => typeof i.hearts === 'number') && d.items.some((i) => i.delivery) && h.students.every((s) => s.passed) && h.rooms.every((r) => Array.isArray(r.photos)));
 
 function load(): Db {
   try {

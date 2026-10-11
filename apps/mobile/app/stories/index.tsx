@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform, Pressable, Share, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Share, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick, type PublicStory } from '@kakehashi/shared';
 import { Heading, Screen, formatDate } from '../../src/ui';
@@ -7,14 +7,16 @@ import { StoryPlayer } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { PhotoCarousel } from '../../src/PhotoCarousel';
 import { spriteFor } from '../../src/pixelArt';
-import { useI18n } from '../../src/i18n';
+import { StoryGlobe } from '../../src/StoryGlobe';
+import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { colors, fonts, type } from '../../src/theme';
 
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
 export default function StoriesFeed() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [stories, setStories] = useState<PublicStory[] | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const load = useCallback(() => api.stories().then(setStories).catch((e) => setError(String(e.message ?? e))), []);
   useEffect(() => { load(); }, [load]);
@@ -28,9 +30,43 @@ export default function StoriesFeed() {
     <Screen>
       <Heading eyebrow={t('feedEyebrow')} title={t('feedTitle')} sub={t('feedLead')} />
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {stories?.length ? (
+        <View style={{ gap: 8 }}>
+          <StoryGlobe stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
+          <Text style={[type.caption, { textAlign: 'center' }]}>{t('globeHint')}</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {stories.map((st) => (
+              <Pressable key={st.id} accessibilityRole="button" onPress={() => setSelected(st.id)}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 4, paddingRight: 10, paddingVertical: 4, borderRadius: 99, borderWidth: 1, borderColor: st.id === selected ? colors.ai : colors.line, backgroundColor: st.id === selected ? colors.aiTint : colors.sheet }}>
+                <PixelIcon sprite={spriteFor({ id: st.id, name: st.name, nameJa: st.nameJa, icon: st.icon })} size={22} />
+                <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: colors.ink }}>{pick(lang, st.name, st.nameJa)}</Text>
+                {st.example ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#D9B26A' }} /> : null}
+              </Pressable>
+            ))}
+          </View>
+          <Text style={type.caption}>{t('globeLegend')}</Text>
+        </View>
+      ) : null}
       {stories?.map((s) => <StoryPost key={s.id} story={s} />)}
       {stories && stories.length === 0 ? <Text style={type.body}>{t('feedEmpty')}</Text> : null}
       <Text style={type.caption}>{t('feedRules')}</Text>
+
+      {/* A story opened from the globe, with where it went */}
+      <Modal visible={!!selected} transparent animationType="slide" onRequestClose={() => { setSelected(null); load(); }}>
+        <Pressable onPress={() => { setSelected(null); load(); }} style={{ flex: 1, backgroundColor: 'rgba(18,26,42,0.55)', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <Pressable onPress={() => {}} style={{ width: '100%', maxWidth: 560, maxHeight: '90%', backgroundColor: colors.paper, borderTopLeftRadius: 22, borderTopRightRadius: 22 }}>
+            <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 30, gap: 10 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t('close')} onPress={() => { setSelected(null); load(); }}
+                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }}>
+                  <Feather name="x" size={18} color={colors.ink} />
+                </Pressable>
+              </View>
+              {stories?.filter((st) => st.id === selected).map((st) => <StoryPost key={st.id} story={st} withJourney />)}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </Screen>
   );
 }
@@ -44,7 +80,7 @@ function rememberHeart(id: string, on: boolean) {
   try { globalThis.localStorage?.setItem(HEARTS_KEY, JSON.stringify([...heartedIds().filter((x) => x !== id), ...(on ? [id] : [])])); } catch { /* not kept */ }
 }
 
-function StoryPost({ story }: { story: PublicStory }) {
+function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: boolean }) {
   const { t, lang } = useI18n();
   const [hearts, setHearts] = useState(story.hearts);
   const [hearted, setHearted] = useState(() => heartedIds().includes(story.id));
@@ -93,6 +129,11 @@ function StoryPost({ story }: { story: PublicStory }) {
           <Text style={{ fontFamily: fonts.bold, fontSize: 14.5, color: colors.ink }}>{pick(lang, story.name, story.nameJa)}{story.year ? ` · ${story.year}` : ''}</Text>
           <Text style={type.caption}>{teller} · {formatDate(story.sharedAt, lang)}</Text>
         </View>
+        {story.example ? (
+          <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99, backgroundColor: '#F3E9D2' }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 11.5, color: '#7A5B1E' }}>{t('feedExample')}</Text>
+          </View>
+        ) : null}
       </View>
 
       {/* Media: her photos (with her OK), or the story itself as the post */}
@@ -119,6 +160,7 @@ function StoryPost({ story }: { story: PublicStory }) {
           <Text style={type.body}><Text style={type.bodyBold}>{teller} </Text>{text}</Text>
         ) : null}
         {story.audioUrl ? <StoryPlayer path={story.audioUrl} /> : null}
+        {withJourney && story.journey.length ? <Journey story={story} /> : null}
         {comments.map((c, i) => (
           <Text key={i} style={type.body}><Text style={type.bodyBold}>{c.from || t('feedAnon')} </Text>{c.message}</Text>
         ))}
@@ -128,7 +170,9 @@ function StoryPost({ story }: { story: PublicStory }) {
           </Pressable>
         ) : null}
 
-        {writing ? (
+        {story.example ? (
+          <Text style={type.caption}>{t('feedExampleNote')}</Text>
+        ) : writing ? (
           <View style={{ gap: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
             <Input value={from} onChangeText={setFrom} placeholder={t('feedNameOptional')} maxLength={40} accessibilityLabel={t('feedNameOptional')} />
             <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
@@ -169,5 +213,29 @@ function Action({ icon, label, count, on, onPress }: { icon: React.ComponentProp
       <Feather name={icon} size={23} color={on ? colors.kaki : colors.ink} style={on ? { opacity: 1 } : undefined} />
       {count !== undefined ? <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ink }}>{count}</Text> : null}
     </Pressable>
+  );
+}
+
+// Where it went: the stages and dates only, never names or places.
+function Journey({ story }: { story: PublicStory }) {
+  const { t, lang } = useI18n();
+  return (
+    <View style={{ gap: 0, paddingVertical: 6 }}>
+      <Text style={[type.bodyBold, { marginBottom: 8 }]}>{t('journeyTitle')}</Text>
+      {story.journey.map((j, i) => (
+        <View key={i} style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ alignItems: 'center', width: 22 }}>
+            <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.moss, alignItems: 'center', justifyContent: 'center' }}>
+              <Feather name="check" size={13} color="#fff" />
+            </View>
+            {i < story.journey.length - 1 ? <View style={{ width: 2, flex: 1, minHeight: 16, backgroundColor: colors.moss }} /> : null}
+          </View>
+          <View style={{ flex: 1, paddingBottom: 12 }}>
+            <Text style={type.bodyBold}>{j.stage === 'home' && story.year ? t('journeyHomeSince', { year: story.year }) : t(`stage_${j.stage}` as Key)}</Text>
+            <Text style={type.caption}>{formatDate(j.at, lang)}</Text>
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }

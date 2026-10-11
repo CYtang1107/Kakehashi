@@ -489,6 +489,12 @@ export interface PublicStory {
   icon?: ItemIcon;
   hearts: number;
   comments: { from: string; message: string; at: string }[]; // from '' = anonymous
+  // For the story globe: the town only, rounded to about 10 km, never the home.
+  lat: number;
+  lng: number;
+  // Where it went: stages and dates only, no names or places.
+  journey: { stage: HandoverStage; at: string }[];
+  example?: boolean; // an invented example story for the demo, labelled as such
 }
 
 // ---------- Outing sharing (お出かけの見守り) ----------
