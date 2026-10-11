@@ -77,7 +77,7 @@ export const api = {
   addFieldNote: (homeId: string, kind: FieldNoteKind, text: string, by: string) =>
     call<FieldNote[]>(`/api/home/${homeId}/fieldnotes`, { method: 'POST', body: { kind, text, by } }),
   checkReport: (text: string) => call<CheckResult>('/api/report/check', { method: 'POST', body: { text } }),
-  sendReport: (homeId: string, text: string) => call<Visit>(`/api/home/${homeId}/report`, { method: 'POST', body: { text } }),
+  sendReport: (homeId: string, text: string, by: string, readConfirmed: boolean) => call<Visit>(`/api/home/${homeId}/report`, { method: 'POST', body: { text, by, readConfirmed } }),
   studentStep: (homeId: string, studentId: string, step: ReadinessStep, passed: boolean) =>
     call<Student>(`/api/home/${homeId}/students/${studentId}/step`, { method: 'POST', body: { step, passed } }),
   roomPhoto: (homeId: string, roomId: string, base64: string, mime: string) =>
@@ -85,7 +85,7 @@ export const api = {
   activity: (homeId: string, activityId: string, status: ActivityStatus) =>
     call<CommunityActivity>(`/api/home/${homeId}/activities/${activityId}`, { method: 'POST', body: { status } }),
   prepareLetter: (homeId: string, note?: string) => call<Letter>(`/api/home/${homeId}/letters`, { method: 'POST', body: note !== undefined ? { note } : {} }),
-  letterStatus: (letterId: string, status: Letter['status']) => call<Letter>(`/api/letters/${letterId}/status`, { method: 'POST', body: { status } }),
+  letterStatus: (letterId: string, status: Letter['status'], opts?: { by: string; readConfirmed: boolean }) => call<Letter>(`/api/letters/${letterId}/status`, { method: 'POST', body: { status, ...opts } }),
   logCall: (homeId: string, body: { by?: string; minutes?: number; mood?: CallMood; note?: string; followUp?: boolean }) =>
     call<Call[]>(`/api/home/${homeId}/calls`, { method: 'POST', body }),
   publicTag: (code: string) => call<PublicTag>(`/api/tags/${encodeURIComponent(code)}`),

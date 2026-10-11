@@ -121,6 +121,9 @@ export interface Visit {
   status: 'done' | 'planned';
   // Set when the report passed the fresh-eyes check before reaching the family.
   checked?: 'claude' | 'offline';
+  // A person confirmed they read it before it went to the family (AI checks; a person approves).
+  readBy?: string;
+  readAt?: string;
 }
 
 // From home to community (KizunaLink): local activities matched to her interests.
@@ -267,6 +270,8 @@ export interface Letter {
   noteJa?: string;
   status: 'draft' | 'printed' | 'mailed';
   mailedAt?: string;
+  readBy?: string; // who read the whole letter before it was printed
+  readAt?: string;
 }
 
 // A short phone call from her student between visits.

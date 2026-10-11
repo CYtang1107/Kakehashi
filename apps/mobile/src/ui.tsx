@@ -122,6 +122,17 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
   );
 }
 
+// "I read this": a person confirms they read what the app drafted or checked, before it goes out.
+export function ReadConfirm({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return (
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} onPress={() => onChange(!checked)}
+      style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', paddingVertical: 8, paddingHorizontal: 10, borderRadius: 10, backgroundColor: checked ? colors.mossTint : colors.paper }}>
+      <Feather name={checked ? 'check-square' : 'square'} size={20} color={checked ? colors.moss : colors.inkSoft} />
+      <Text style={[type.body, { flex: 1 }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export function Button({ label, onPress, kind = 'primary', icon, disabled, busy }: {
   label: string; onPress: () => void; kind?: 'primary' | 'secondary' | 'danger'; icon?: keyof typeof Feather.glyphMap; disabled?: boolean; busy?: boolean;
 }) {

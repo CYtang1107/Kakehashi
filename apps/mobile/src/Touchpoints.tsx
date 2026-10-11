@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { pick, type CallMood, type Home, type Letter } from '@kakehashi/shared';
-import { Button, Card, Field, Pill, formatDate } from './ui';
+import { Button, Card, Field, Pill, formatDate , ReadConfirm } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
 import { api, letterUrl } from './api';
@@ -32,6 +32,7 @@ export function LetterCard({ mode }: { mode: 'family' | 'student' }) {
   const { t, lang } = useI18n();
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [readLetter, setReadLetter] = useState(false);
   if (!data) return null;
   const { home } = data;
   const thisMonth = new Date().toISOString().slice(0, 7);
@@ -68,9 +69,12 @@ export function LetterCard({ mode }: { mode: 'family' | 'student' }) {
             <Button label={t('saveNote')} kind="secondary" busy={busy === 'note'} disabled={note === null}
               onPress={() => run('note', () => api.prepareLetter(home.id, note ?? ''), t('saved')).then(() => setNote(null))} />
             <Button label={t('openLetter')} kind="secondary" icon="printer" onPress={() => WebBrowser.openBrowserAsync(letterUrl(shown.id))} />
+            {shown.status === 'draft'
+              ? <ReadConfirm checked={readLetter} onChange={setReadLetter} label={t('readLetter')} />
+              : shown.readBy ? <Text style={type.caption}>{t('readLetterBy', { by: shown.readBy })}</Text> : null}
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              <View style={{ flex: 1 }}><Button label={t('markPrinted')} kind="secondary" busy={busy === 'printed'} disabled={shown.status !== 'draft'}
-                onPress={() => run('printed', () => api.letterStatus(shown.id, 'printed'))} /></View>
+              <View style={{ flex: 1 }}><Button label={t('markPrinted')} kind="secondary" busy={busy === 'printed'} disabled={shown.status !== 'draft' || !readLetter}
+                onPress={() => run('printed', () => api.letterStatus(shown.id, 'printed', { by: home.students.find((x) => x.role === 'pair')?.name ?? 'Student', readConfirmed: readLetter })).then(() => setReadLetter(false))} /></View>
               <View style={{ flex: 1 }}><Button label={t('markMailed')} busy={busy === 'mailed'} disabled={shown.status === 'mailed'}
                 onPress={() => run('mailed', () => api.letterStatus(shown.id, 'mailed'))} /></View>
             </View>

@@ -25,6 +25,7 @@ export default function Reports() {
                   <Text style={[type.bodyBold, { flex: 1 }]}>{formatDate(v.date, lang)} · {room ? (lang === 'ja' ? room.nameJa : room.name) : ''}</Text>
                   {v.status === 'planned' ? <Pill label={t('planned')} /> : null}
                   {v.checked ? <Pill label={t('checkedBadge')} color={colors.moss} bg={colors.mossTint} /> : null}
+                  {v.readBy ? <Pill label={t('readByBadge', { by: v.readBy })} color={colors.ai} bg={colors.aiTint} /> : null}
                 </View>
                 <Text style={[type.body, { color: v.status === 'planned' ? colors.inkSoft : colors.ink }]}>{pick(lang, v.summary, v.summaryJa)}</Text>
               </Card>

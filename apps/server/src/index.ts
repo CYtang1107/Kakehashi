@@ -672,6 +672,7 @@ app.post('/api/home/:id/report', async (req, res) => {
   if (!home) return fail(res, 404, 'Home not found.');
   const text = String(req.body?.text ?? '').trim();
   if (!text) return fail(res, 400, 'Write the report first.');
+  if (req.body?.readConfirmed !== true) return fail(res, 400, 'Confirm that you read the report yourself before sending it.');
   const result = await checkReport(text);
   if (!result.ok) return res.status(422).json({ error: 'Some wording could read as pressure. Please reword the flagged phrases.', ...result });
   const today = now().slice(0, 10);
@@ -685,6 +686,8 @@ app.post('/api/home/:id/report', async (req, res) => {
   delete visit.summaryJa;
   visit.status = 'done';
   visit.checked = result.source;
+  visit.readBy = String(req.body?.by || home.students.find((s) => s.role === 'pair')?.name || 'Student').slice(0, 40);
+  visit.readAt = now();
   save();
   res.json(visit);
 });
@@ -767,6 +770,11 @@ app.post('/api/letters/:id/status', (req, res) => {
   if (!letter) return fail(res, 404, 'Letter not found.');
   const status = req.body?.status;
   if (!['draft', 'printed', 'mailed'].includes(status)) return fail(res, 400, 'Unknown status.');
+  if (status === 'printed') {
+    if (req.body?.readConfirmed !== true) return fail(res, 400, 'Confirm that you read the whole letter before printing it.');
+    letter.readBy = String(req.body?.by || 'Student').slice(0, 40);
+    letter.readAt = now();
+  }
   letter.status = status;
   if (status === 'mailed') letter.mailedAt = now().slice(0, 10);
   save();

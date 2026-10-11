@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { pick, type CheckResult, type FieldNoteKind } from '@kakehashi/shared';
-import { Button, Card, Field, Pill, formatDate } from './ui';
+import { Button, Card, Field, Pill, formatDate , ReadConfirm } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
 import { api } from './api';
@@ -65,6 +65,8 @@ export function ReportCard() {
   const [result, setResult] = useState<CheckResult | null>(null);
   const [checkedText, setCheckedText] = useState('');
   const [busy, setBusy] = useState<'check' | 'send' | null>(null);
+  const [read, setRead] = useState(false);
+  useEffect(() => { setRead(false); }, [text]);
   const [error, setError] = useState<string | null>(null);
   if (!data) return null;
 
@@ -77,7 +79,7 @@ export function ReportCard() {
 
   const send = async () => {
     setBusy('send'); setError(null);
-    try { await api.sendReport(data.home.id, text.trim()); await refresh(); setText(''); setResult(null); showToast(t('reportSent')); }
+    try { await api.sendReport(data.home.id, text.trim(), data.home.students.find((x) => x.role === 'pair')?.name ?? 'Student', read); await refresh(); setText(''); setResult(null); setRead(false); showToast(t('reportSent')); }
     catch (e) { setError(e instanceof Error ? e.message : 'Could not send.'); }
     finally { setBusy(null); }
   };
@@ -113,7 +115,8 @@ export function ReportCard() {
           </View>
         )
       ) : null}
-      <Button label={t('sendReport')} icon="send" busy={busy === 'send'} disabled={!upToDate || !result?.ok} onPress={send} />
+      {upToDate && result?.ok ? <ReadConfirm checked={read} onChange={setRead} label={t('readReport')} /> : null}
+      <Button label={t('sendReport')} icon="send" busy={busy === 'send'} disabled={!upToDate || !result?.ok || !read} onPress={send} />
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
     </Card>
   );
