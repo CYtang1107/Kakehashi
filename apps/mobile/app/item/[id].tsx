@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { CHOICES, WISHES, pick, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
-import { Button, Card, DecisionChip, Field, Fold, Glyph, Heading, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Columns, DecisionChip, Field, Fold, Glyph, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
@@ -52,16 +52,20 @@ export default function ItemScreen() {
   const held = Boolean(item.holdUntil && today() < item.holdUntil);
   const nextStage: HandoverStage = item.decision === 'recycle' ? (item.journey.some((j) => j.stage === 'collected') ? 'recycler' : 'collected') : item.journey.some((j) => j.stage === 'repair') ? 'delivered' : 'repair';
 
-  return (
-    <Screen back>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View style={{ width: 84, height: 84, borderRadius: 18, backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }}>
-          <PixelIcon sprite={spriteFor(item)} size={64} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Heading eyebrow={`${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? `, ${item.year}` : ''}`} title={name} />
-        </View>
+  const header = {
+    eyebrow: `${room ? (lang === 'ja' ? room.nameJa : room.name) : ''}${item.year ? `, ${item.year}` : ''}`,
+    title: name,
+    leading: (
+      <View style={{ width: 76, height: 76, borderRadius: 16, backgroundColor: colors.sheet, alignItems: 'center', justifyContent: 'center' }}>
+        <PixelIcon sprite={spriteFor(item)} size={58} />
       </View>
+    ),
+  };
+
+  return (
+    <Screen back wide header={header}>
+      <Columns
+        left={<>
       <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('icon', () => api.setIcon(item.id, { photoId }), t('photoPixelMade')) : undefined} />
       {student && item.icon ? (
         <Pressable accessibilityRole="button" onPress={() => run('icon', () => api.setIcon(item.id, { reset: true }), t('saved'))} style={{ alignSelf: 'flex-start', paddingVertical: 2 }}>
@@ -78,7 +82,8 @@ export default function ItemScreen() {
         </View>
       ) : null}
       {item.audioUrl ? <StoryPlayer path={item.audioUrl} /> : null}
-
+        </>}
+        right={<>
       {student ? (
         <>
           {item.wish ? (
@@ -160,7 +165,8 @@ export default function ItemScreen() {
         </Fold>
       )}
       <Worth item={item} />
-
+        </>}
+      />
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
     </Screen>
   );

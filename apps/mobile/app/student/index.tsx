@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { Button, Card, DecisionChip, Fold, Glyph, Heading, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Columns, DecisionChip, Fold, Glyph, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -37,11 +37,13 @@ export default function Visit() {
   };
 
   return (
-    <Screen>
-      <Heading eyebrow={t('visitToday', { name: lang === 'ja' && home.seniorNameJa ? home.seniorNameJa.split(' ')[0] : home.seniorName.split(' ')[1] ?? home.seniorName })} title={lang === 'ja' ? current.nameJa : current.name} />
+    <Screen wide={step === 'with'} header={{
+      eyebrow: t('visitToday', { name: lang === 'ja' && home.seniorNameJa ? home.seniorNameJa.split(' ')[0] : home.seniorName.split(' ')[1] ?? home.seniorName }),
+      title: lang === 'ja' ? current.nameJa : current.name,
+    }}>
       <VisitSteps step={step} onChange={setStep} />
       {step === 'before' ? (
-        <>
+        <View style={{ maxWidth: 640, width: '100%', gap: 14 }}>
       <WeatherCheckCard />
       <Card tint>
         <Text style={type.bodyBold}>{t('beforeYouStart')}</Text>
@@ -55,9 +57,11 @@ export default function Visit() {
           icon={home.consent.recording ? 'x-circle' : 'check-circle'} busy={busy} onPress={() => setConsent(!home.consent.recording)} />
       </Card>
           <Button label={t('stepNextWith')} icon="chevron-right" onPress={() => setStep('with')} />
-        </>
+        </View>
       ) : step === 'with' ? (
         <>
+      <Columns
+        left={<>
       <Text style={type.section}>{t('items')}</Text>
       {[...roomItems, ...otherItems].map((it) => (
         <Pressable key={it.id} accessibilityRole="button" onPress={() => router.push(`/item/${it.id}?as=student`)}
@@ -71,6 +75,8 @@ export default function Visit() {
         </Pressable>
       ))}
       <Button label={t('tabAdd')} kind="secondary" icon="camera" onPress={() => router.push('/student/add')} />
+        </>}
+        right={<>
       <Text style={[type.section, { marginTop: 6 }]}>{t('moreWithHer')}</Text>
       <Fold title={t('roomPhotosTitle')} icon="image" summary={t('foldPhotos', { n: current.photos.length })}>
         <RoomCapture roomId={current.id} />
@@ -88,14 +94,16 @@ export default function Visit() {
         <ActivitiesCard mode="student" />
         <OutingCard />
       </Fold>
+        </>}
+      />
           <Button label={t('stepNextAfter')} icon="chevron-right" onPress={() => setStep('after')} />
         </>
       ) : (
-        <>
+        <View style={{ maxWidth: 640, width: '100%', gap: 14 }}>
       <ReportCard />
       <LetterCard mode="student" />
       <CallsCard mode="student" />
-        </>
+        </View>
       )}
     </Screen>
   );
@@ -111,9 +119,9 @@ function VisitSteps({ step, onChange }: { step: Step; onChange: (s: Step) => voi
         const on = step === k;
         return (
           <Pressable key={k} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => onChange(k)}
-            style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, borderRadius: 12, backgroundColor: on ? colors.ai : colors.sheet, borderWidth: on ? 0 : 1, borderColor: colors.line, gap: 2 }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 12, color: on ? colors.aiTint : colors.inkSoft }}>{i + 1}</Text>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: on ? colors.sheet : colors.ink }}>{label}</Text>
+            style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, borderRadius: 12, backgroundColor: on ? colors.night : colors.sheet, borderWidth: on ? 0 : 1, borderColor: colors.line, gap: 2 }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 12, color: on ? colors.kakiNight : colors.inkSoft }}>{i + 1}</Text>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: on ? colors.onNight : colors.ink }}>{label}</Text>
           </Pressable>
         );
       })}

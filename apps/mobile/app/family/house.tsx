@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
-import { Button, Card, DecisionChip, Glyph, Heading, Screen } from '../../src/ui';
+import { Button, Card, Columns, DecisionChip, Glyph, Screen } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
 import { NearbyList, NeighbourhoodMap } from '../../src/NeighbourhoodMap';
 import { Home3D, eveningState, hasStory, memoryColors, type ColorBy, type Evening } from '../../src/Home3D';
@@ -71,12 +71,17 @@ export default function House() {
   const current = data?.items.find((i) => i.id === selected);
   const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
+  const header = data ? {
+    eyebrow: memory ? t('memoryHouse') : t('tabHouse'),
+    title: lang === 'ja' && data.home.seniorNameJa ? `${data.home.seniorNameJa.split(' ')[1]}さん · ${pick(lang, data.home.town, data.home.townJa)}` : `${data.home.seniorName.split(' ')[0]} · ${data.home.town}`,
+    sub: memory ? t('memoryLead') : view === 'map' ? t('mapLead') : t('dragToRotate'),
+  } : undefined;
+
   return (
-    <Screen>
+    <Screen wide header={header}>
       {data ? (
-        <>
-          <Heading eyebrow={memory ? t('memoryHouse') : t('tabHouse')} title={lang === 'ja' && data.home.seniorNameJa ? `${data.home.seniorNameJa.split(' ')[1]}さん · ${pick(lang, data.home.town, data.home.townJa)}` : `${data.home.seniorName.split(' ')[0]} · ${data.home.town}`}
-            sub={memory ? t('memoryLead') : view === 'map' ? t('mapLead') : t('dragToRotate')} />
+        <Columns
+          left={<>
           <View style={{ flexDirection: 'row', backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
             {(['3d', '2d', 'memory', 'map'] as const).map((v) => (
               <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: view === v }} onPress={() => pickView(v)}
@@ -116,6 +121,8 @@ export default function House() {
             </Card>
           ) : null}
 
+          </>}
+          right={<>
           {view === 'map' ? (
             <NearbyList onFocus={(id) => setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }))} />
           ) : memory ? (
@@ -151,7 +158,8 @@ export default function House() {
               }) : null}
             </>
           )}
-        </>
+          </>}
+        />
       ) : null}
     </Screen>
   );

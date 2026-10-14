@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal, Platform, Pressable, ScrollView, Share, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick, type PublicStory } from '@kakehashi/shared';
-import { Heading, Screen, formatDate } from '../../src/ui';
+import { Columns, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { PhotoCarousel } from '../../src/PhotoCarousel';
@@ -27,10 +27,10 @@ export default function StoriesFeed() {
   }, [stories]);
 
   return (
-    <Screen>
-      <Heading eyebrow={t('feedEyebrow')} title={t('feedTitle')} sub={t('feedLead')} />
+    <Screen wide header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
-      {stories?.length ? (
+      <Columns stickyLeft
+        left={stories?.length ? (
         <View style={{ gap: 8 }}>
           <StoryGlobe stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
           <Text style={[type.caption, { textAlign: 'center' }]}>{t('globeHint')}</Text>
@@ -47,9 +47,12 @@ export default function StoriesFeed() {
           <Text style={type.caption}>{t('globeLegend')}</Text>
         </View>
       ) : null}
-      {stories?.map((s) => <StoryPost key={s.id} story={s} />)}
-      {stories && stories.length === 0 ? <Text style={type.body}>{t('feedEmpty')}</Text> : null}
-      <Text style={type.caption}>{t('feedRules')}</Text>
+        right={<>
+          {stories?.map((s) => <StoryPost key={s.id} story={s} />)}
+          {stories && stories.length === 0 ? <Text style={type.body}>{t('feedEmpty')}</Text> : null}
+          <Text style={type.caption}>{t('feedRules')}</Text>
+        </>}
+      />
 
       {/* A story opened from the globe, with where it went */}
       <Modal visible={!!selected} transparent animationType="slide" onRequestClose={() => { setSelected(null); load(); }}>

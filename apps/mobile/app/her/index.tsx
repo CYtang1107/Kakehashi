@@ -53,11 +53,7 @@ export default function HerScreen() {
   };
 
   return (
-    <Screen>
-      <View style={{ gap: 2 }}>
-        <Text style={{ fontFamily: fonts.display, fontSize: 34, lineHeight: 44, color: colors.ink }}>{t('herHello')}</Text>
-        <Text style={[body, { color: colors.inkSoft }]}>{t('herToday', { date: today(lang) })}</Text>
-      </View>
+    <Screen header={{ title: t('herHello'), sub: t('herToday', { date: today(lang) }), large: true }}>
       <WeatherNote />
       {next ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, borderRadius: 20, backgroundColor: thread.cloth }}>
