@@ -8,3 +8,4 @@ web-build/
 apps/server/data/
 .DS_Store
 .claude/skills/logo-design/
+.superpowers/
