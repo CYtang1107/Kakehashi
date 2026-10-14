@@ -53,7 +53,7 @@ export function WeatherCheckCard() {
           <Text style={[type.caption, { flex: 1 }]}>
             {w.source === 'unavailable' ? t('wxUnavailable') : t('wxNone', { area: pick(lang, w.area, w.areaJa), time: w.reportAt ? time(w.reportAt, lang) : '' })}
           </Text>
-          <Pressable accessibilityRole="button" onPress={() => demo('06')} disabled={busy === 'demo'}>
+          <Pressable accessibilityRole="button" onPress={() => demo('06')} disabled={busy === 'demo'} style={{ minHeight: 44, justifyContent: 'center' }}>
             <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.ai }}>{t('wxDemoOn')}</Text>
           </Pressable>
         </View>
@@ -87,7 +87,7 @@ export function WeatherCheckCard() {
         </>
       ) : null}
       {w.source === 'demo' ? (
-        <Pressable accessibilityRole="button" onPress={() => demo(null)} style={{ alignSelf: 'flex-start' }}>
+        <Pressable accessibilityRole="button" onPress={() => demo(null)} style={{ alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' }}>
           <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: colors.ai }}>{t('wxDemoOff')}</Text>
         </Pressable>
       ) : null}

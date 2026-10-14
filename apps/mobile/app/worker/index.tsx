@@ -108,6 +108,12 @@ export default function HelperBoard() {
           ))}
           <Text style={type.body}>{t('earned', { amount: yen(board.earned) })}</Text>
         </>
+      ) : !worker ? (
+        <Card tint style={{ alignItems: 'center', paddingVertical: 28 }}>
+          <Feather name="briefcase" size={28} color={colors.ai} />
+          <Text style={[type.bodyBold, { textAlign: 'center' }]}>{t('helperPickFirst')}</Text>
+          <Text style={[type.caption, { textAlign: 'center' }]}>{t('helperPickFirstHint')}</Text>
+        </Card>
       ) : null}
         </>}
       />

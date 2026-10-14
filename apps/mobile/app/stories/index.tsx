@@ -136,7 +136,7 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
         </View>
         {story.example ? (
           <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99, backgroundColor: '#F3E9D2' }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 11.5, color: '#7A5B1E' }}>{t('feedExample')}</Text>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 12, color: '#7A5B1E' }}>{t('feedExample')}</Text>
           </View>
         ) : null}
       </View>
@@ -190,7 +190,7 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
             </View>
           </View>
         ) : (
-          <Pressable accessibilityRole="button" onPress={openWriting} style={{ paddingVertical: 4 }}>
+          <Pressable accessibilityRole="button" onPress={openWriting} style={{ minHeight: 44, justifyContent: 'center' }}>
             <Text style={[type.caption, { fontSize: 13.5 }]}>{t('feedAddMessage')}</Text>
           </Pressable>
         )}
@@ -214,7 +214,7 @@ const Input = React.forwardRef<TextInput, TextInputProps>(function Input({ style
 function Action({ icon, label, count, on, onPress }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; count?: number; on?: boolean; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={on === undefined ? undefined : { selected: on }} onPress={onPress} hitSlop={8}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 44 }}>
       <Feather name={icon} size={23} color={on ? colors.kaki : colors.ink} style={on ? { opacity: 1 } : undefined} />
       {count !== undefined ? <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ink }}>{count}</Text> : null}
     </Pressable>

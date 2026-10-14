@@ -54,7 +54,7 @@ export default function PlanScreen() {
               <Text style={{ fontFamily: fonts.display, fontSize: 22, color: colors.ink }}>{yen(p.priceJpy)}</Text>
               <Text style={type.caption}>{t('perMonth')}</Text>
             </View>
-            <Text style={type.caption}>{t('visitsPerMonth', { n: p.visitsPerMonth })} · {p.description}</Text>
+            <Text style={type.caption}>{p.visitsPerMonth === 1 ? t('visitsPerMonthOne') : t('visitsPerMonth', { n: p.visitsPerMonth })} · {p.description}</Text>
             {data.home.planId === p.id ? <Pill label={t('currentPlan')} /> : null}
           </Pressable>
         );

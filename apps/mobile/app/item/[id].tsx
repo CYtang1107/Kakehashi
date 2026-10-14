@@ -68,7 +68,7 @@ export default function ItemScreen() {
         left={<>
       <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('icon', () => api.setIcon(item.id, { photoId }), t('photoPixelMade')) : undefined} />
       {student && item.icon ? (
-        <Pressable accessibilityRole="button" onPress={() => run('icon', () => api.setIcon(item.id, { reset: true }), t('saved'))} style={{ alignSelf: 'flex-start', paddingVertical: 2 }}>
+        <Pressable accessibilityRole="button" onPress={() => run('icon', () => api.setIcon(item.id, { reset: true }), t('saved'))} style={{ alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' }}>
           <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.inkSoft }}>{t('iconReset')}</Text>
         </Pressable>
       ) : null}
@@ -193,7 +193,7 @@ function Worth({ item }: { item: Item }) {
         </>
       ) : (
         <>
-          <Pressable accessibilityRole="button" onPress={reveal} disabled={busy} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Pressable accessibilityRole="button" onPress={reveal} disabled={busy} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 }}>
             <Feather name="help-circle" size={16} color={colors.ai} />
             <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ai }}>{busy ? t('estimating') : t('whatWorth')}</Text>
           </Pressable>

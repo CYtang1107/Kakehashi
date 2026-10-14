@@ -121,9 +121,9 @@ export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: R
     return (
       <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: 20 }}>
         {scrollLeft
-          ? <ScrollView style={{ flex: 1.38, minWidth: 0 }} contentContainerStyle={{ gap: 14, paddingBottom: 8 }}>{left}</ScrollView>
+          ? <ScrollPanel flex={1.38}>{left}</ScrollPanel>
           : <View style={{ flex: 1.38, minWidth: 0, minHeight: 0, gap: 14 }}>{left}</View>}
-        <ScrollView style={{ flex: 1, minWidth: 0 }} contentContainerStyle={{ gap: 14, paddingBottom: 8 }} keyboardShouldPersistTaps="handled">{right}</ScrollView>
+        <ScrollPanel flex={1}>{right}</ScrollPanel>
       </View>
     );
   }
@@ -132,6 +132,30 @@ export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: R
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 20 }}>
       <View style={[{ flex: 1.38, minWidth: 0, gap: 14 }, sticky]}>{left}</View>
       <View style={{ flex: 1, minWidth: 0, gap: 14 }}>{right}</View>
+    </View>
+  );
+}
+
+// A column that scrolls on its own. While more content sits below, the bottom fades into the paper,
+// so cut-off text reads as "there is more" rather than a broken page.
+const FADE_STEPS = [0.15, 0.35, 0.55, 0.75, 0.9];
+function ScrollPanel({ children, flex }: { children: React.ReactNode; flex: number }) {
+  const [box, setBox] = useState(0);
+  const [content, setContent] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const more = content - box - offset > 4;
+  return (
+    <View style={{ flex, minWidth: 0, minHeight: 0 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 14, paddingBottom: 24, paddingRight: 8 }} keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={32} onLayout={(e) => setBox(e.nativeEvent.layout.height)} onContentSizeChange={(_, h) => setContent(h)}
+        onScroll={(e) => setOffset(e.nativeEvent.contentOffset.y)}>
+        {children}
+      </ScrollView>
+      {more ? (
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 14, bottom: 0, height: 40 }}>
+          {FADE_STEPS.map((o) => <View key={o} style={{ flex: 1, backgroundColor: colors.paper, opacity: o }} />)}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -167,7 +191,7 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
     return (
       <View style={{ gap: 6 }}>
         {children}
-        <Pressable accessibilityRole="button" onPress={() => setOpen(false)} style={{ alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 4 }}>
+        <Pressable accessibilityRole="button" onPress={() => setOpen(false)} style={{ alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 4, minHeight: 44 }}>
           <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.ai }}>{t('showLess')}</Text>
           <Feather name="chevron-up" size={15} color={colors.ai} />
         </Pressable>

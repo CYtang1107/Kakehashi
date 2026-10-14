@@ -110,7 +110,7 @@ export function LiveOutingBanner({ onOpenMap }: { onOpenMap?: () => void }) {
       <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: colors.kaki }} />
       <View style={{ flex: 1, gap: 1 }}>
         <Text style={{ fontFamily: fonts.bold, fontSize: 13.5, color: colors.kaki }} numberOfLines={2}>{t('outingFamily', { by: live.by, what: act ? pick(lang, act.title, act.titleJa) : '', place: place?.nameJa ?? '' })}</Text>
-        <Text style={{ fontFamily: fonts.medium, fontSize: 11.5, color: colors.inkSoft }}>{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</Text>
+        <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.inkSoft }}>{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</Text>
       </View>
       {onOpenMap ? <Feather name="chevron-right" size={18} color={colors.kaki} /> : null}
     </Pressable>

@@ -103,7 +103,8 @@ const en = {
   plansTitle: 'Plan and payment',
   plansLead: 'The same two students every visit. The fee is the same whatever stays or goes.',
   perMonth: '/ month',
-  visitsPerMonth: '{n} visit(s) a month',
+  visitsPerMonth: '{n} visits a month',
+  visitsPerMonthOne: '1 visit a month',
   currentPlan: 'Current plan',
   choosePlan: 'Choose this plan',
   youPay: 'You pay this month',
@@ -368,6 +369,8 @@ const en = {
   helperTitle: 'Jobs near you',
   helperLead: 'Small jobs older people asked for, with the price set before you go. KAKEHASHI keeps {pct}% for checks, insurance and coordination.',
   helperWho: 'Which helper are you? (demo sign-in)',
+  helperPickFirst: 'Pick who you are to see the open jobs',
+  helperPickFirstHint: 'Only helpers who passed the checks can see jobs near her home.',
   helperRulesTitle: 'Rules for helpers',
   helperRulesSummary: 'Price set beforehand, no cash, {pct}% fee',
   helperRule1: 'Only helpers who passed ID, interview and training checks can see or accept jobs.',
@@ -674,6 +677,7 @@ const ja: Record<Key, string> = {
   plansLead: '毎回同じ学生2人が伺います。何を残しても手放しても、料金は同じです。',
   perMonth: '／月',
   visitsPerMonth: '月{n}回の訪問',
+  visitsPerMonthOne: '月1回の訪問',
   currentPlan: '現在のプラン',
   choosePlan: 'このプランにする',
   youPay: '今月のお支払い',
@@ -938,6 +942,8 @@ const ja: Record<Key, string> = {
   helperTitle: '近くのお仕事',
   helperLead: '高齢の方が頼んだ小さな仕事です。料金は行く前に決まっています。KAKEHASHIは確認・保険・調整のため{pct}%をいただきます。',
   helperWho: 'どのお手伝いの方ですか？（デモ用ログイン）',
+  helperPickFirst: 'お名前を選ぶと、募集中の仕事が表示されます',
+  helperPickFirstHint: '確認を通過した方だけが、近くの仕事を見られます。',
   helperRulesTitle: 'お手伝いの方のルール',
   helperRulesSummary: '料金は事前に決定・現金なし・手数料{pct}%',
   helperRule1: '本人確認・面談・研修を終えた方だけが仕事を見て受けられます。',
@@ -1145,8 +1151,19 @@ const dict = { en, ja };
 type Ctx = { lang: Lang; setLang: (l: Lang) => void; t: (k: Key, vars?: Record<string, string | number>) => string };
 const I18n = createContext<Ctx>({ lang: 'en', setLang: () => {}, t: (k) => en[k] });
 
+// The chosen language survives a reload or the browser's back button (web). Only a convenience: if storage
+// is unavailable, the app simply starts in English.
+const LANG_KEY = 'kakehashi-lang';
+const savedLang = (): Lang => {
+  try { return globalThis.localStorage?.getItem(LANG_KEY) === 'ja' ? 'ja' : 'en'; } catch { return 'en'; }
+};
+
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Lang>('en');
+  const [lang, setLangState] = useState<Lang>(savedLang);
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    try { globalThis.localStorage?.setItem(LANG_KEY, l); } catch { /* not kept */ }
+  };
   const t = (k: Key, vars?: Record<string, string | number>) => {
     let s = dict[lang][k] ?? en[k];
     if (vars) for (const [name, v] of Object.entries(vars)) s = s.split(`{${name}}`).join(String(v));

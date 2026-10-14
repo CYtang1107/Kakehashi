@@ -232,7 +232,7 @@ export function StoryGlobe({ stories, selected, onSelect, height = 360, fill, la
 function GlobeButton({ icon, label, onPress }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={4}
-      style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(250,251,248,0.14)', borderWidth: 1, borderColor: 'rgba(250,251,248,0.25)', alignItems: 'center', justifyContent: 'center' }}>
+      style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(250,251,248,0.14)', borderWidth: 1, borderColor: 'rgba(250,251,248,0.25)', alignItems: 'center', justifyContent: 'center' }}>
       <Feather name={icon} size={17} color="#FAFBF8" />
     </Pressable>
   );

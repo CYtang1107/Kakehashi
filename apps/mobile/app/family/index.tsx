@@ -37,9 +37,9 @@ export default function FamilyHome() {
             {latest ? (
               <Card>
                 <Text style={type.eyebrow}>{t('latestStory')}</Text>
-                <Text numberOfLines={3} style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, latest.story, latest.storyJa)}”</Text>
-                <Pressable accessibilityRole="link" onPress={() => router.push(`/item/${latest.id}`)} style={{ alignSelf: 'flex-start', paddingVertical: 2 }}>
-                  <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ai }}>{lang === 'ja' && latest.nameJa ? latest.nameJa : latest.name}</Text>
+                <Text numberOfLines={3} style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.kakiInk, paddingLeft: 12 }]}>“{pick(lang, latest.story, latest.storyJa)}”</Text>
+                <Pressable accessibilityRole="link" onPress={() => router.push(`/item/${latest.id}`)} style={{ alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' }}>
+                  <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.kakiInk }}>{lang === 'ja' && latest.nameJa ? latest.nameJa : latest.name}</Text>
                 </Pressable>
               </Card>
             ) : null}
