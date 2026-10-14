@@ -53,8 +53,9 @@ export function useWide() {
   return useWindowDimensions().width >= WIDE_MIN;
 }
 
-export function Screen({ children, back, roleSwitch = true, header, wide }: {
-  children: React.ReactNode; back?: boolean; roleSwitch?: boolean; header?: ScreenHeader; wide?: boolean;
+// fit: on a laptop, the page fills the window and never scrolls; long panels scroll inside (Columns fill).
+export function Screen({ children, back, roleSwitch = true, header, wide, fit }: {
+  children: React.ReactNode; back?: boolean; roleSwitch?: boolean; header?: ScreenHeader; wide?: boolean; fit?: boolean;
 }) {
   const { data, error, refresh } = useData();
   const { t } = useI18n();
@@ -73,6 +74,13 @@ export function Screen({ children, back, roleSwitch = true, header, wide }: {
         </View>
       ) : !data ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={colors.ai} /></View>
+      ) : fit && isWide ? (
+        <View style={{ flex: 1 }}>
+          {header ? <NightBand header={header} maxWidth={maxWidth} /> : null}
+          <View style={{ flex: 1, padding: 16, gap: 14, maxWidth, width: '100%', alignSelf: 'center' }}>
+            {children}
+          </View>
+        </View>
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
           {header ? <NightBand header={header} maxWidth={maxWidth} /> : null}
@@ -105,9 +113,18 @@ export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth
 
 // Two columns on a laptop (left about 58%), one stacked column on a phone.
 // stickyLeft keeps the left column in view while the right one scrolls (web only).
-export function Columns({ left, right, stickyLeft }: { left: React.ReactNode; right: React.ReactNode; stickyLeft?: boolean }) {
+// fill: both columns take the full height left on the page; the right one scrolls inside itself.
+export function Columns({ left, right, stickyLeft, fill }: { left: React.ReactNode; right: React.ReactNode; stickyLeft?: boolean; fill?: boolean }) {
   const wide = useWide();
   if (!wide) return <>{left}{right}</>;
+  if (fill) {
+    return (
+      <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: 20 }}>
+        <View style={{ flex: 1.38, minWidth: 0, minHeight: 0, gap: 14 }}>{left}</View>
+        <ScrollView style={{ flex: 1, minWidth: 0 }} contentContainerStyle={{ gap: 14, paddingBottom: 8 }} keyboardShouldPersistTaps="handled">{right}</ScrollView>
+      </View>
+    );
+  }
   const sticky = stickyLeft && Platform.OS === 'web' ? ({ position: 'sticky', top: 16 } as unknown as ViewStyle) : null;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 20 }}>

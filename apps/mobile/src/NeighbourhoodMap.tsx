@@ -16,7 +16,7 @@ export const placeColor: Record<PlaceKind, string> = {
 const directions = (p: Place) => Linking.openURL(`https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=${p.lat},${p.lng}`);
 
 // The server's map page (MapLibre) in an iframe on web and a WebView on phones. `focus` flies to a place.
-export function NeighbourhoodMap({ homeId, focus }: { homeId: string; focus?: { id: string; n: number } }) {
+export function NeighbourhoodMap({ homeId, focus, fill }: { homeId: string; focus?: { id: string; n: number }; fill?: boolean }) {
   const { lang } = useI18n();
   const url = `${API_BASE}/map/${homeId}?lang=${lang}`;
   const frame = useRef<HTMLIFrameElement | null>(null);
@@ -27,7 +27,7 @@ export function NeighbourhoodMap({ homeId, focus }: { homeId: string; focus?: { 
     else web.current?.injectJavaScript(`window.__focus && window.__focus(${JSON.stringify(focus.id)}); true;`);
   }, [focus?.n]);
   return (
-    <View style={{ width: '100%', height: 340, borderRadius: 14, overflow: 'hidden', backgroundColor: '#EEF0EA' }}>
+    <View style={{ width: '100%', ...(fill ? { flex: 1 } : { height: 340 }), borderRadius: 14, overflow: 'hidden', backgroundColor: '#EEF0EA' }}>
       {Platform.OS === 'web'
         ? React.createElement('iframe', { ref: frame, src: url, title: 'Neighbourhood map', style: { border: 0, width: '100%', height: '100%' } })
         : <WebView ref={web} source={{ uri: url }} style={{ flex: 1 }} originWhitelist={['*']} />}

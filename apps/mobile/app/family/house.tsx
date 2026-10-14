@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
-import { Button, Card, Columns, DecisionChip, Glyph, Screen } from '../../src/ui';
+import { Button, Card, Columns, DecisionChip, Glyph, Screen, useWide } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
 import { NearbyList, NeighbourhoodMap } from '../../src/NeighbourhoodMap';
 import { Home3D, eveningState, hasStory, memoryColors, type ColorBy, type Evening } from '../../src/Home3D';
@@ -71,6 +71,24 @@ export default function House() {
   const current = data?.items.find((i) => i.id === selected);
   const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
+  // On a laptop the whole page fits the window: the stage fills the height, the side panel scrolls on its own.
+  const fit = useWide();
+  const colourCard = (
+    <Card style={{ gap: 10 }}>
+      <Segment label={t('colourBy')} value={colorBy} options={(['none', 'decision', 'stories', 'fixes'] as const).map((v) => [v, t(`colour_${v}`)])}
+        onChange={(v) => { setColorBy(v); setEvening('off'); }} />
+      <Segment label={t('evening')} value={evening} options={(['off', 'today', 'plan'] as const).map((v) => [v, t(`evening_${v}`)])}
+        onChange={(v) => { setEvening(v); setColorBy('none'); }} />
+      <ViewLegend colorBy={colorBy} evening={evening} />
+    </Card>
+  );
+  const tourButtons = (
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={{ flex: 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
+      <View style={{ flex: 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} onPress={() => setTouring((x) => !x)} /></View>
+      <View style={{ flex: 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
+    </View>
+  );
   const header = data ? {
     eyebrow: memory ? t('memoryHouse') : t('tabHouse'),
     title: lang === 'ja' && data.home.seniorNameJa ? `${data.home.seniorNameJa.split(' ')[1]}さん · ${pick(lang, data.home.town, data.home.townJa)}` : `${data.home.seniorName.split(' ')[0]} · ${data.home.town}`,
@@ -78,9 +96,9 @@ export default function House() {
   } : undefined;
 
   return (
-    <Screen wide header={header}>
+    <Screen wide fit header={header}>
       {data ? (
-        <Columns
+        <Columns fill
           left={<>
           <View style={{ flexDirection: 'row', backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
             {(['3d', '2d', 'memory', 'map'] as const).map((v) => (
@@ -92,12 +110,12 @@ export default function House() {
           </View>
 
           {view === 'map' ? <LiveOutingBanner /> : null}
-          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line }}>
+          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
             {view === 'map'
-              ? <NeighbourhoodMap homeId={data.home.id} focus={focus} />
+              ? <NeighbourhoodMap homeId={data.home.id} focus={focus} fill={fit} />
               : view === '2d'
-              ? <FloorPlan rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} fixes={data.home.safety} />
-              : <Home3D rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} memory={memory} fixes={data.home.safety} colorBy={colorBy} evening={evening} />}
+              ? <FloorPlan rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} fixes={data.home.safety} fill={fit} />
+              : <Home3D rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} memory={memory} fixes={data.home.safety} colorBy={colorBy} evening={evening} fill={fit} />}
             {memory ? (
               <Text style={[type.caption, { color: '#CDBFAE', paddingHorizontal: 6, paddingTop: 4 }]}>{t('memoryLegend', { n: memories.length })}</Text>
             ) : view === '2d' ? (
@@ -111,28 +129,18 @@ export default function House() {
               </View>
             ) : null}
           </Card>
-          {view === '3d' ? (
-            <Card style={{ gap: 10 }}>
-              <Segment label={t('colourBy')} value={colorBy} options={(['none', 'decision', 'stories', 'fixes'] as const).map((v) => [v, t(`colour_${v}`)])}
-                onChange={(v) => { setColorBy(v); setEvening('off'); }} />
-              <Segment label={t('evening')} value={evening} options={(['off', 'today', 'plan'] as const).map((v) => [v, t(`evening_${v}`)])}
-                onChange={(v) => { setEvening(v); setColorBy('none'); }} />
-              <ViewLegend colorBy={colorBy} evening={evening} />
-            </Card>
-          ) : null}
-
+          {/* On a laptop these sit with the stage so they never need scrolling to; on a phone, where they always were. */}
+          {view === '3d' && !fit ? colourCard : null}
+          {memory && fit ? tourButtons : null}
           </>}
           right={<>
+          {view === '3d' && fit ? colourCard : null}
           {view === 'map' ? (
             <NearbyList onFocus={(id) => setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }))} />
           ) : memory ? (
             <>
               {current ? <MemoryCard item={current} rooms={data.home.rooms} /> : null}
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <View style={{ flex: 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
-                <View style={{ flex: 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} onPress={() => setTouring((x) => !x)} /></View>
-                <View style={{ flex: 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
-              </View>
+              {!fit ? tourButtons : null}
               <Text style={type.caption}>{t('memoryPrivacy')}</Text>
             </>
           ) : (

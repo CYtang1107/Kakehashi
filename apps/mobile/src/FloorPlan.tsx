@@ -6,11 +6,11 @@ import { colors, decisionColor, roomColor } from './theme';
 import { useI18n } from './i18n';
 
 // 2D floor plan on the shared 320 x 240 grid, with a tappable pin per item.
-export function FloorPlan({ rooms, items, selected, onSelect, fixes = [] }: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; fixes?: SafetyFix[] }) {
+export function FloorPlan({ rooms, items, selected, onSelect, fixes = [], fill }: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; fixes?: SafetyFix[]; fill?: boolean }) {
   const { lang } = useI18n();
   const tatami = rooms.find((r) => r.id === 'washitsu');
   return (
-    <Svg viewBox="0 0 320 240" width="100%" style={{ aspectRatio: 320 / 240 }} accessibilityLabel="Floor plan of the home">
+    <Svg viewBox="0 0 320 240" width="100%" height={fill ? '100%' : undefined} style={fill ? { flex: 1 } : { aspectRatio: 320 / 240 }} accessibilityLabel="Floor plan of the home">
       {rooms.map((r) => (
         <Rect key={r.id} x={r.x} y={r.y} width={r.w} height={r.h} fill={roomColor[r.status]} stroke={colors.inkSoft} strokeWidth={1.5} />
       ))}

@@ -183,7 +183,7 @@ function House({ rooms, items, selected, onSelect, drag, memory, fixes = [], col
   );
 }
 
-export function Home3D(props: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; memory?: boolean; fixes?: SafetyFix[]; colorBy?: ColorBy; evening?: Evening }) {
+export function Home3D(props: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; memory?: boolean; fixes?: SafetyFix[]; colorBy?: ColorBy; evening?: Evening; fill?: boolean }) {
   const memory = Boolean(props.memory);
   const night = !memory && (props.evening ?? 'off') !== 'off';
   const drag = useRef<Drag>({ yaw: -0.5, active: false });
@@ -198,7 +198,7 @@ export function Home3D(props: { rooms: Room[]; items: Item[]; selected?: string;
   }), []);
 
   return (
-    <View {...pan.panHandlers} style={{ width: '100%', aspectRatio: 1.15, borderRadius: 14, overflow: 'hidden', backgroundColor: memory ? memoryColors.sky : night ? '#141A2B' : '#BFD8E8' }}>
+    <View {...pan.panHandlers} style={{ width: '100%', ...(props.fill ? { flex: 1 } : { aspectRatio: 1.15 }), borderRadius: 14, overflow: 'hidden', backgroundColor: memory ? memoryColors.sky : night ? '#141A2B' : '#BFD8E8' }}>
       {/* Rebuilt when the lighting changes: three.js keeps stale shaders when lights are removed. */}
       <Canvas
         key={memory ? 'memory' : night ? 'night' : 'day'}
