@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions, type TextInputProps, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -45,9 +45,21 @@ export function TopBar({ back, roleSwitch }: { back?: boolean; roleSwitch?: bool
   );
 }
 
-export function Screen({ children, back, roleSwitch = true }: { children: React.ReactNode; back?: boolean; roleSwitch?: boolean }) {
+export type ScreenHeader = { eyebrow?: string; title: string; sub?: string; leading?: React.ReactNode; large?: boolean };
+
+// Laptop layouts start at this width; below it everything is one column.
+export const WIDE_MIN = 900;
+export function useWide() {
+  return useWindowDimensions().width >= WIDE_MIN;
+}
+
+export function Screen({ children, back, roleSwitch = true, header, wide }: {
+  children: React.ReactNode; back?: boolean; roleSwitch?: boolean; header?: ScreenHeader; wide?: boolean;
+}) {
   const { data, error, refresh } = useData();
   const { t } = useI18n();
+  const isWide = useWide();
+  const maxWidth = wide && isWide ? 1120 : 640;
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper }}>
       <TopBar back={back} roleSwitch={roleSwitch} />
@@ -62,11 +74,45 @@ export function Screen({ children, back, roleSwitch = true }: { children: React.
       ) : !data ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}><ActivityIndicator color={colors.ai} /></View>
       ) : (
-        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 14, maxWidth: 640, width: '100%', alignSelf: 'center' }} keyboardShouldPersistTaps="handled">
-          {children}
+        <ScrollView contentContainerStyle={{ paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+          {header ? <NightBand header={header} maxWidth={maxWidth} /> : null}
+          <View style={{ padding: 16, gap: 14, maxWidth, width: '100%', alignSelf: 'center' }}>
+            {children}
+          </View>
         </ScrollView>
       )}
       <Toast />
+    </View>
+  );
+}
+
+// The page heading on night indigo, directly under the top bar so the two read as one band.
+export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth: number }) {
+  const { eyebrow, title, sub, leading, large } = header;
+  return (
+    <View style={{ backgroundColor: colors.night, paddingHorizontal: 16, paddingTop: 4, paddingBottom: large ? 24 : 18 }}>
+      <View style={{ maxWidth, width: '100%', alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        {leading}
+        <View style={{ flex: 1, gap: 4 }}>
+          {eyebrow ? <Text style={[type.eyebrow, { color: colors.kakiNight }]}>{eyebrow}</Text> : null}
+          <Text style={[type.title, { color: colors.onNight }, large ? { fontSize: 34, lineHeight: 44 } : null]}>{title}</Text>
+          {sub ? <Text style={[large ? { fontFamily: fonts.medium, fontSize: 18, lineHeight: 27 } : type.caption, { color: colors.onNightSoft }]}>{sub}</Text> : null}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// Two columns on a laptop (left about 58%), one stacked column on a phone.
+// stickyLeft keeps the left column in view while the right one scrolls (web only).
+export function Columns({ left, right, stickyLeft }: { left: React.ReactNode; right: React.ReactNode; stickyLeft?: boolean }) {
+  const wide = useWide();
+  if (!wide) return <>{left}{right}</>;
+  const sticky = stickyLeft && Platform.OS === 'web' ? ({ position: 'sticky', top: 16 } as unknown as ViewStyle) : null;
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 20 }}>
+      <View style={[{ flex: 1.38, minWidth: 0, gap: 14 }, sticky]}>{left}</View>
+      <View style={{ flex: 1, minWidth: 0, gap: 14 }}>{right}</View>
     </View>
   );
 }
