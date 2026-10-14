@@ -32,7 +32,7 @@ Unchanged: `paper`, `sheet`, `ink`, `inkSoft`, `line`, and the decision colours 
 ## 2. The night band
 
 - `TopBar` (logo, back, Switch role, 日本語) becomes night: `onNight` text, persimmon focus/active states.
-- `Screen` gets an optional `header` prop: `{ eyebrow?, title, sub? }`. When given, the band draws the eyebrow (`kakiNight`), the title (Shippori Mincho, `onNight`) and the sub (`onNightSoft`) directly under the top bar, so the bar and heading read as one block. The screen's own `Heading` is removed.
+- `Screen` gets an optional `header` prop: `{ eyebrow?, title, sub?, leading?, large? }` (`leading`: something drawn left of the text, such as the item's pixel icon; `large`: her screen's bigger greeting). When given, the band draws the eyebrow (`kakiNight`), the title (Shippori Mincho, `onNight`) and the sub (`onNightSoft`) directly under the top bar, so the bar and heading read as one block. The screen's own `Heading` is removed.
 - Screens that don't pass `header` keep their `Heading` in the body; they still get the night top bar.
 - Bottom tab bars (family, student layouts): `night` background, no top border, active `kakiNight`, inactive `onNightSoft`.
 - `StatusBar` style becomes `light`.
@@ -47,7 +47,7 @@ Unchanged: `paper`, `sheet`, `ink`, `inkSoft`, `line`, and the decision colours 
 | Digital 実家 (`family/house`) | The stage: 3D / floor plan / memory / neighbourhood, colour-by and evening light | Items, Safer home, Future, Photos |
 | Item page (`item/[id]`) | Photo album, pixel icon, her story, voice | Her choice, "Where is it now", sharing, student actions |
 | Story feed (`stories`) | The globe and its story list; stays in view while scrolling (web `position: sticky`) | The posts |
-| Student home (`student`) | The Before / With her / After steps and the current step's content (including the weather check) | The folding sections: room photos, safer home, help at home, the house's future, from home to community |
+| Student home (`student`), "With her" step only | Her items and the add-item button | The folding sections: room photos, safer home, help at home, the house's future, from home to community |
 
 ## 4. Her screen (`her`)
 
