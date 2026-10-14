@@ -1,0 +1,39 @@
+// WCAG contrast check for the colour pairs the app uses. Run: npm run contrast -w apps/mobile
+import { colors, decisionColor } from '../src/theme';
+
+const lum = (hex: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+export const ratio = (a: string, b: string) => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+};
+
+const c = colors as Record<string, string>;
+// [label, text, background, minimum]
+const pairs: [string, string, string, number][] = [
+  ['band title', c.onNight, c.night, 4.5],
+  ['band caption', c.onNightSoft, c.night, 4.5],
+  ['band eyebrow / active tab', c.kakiNight, c.night, 4.5],
+  ['chip in band', c.onNight, c.nightRaised, 4.5],
+  ['persimmon on raised', c.kakiNight, c.nightRaised, 4.5],
+  ['primary button', c.onNight, c.night, 4.5],
+  ['eyebrow on paper', c.kakiInk, c.paper, 4.5],
+  ['eyebrow on sheet', c.kakiInk, c.sheet, 4.5],
+  ['eyebrow on tinted card', c.kakiInk, c.aiTint, 4.5],
+  ['body on paper', c.ink, c.paper, 4.5],
+  ['caption on paper', c.inkSoft, c.paper, 4.5],
+  ['caption on sheet', c.inkSoft, c.sheet, 4.5],
+  ...Object.entries(decisionColor).map(([k, d]) => [`decision ${k}`, d.fg, d.bg, 4.5] as [string, string, string, number]),
+];
+
+let failed = 0;
+for (const [label, fg, bg, min] of pairs) {
+  const r = fg && bg ? ratio(fg, bg) : NaN;
+  const ok = r >= min;
+  if (!ok) failed++;
+  console.log(`${ok ? 'ok  ' : 'FAIL'} ${r.toFixed(2)}:1  ${label} (${fg} on ${bg})`);
+}
+if (failed) { console.error(`${failed} pair(s) below WCAG AA`); process.exit(1); }
