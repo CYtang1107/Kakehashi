@@ -9,8 +9,8 @@ export default function FamilyTabs() {
   const { t } = useI18n();
   const icon = (name: keyof typeof Feather.glyphMap) => ({ color, size }: { color: ColorValue; size: number }) => <Feather name={name} color={color as string} size={size - 2} />;
   return (
-    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.ai, tabBarInactiveTintColor: colors.inkSoft,
-      tabBarStyle: { backgroundColor: colors.sheet, borderTopColor: colors.line }, tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 } }}>
+    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.kakiNight, tabBarInactiveTintColor: colors.onNightSoft,
+      tabBarStyle: { backgroundColor: colors.night, borderTopWidth: 0 }, tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 } }}>
       <Tabs.Screen name="index" options={{ title: t('tabHome'), tabBarIcon: icon('home') }} />
       <Tabs.Screen name="house" options={{ title: t('tabHouse'), tabBarIcon: icon('box') }} />
       <Tabs.Screen name="plan" options={{ title: t('tabPlan'), tabBarIcon: icon('credit-card') }} />

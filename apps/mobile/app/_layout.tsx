@@ -13,7 +13,7 @@ export default function RootLayout() {
   return (
     <I18nProvider>
       <DataProvider>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper } }} />
       </DataProvider>
     </I18nProvider>

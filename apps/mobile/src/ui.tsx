@@ -14,29 +14,30 @@ export function LangToggle() {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={lang === 'en' ? '日本語に切り替え' : 'Switch to English'}
       onPress={() => setLang(lang === 'en' ? 'ja' : 'en')}
-      style={{ paddingHorizontal: 10, height: 32, borderRadius: 16, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.sheet }}>
-      <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: colors.ink }}>{lang === 'en' ? '日本語' : 'EN'}</Text>
+      style={{ paddingHorizontal: 10, height: 32, borderRadius: 16, borderWidth: 1, borderColor: '#33415C', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.nightRaised }}>
+      <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: colors.onNight }}>{lang === 'en' ? '日本語' : 'EN'}</Text>
     </Pressable>
   );
 }
 
+// The top of every screen: night indigo, joined to the page heading band below it when a screen has one.
 export function TopBar({ back, roleSwitch }: { back?: boolean; roleSwitch?: boolean }) {
   const { top } = useSafeAreaInsets();
   const { t } = useI18n();
   return (
-    <View style={{ paddingTop: top + 8, paddingHorizontal: 16, paddingBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.paper }}>
+    <View style={{ paddingTop: top + 8, paddingHorizontal: 16, paddingBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.night }}>
       {back ? (
         <Pressable accessibilityRole="button" accessibilityLabel={t('back')} onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
           style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginLeft: -8 }}>
-          <Feather name="chevron-left" size={26} color={colors.ink} />
+          <Feather name="chevron-left" size={26} color={colors.onNight} />
         </Pressable>
       ) : (
-        <Text numberOfLines={1} style={{ fontFamily: fonts.display, fontSize: 17, color: colors.ink, flexShrink: 1 }}>KAKEHASHI <Text style={{ color: colors.ai }}>架け橋</Text></Text>
+        <Text numberOfLines={1} style={{ fontFamily: fonts.display, fontSize: 17, color: colors.onNight, flexShrink: 1 }}>KAKEHASHI <Text style={{ color: colors.kakiNight }}>架け橋</Text></Text>
       )}
       <View style={{ flex: 1 }} />
       {roleSwitch ? (
         <Pressable accessibilityRole="button" onPress={() => router.replace('/')} style={{ paddingHorizontal: 10, height: 32, justifyContent: 'center' }}>
-          <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.ai }}>{t('switchRole')}</Text>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.onNight }}>{t('switchRole')}</Text>
         </Pressable>
       ) : null}
       <LangToggle />
@@ -137,12 +138,12 @@ export function Button({ label, onPress, kind = 'primary', icon, disabled, busy 
   label: string; onPress: () => void; kind?: 'primary' | 'secondary' | 'danger'; icon?: keyof typeof Feather.glyphMap; disabled?: boolean; busy?: boolean;
 }) {
   const primary = kind === 'primary';
-  const fg = primary ? colors.sheet : kind === 'danger' ? colors.danger : colors.ink;
+  const fg = primary ? colors.onNight : kind === 'danger' ? colors.danger : colors.ink;
   return (
     <Pressable accessibilityRole="button" disabled={disabled || busy} onPress={onPress}
       style={({ pressed }) => ({
         minHeight: 46, paddingHorizontal: 16, borderRadius: 12, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center',
-        backgroundColor: primary ? colors.ai : colors.sheet, borderWidth: primary ? 0 : 1, borderColor: colors.line,
+        backgroundColor: primary ? colors.night : colors.sheet, borderWidth: primary ? 0 : 1, borderColor: colors.line,
         opacity: disabled ? 0.45 : pressed ? 0.85 : 1,
       })}>
       {busy ? <ActivityIndicator color={fg} /> : icon ? <Feather name={icon} size={18} color={fg} /> : null}

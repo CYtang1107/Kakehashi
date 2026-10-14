@@ -9,8 +9,8 @@ export default function StudentTabs() {
   const { t } = useI18n();
   const icon = (name: keyof typeof Feather.glyphMap) => ({ color, size }: { color: ColorValue; size: number }) => <Feather name={name} color={color as string} size={size - 2} />;
   return (
-    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.ai, tabBarInactiveTintColor: colors.inkSoft,
-      tabBarStyle: { backgroundColor: colors.sheet, borderTopColor: colors.line }, tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 } }}>
+    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.kakiNight, tabBarInactiveTintColor: colors.onNightSoft,
+      tabBarStyle: { backgroundColor: colors.night, borderTopWidth: 0 }, tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 11 } }}>
       <Tabs.Screen name="index" options={{ title: t('tabVisit'), tabBarIcon: icon('check-square') }} />
       <Tabs.Screen name="add" options={{ title: t('tabAdd'), tabBarIcon: icon('camera') }} />
       <Tabs.Screen name="wallet" options={{ title: t('tabWallet'), tabBarIcon: icon('credit-card') }} />
