@@ -63,8 +63,8 @@ export default function ItemScreen() {
   };
 
   return (
-    <Screen back wide header={header}>
-      <Columns
+    <Screen back wide fit header={header}>
+      <Columns fill scrollLeft
         left={<>
       <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('icon', () => api.setIcon(item.id, { photoId }), t('photoPixelMade')) : undefined} />
       {student && item.icon ? (

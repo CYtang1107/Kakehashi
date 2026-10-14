@@ -146,8 +146,8 @@ function Globe({ stories, selected, drag, zoom, picker }: { stories: PublicStory
   );
 }
 
-export function StoryGlobe({ stories, selected, onSelect, height = 360, labels }: {
-  stories: PublicStory[]; selected: string | null; onSelect: (id: string | null) => void; height?: number;
+export function StoryGlobe({ stories, selected, onSelect, height = 360, fill, labels }: {
+  stories: PublicStory[]; selected: string | null; onSelect: (id: string | null) => void; height?: number; fill?: boolean;
   labels: { zoomIn: string; zoomOut: string; japan: string };
 }) {
   const drag = useRef<Drag>({ ...facing(JAPAN.lat, JAPAN.lng), active: false });
@@ -215,7 +215,7 @@ export function StoryGlobe({ stories, selected, onSelect, height = 360, labels }
   const home = () => { Object.assign(drag.current, facing(JAPAN.lat, JAPAN.lng)); zoom.current = ZOOM.start; };
 
   return (
-    <View style={{ height, borderRadius: 16, overflow: 'hidden', backgroundColor: BG }} onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
+    <View style={{ ...(fill ? { flex: 1, minHeight: 0 } : { height }), borderRadius: 16, overflow: 'hidden', backgroundColor: BG }} onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}>
       <Canvas camera={{ position: [0, 0, ZOOM.start], fov: 40 }}>
         <Globe stories={stories} selected={selected} drag={drag} zoom={zoom} picker={picker} />
       </Canvas>

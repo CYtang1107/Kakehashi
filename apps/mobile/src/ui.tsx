@@ -113,14 +113,16 @@ export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth
 
 // Two columns on a laptop (left about 58%), one stacked column on a phone.
 // stickyLeft keeps the left column in view while the right one scrolls (web only).
-// fill: both columns take the full height left on the page; the right one scrolls inside itself.
-export function Columns({ left, right, stickyLeft, fill }: { left: React.ReactNode; right: React.ReactNode; stickyLeft?: boolean; fill?: boolean }) {
+// fill: both columns take the full height left on the page; the right one scrolls inside itself (and the left one too with scrollLeft).
+export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: React.ReactNode; right: React.ReactNode; stickyLeft?: boolean; fill?: boolean; scrollLeft?: boolean }) {
   const wide = useWide();
   if (!wide) return <>{left}{right}</>;
   if (fill) {
     return (
       <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: 20 }}>
-        <View style={{ flex: 1.38, minWidth: 0, minHeight: 0, gap: 14 }}>{left}</View>
+        {scrollLeft
+          ? <ScrollView style={{ flex: 1.38, minWidth: 0 }} contentContainerStyle={{ gap: 14, paddingBottom: 8 }}>{left}</ScrollView>
+          : <View style={{ flex: 1.38, minWidth: 0, minHeight: 0, gap: 14 }}>{left}</View>}
         <ScrollView style={{ flex: 1, minWidth: 0 }} contentContainerStyle={{ gap: 14, paddingBottom: 8 }} keyboardShouldPersistTaps="handled">{right}</ScrollView>
       </View>
     );

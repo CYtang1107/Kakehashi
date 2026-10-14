@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal, Platform, Pressable, ScrollView, Share, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick, type PublicStory } from '@kakehashi/shared';
-import { Columns, Screen, formatDate } from '../../src/ui';
+import { Columns, Screen, formatDate, useWide } from '../../src/ui';
 import { StoryPlayer } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { PhotoCarousel } from '../../src/PhotoCarousel';
@@ -15,6 +15,8 @@ import { colors, fonts, type } from '../../src/theme';
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
 export default function StoriesFeed() {
   const { t, lang } = useI18n();
+  // On a laptop the page fits the window: the globe fills the left, the posts scroll on the right.
+  const fit = useWide();
   const [stories, setStories] = useState<PublicStory[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,12 +29,12 @@ export default function StoriesFeed() {
   }, [stories]);
 
   return (
-    <Screen wide header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
+    <Screen wide fit header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
-      <Columns stickyLeft
+      <Columns fill
         left={stories?.length ? (
-        <View style={{ gap: 8 }}>
-          <StoryGlobe stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
+        <View style={{ gap: 8, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
+          <StoryGlobe fill={fit} stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
           <Text style={[type.caption, { textAlign: 'center' }]}>{t('globeHint')}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {stories.map((st) => (
