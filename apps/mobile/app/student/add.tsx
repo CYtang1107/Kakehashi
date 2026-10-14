@@ -3,7 +3,7 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import type { Estimate } from '@kakehashi/shared';
-import { Button, Card, Field, Heading, Screen } from '../../src/ui';
+import { Button, Card, Columns, Field, Screen } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -66,8 +66,9 @@ export default function AddItem() {
   };
 
   return (
-    <Screen>
-      <Heading title={t('addTitle')} />
+    <Screen wide fit header={{ title: t('addTitle') }}>
+      <Columns fill scrollLeft
+        left={<>
       <Card>
         {photo ? <Image source={{ uri: photo.uri }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 12 }} resizeMode="cover" accessibilityLabel="Item photo" /> : null}
         <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -85,6 +86,8 @@ export default function AddItem() {
           ))}
         </View>
       </Card>
+        </>}
+        right={<>
       <Card>
         <Text style={type.section}>{t('whatWorth')}</Text>
         <Text style={type.caption}>{t('worthHint')}</Text>
@@ -101,6 +104,8 @@ export default function AddItem() {
       </Card>
       <Button label={t('addItem')} icon="plus" busy={busy === 'save'} disabled={!name.trim()} onPress={save} />
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+        </>}
+      />
     </Screen>
   );
 }

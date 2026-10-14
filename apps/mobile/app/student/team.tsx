@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { READINESS, pick, type ReadinessStep, type Student } from '@kakehashi/shared';
-import { Avatar, Card, Heading, Screen, formatDate } from '../../src/ui';
+import { Avatar, Card, Columns, Screen, formatDate } from '../../src/ui';
 import { StudentBadges } from '../../src/Community';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
@@ -27,11 +27,8 @@ export default function Team() {
     }
   };
 
-  return (
-    <Screen>
-      <Heading title={t('teamTitle')} sub={t('teamLead')} />
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
-      {data.home.students.map((s, i) => (
+  // One card per student; on a laptop they sit in two columns.
+  const studentCard = (s: (typeof data.home.students)[number], i: number) => (
         <Card key={s.id}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Avatar initial={s.initial} tone={i % 2 ? 'moss' : 'plum'} />
@@ -53,7 +50,15 @@ export default function Team() {
             );
           })}
         </Card>
-      ))}
+  );
+
+  return (
+    <Screen wide fit header={{ title: t('teamTitle'), sub: t('teamLead') }}>
+      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      <Columns fill scrollLeft
+        left={data.home.students.map((s, i) => (i % 2 ? null : studentCard(s, i)))}
+        right={data.home.students.map((s, i) => (i % 2 ? studentCard(s, i) : null))}
+      />
     </Screen>
   );
 }

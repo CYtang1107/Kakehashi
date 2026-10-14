@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import type { Home } from '@kakehashi/shared';
-import { Button, Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Columns, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -41,8 +41,9 @@ export default function PlanScreen() {
   };
 
   return (
-    <Screen>
-      <Heading title={t('plansTitle')} sub={t('plansLead')} />
+    <Screen wide fit header={{ title: t('plansTitle'), sub: t('plansLead') }}>
+      <Columns fill scrollLeft
+        left={<>
       {data.plans.map((p) => {
         const active = p.id === planId;
         return (
@@ -58,6 +59,8 @@ export default function PlanScreen() {
           </Pressable>
         );
       })}
+        </>}
+        right={<>
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[type.bodyBold, { flex: 1 }]}>{t('youPay')}</Text>
@@ -95,6 +98,8 @@ export default function PlanScreen() {
           <Text style={type.caption}>{t('paid')}</Text>
         </Card>
       ))}
+        </>}
+      />
     </Screen>
   );
 }

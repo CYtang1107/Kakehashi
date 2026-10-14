@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { COMMISSION, WORKER_CHECKS, isCleared, pick, type JobListing, type Worker } from '@kakehashi/shared';
-import { Button, Card, Fold, Heading, Pill, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Columns, Fold, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -40,8 +40,9 @@ export default function HelperBoard() {
   };
 
   return (
-    <Screen>
-      <Heading title={t('helperTitle')} sub={t('helperLead', { pct: Math.round(COMMISSION * 100) })} />
+    <Screen wide fit header={{ title: t('helperTitle'), sub: t('helperLead', { pct: Math.round(COMMISSION * 100) }) }}>
+      <Columns fill scrollLeft
+        left={<>
 
       {/* Demo sign-in: pick which helper you are */}
       <View style={{ gap: 8 }}>
@@ -71,7 +72,8 @@ export default function HelperBoard() {
 
       {worker ? <Checks worker={worker} /> : null}
       {error ? <Text style={[type.body, { color: colors.danger }]}>{error}</Text> : null}
-
+        </>}
+        right={<>
       {worker && board ? (
         <>
           <Text style={type.section}>{t('openJobs', { n: board.open.length })}</Text>
@@ -107,6 +109,8 @@ export default function HelperBoard() {
           <Text style={type.body}>{t('earned', { amount: yen(board.earned) })}</Text>
         </>
       ) : null}
+        </>}
+      />
     </Screen>
   );
 }

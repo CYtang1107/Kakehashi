@@ -37,30 +37,34 @@ export default function Visit() {
   };
 
   return (
-    <Screen wide={step === 'with'} header={{
+    <Screen wide fit header={{
       eyebrow: t('visitToday', { name: lang === 'ja' && home.seniorNameJa ? home.seniorNameJa.split(' ')[0] : home.seniorName.split(' ')[1] ?? home.seniorName }),
       title: lang === 'ja' ? current.nameJa : current.name,
     }}>
       <VisitSteps step={step} onChange={setStep} />
       {step === 'before' ? (
-        <View style={{ maxWidth: 640, width: '100%', gap: 14 }}>
+        <>
+      <Columns fill scrollLeft
+        left={<>
       <WeatherCheckCard />
       <Card tint>
         <Text style={type.bodyBold}>{t('beforeYouStart')}</Text>
         <Text style={type.body}>{t('beforeYouStartBody')}</Text>
       </Card>
-      <FieldNotesCard />
       <Card>
         <Text style={type.section}>{t('consentTitle')}</Text>
         <Text style={type.body}>{home.consent.recording ? t('consentGiven', { date: formatDate(home.consent.at ?? '', lang) }) : t('consentMissing')}</Text>
         <Button label={home.consent.recording ? t('consentWithdraw') : t('consentYes')} kind={home.consent.recording ? 'secondary' : 'primary'}
           icon={home.consent.recording ? 'x-circle' : 'check-circle'} busy={busy} onPress={() => setConsent(!home.consent.recording)} />
       </Card>
+        </>}
+        right={<FieldNotesCard />}
+      />
           <Button label={t('stepNextWith')} icon="chevron-right" onPress={() => setStep('with')} />
-        </View>
+        </>
       ) : step === 'with' ? (
         <>
-      <Columns
+      <Columns fill scrollLeft
         left={<>
       <Text style={type.section}>{t('items')}</Text>
       {[...roomItems, ...otherItems].map((it) => (
@@ -99,11 +103,13 @@ export default function Visit() {
           <Button label={t('stepNextAfter')} icon="chevron-right" onPress={() => setStep('after')} />
         </>
       ) : (
-        <View style={{ maxWidth: 640, width: '100%', gap: 14 }}>
-      <ReportCard />
+      <Columns fill scrollLeft
+        left={<ReportCard />}
+        right={<>
       <LetterCard mode="student" />
       <CallsCard mode="student" />
-        </View>
+        </>}
+      />
       )}
     </Screen>
   );

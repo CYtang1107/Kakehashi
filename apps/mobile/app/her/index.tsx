@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { HELP_KINDS, pick, type ServiceFeedback, type ServiceKind } from '@kakehashi/shared';
-import { Card, Screen, formatDate } from '../../src/ui';
+import { Card, Columns, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -53,7 +53,9 @@ export default function HerScreen() {
   };
 
   return (
-    <Screen header={{ title: t('herHello'), sub: t('herToday', { date: today(lang) }), large: true }}>
+    <Screen wide fit header={{ title: t('herHello'), sub: t('herToday', { date: today(lang) }), large: true }}>
+      <Columns fill scrollLeft
+        left={<>
       <WeatherNote />
       {next ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, borderRadius: 20, backgroundColor: thread.cloth }}>
@@ -101,6 +103,8 @@ export default function HerScreen() {
         <Text style={[body, { flex: 1 }]}>{t('doorRule')}</Text>
       </View>
 
+        </>}
+        right={<>
       {/* Ask for help: pick one, then when */}
       <Text style={big}>{t('askHelpTitle')}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
@@ -152,6 +156,8 @@ export default function HerScreen() {
           </View>
         </Card>
       ))}
+        </>}
+      />
     </Screen>
   );
 }

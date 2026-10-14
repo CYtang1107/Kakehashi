@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import type { PayKind, Wallet } from '@kakehashi/shared';
-import { Button, Card, Field, Fold, Heading, Pill, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Columns, Field, Fold, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -43,8 +43,9 @@ export default function WalletScreen() {
   const startEdit = () => { setGoalName(goal?.name ?? ''); setTarget(goal ? String(goal.targetJpy) : ''); setPct(String(goal?.setAsidePct ?? 20)); setEditing(true); };
 
   return (
-    <Screen>
-      <Heading title={t('walletTitle')} sub={t('walletLead')} />
+    <Screen wide fit header={{ title: t('walletTitle'), sub: t('walletLead') }}>
+      <Columns fill scrollLeft
+        left={<>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         {pair.map((s) => (
           <Pressable key={s.id} accessibilityRole="radio" accessibilityState={{ checked: me === s.id }} onPress={() => setSid(s.id)}
@@ -104,6 +105,8 @@ export default function WalletScreen() {
         <Text style={type.caption}>{t('goalNote')}</Text>
       </Card>
 
+        </>}
+        right={<>
       {/* Long-term saving: neutral information and the government's guide, never advice */}
       <Fold title={t('nisaTitle')} icon="trending-up" summary={t('nisaSummary')}>
         <Card tint>
@@ -127,6 +130,8 @@ export default function WalletScreen() {
         </View>
       ))}
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+        </>}
+      />
     </Screen>
   );
 }

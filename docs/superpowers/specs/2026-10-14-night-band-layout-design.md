@@ -58,6 +58,10 @@ Unchanged: `paper`, `sheet`, `ink`, `inkSoft`, `line`, and the decision colours 
 
 The 3D house's own colours and lighting, the story globe, the map pages, the decision colours, any feature or text, and the screens outside the five (helper job board, wallet tab, plan, reports, add item, team): those only get the night top bar and tab bar through the shared components.
 
+## Update, 14 October: every page fits the window on a laptop
+
+At the user's request, at 900 px and wider every page now fits the window without the page scrolling (`Screen fit`, `Columns fill`): the page is split into two columns and a column scrolls inside itself only when its content is long. This replaces two earlier decisions: her screen now also has two columns on a laptop (visit, who is coming and the door rule | ask for help), with the same large text; and all screens, not only the five video screens, use the band heading and two columns. Phones are unchanged.
+
 ## Testing
 
 - Typecheck both apps.

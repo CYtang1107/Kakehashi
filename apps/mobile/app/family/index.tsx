@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { pick } from '@kakehashi/shared';
-import { Button, Card, Fold, Heading, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Columns, Fold, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { ActivitiesCard, StudentsCard } from '../../src/Community';
 import { ServicesCard } from '../../src/Services';
@@ -16,7 +16,7 @@ export default function FamilyHome() {
   const { data } = useData();
   const { t, lang } = useI18n();
   return (
-    <Screen>
+    <Screen wide fit header={data ? { eyebrow: t('mothersHome', { town: pick(lang, data.home.town, data.home.townJa) }), title: t('greeting', { name: pick(lang, data.home.childName, data.home.childNameJa) }) } : undefined}>
       {data ? (() => {
         const { home, items } = data;
         const next = home.visits.find((v) => v.status === 'planned');
@@ -26,8 +26,8 @@ export default function FamilyHome() {
         const latest = [...items].filter((i) => i.story).sort((a, b) => (b.journey.at(-1)?.at ?? '').localeCompare(a.journey.at(-1)?.at ?? ''))[0];
         const [a, b] = home.students;
         return (
-          <>
-            <Heading eyebrow={t('mothersHome', { town: pick(lang, home.town, home.townJa) })} title={t('greeting', { name: pick(lang, home.childName, home.childNameJa) })} />
+          <Columns fill scrollLeft
+            left={<>
             <LiveOutingBanner onOpenMap={() => router.push('/family/house?view=map')} />
             <WeatherBanner />
             <VisitThread visits={home.visits} names={[a.name, b.name]} initials={[a.initial, b.initial]}
@@ -43,6 +43,8 @@ export default function FamilyHome() {
                 </Pressable>
               </Card>
             ) : null}
+            </>}
+            right={<>
             <Fold title={t('studentsTitleShort')} icon="award" summary={t('foldStudents', { a: a.name, b: b.name })}>
               <StudentsCard />
             </Fold>
@@ -52,7 +54,8 @@ export default function FamilyHome() {
             <Fold title={t('servicesTitle')} icon="tool" summary={t('foldHelp', { booked: home.services.filter((s) => s.status === 'booked').length, asked: home.services.filter((s) => s.status === 'requested').length })}>
               <ServicesCard mode="family" />
             </Fold>
-          </>
+            </>}
+          />
         );
       })() : null}
     </Screen>

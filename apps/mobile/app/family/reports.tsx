@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { pick } from '@kakehashi/shared';
-import { Card, Heading, Pill, Screen, formatDate } from '../../src/ui';
+import { Card, Columns, Pill, Screen, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { colors, type } from '../../src/theme';
@@ -11,12 +11,14 @@ export default function Reports() {
   const { data } = useData();
   const { t, lang } = useI18n();
   return (
-    <Screen>
+    <Screen wide fit header={{ title: t('reportsTitle') }}>
       {data ? (
-        <>
-          <Heading title={t('reportsTitle')} />
+        <Columns fill scrollLeft
+          left={<>
           <LetterCard mode="family" />
           <CallsCard mode="family" />
+          </>}
+          right={<>
           {data.home.visits.map((v) => {
             const room = data.home.rooms.find((r) => r.id === v.roomId);
             return (
@@ -38,7 +40,8 @@ export default function Reports() {
               <Text style={type.caption}>{th.item.name} · {formatDate(th.at, lang)}</Text>
             </Card>
           ))}
-        </>
+          </>}
+        />
       ) : null}
     </Screen>
   );
