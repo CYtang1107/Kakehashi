@@ -52,7 +52,7 @@ export function LetterCard({ mode }: { mode: 'family' | 'student' }) {
         <View key={l.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 }}>
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={type.bodyBold}>{t('letterMonth', { month: monthLabel(l.month, lang) })}</Text>
-            <Text style={type.caption}>{t('letterItems', { n: l.itemIds.length })}</Text>
+            <Text style={type.caption}>{(l.itemIds.length === 1 ? t('letterItemsOne') : t('letterItems', { n: l.itemIds.length }))}</Text>
             <LetterStatus letter={l} />
           </View>
           <Button label={t('openLetter')} kind="secondary" icon="mail" onPress={() => WebBrowser.openBrowserAsync(letterUrl(l.id))} />
@@ -62,7 +62,7 @@ export function LetterCard({ mode }: { mode: 'family' | 'student' }) {
         shown ? (
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={[type.bodyBold, { flex: 1 }]}>{t('letterMonth', { month: monthLabel(shown.month, lang) })} · {t('letterItems', { n: shown.itemIds.length })}</Text>
+              <Text style={[type.bodyBold, { flex: 1 }]}>{t('letterMonth', { month: monthLabel(shown.month, lang) })} · {(shown.itemIds.length === 1 ? t('letterItemsOne') : t('letterItems', { n: shown.itemIds.length }))}</Text>
               <LetterStatus letter={shown} />
             </View>
             <Field label={t('letterNote')} multiline value={note ?? shown.note} onChangeText={setNote} />
