@@ -174,6 +174,14 @@ export function seedItems(): Item[] {
     { id: 'camera', homeId: HOME_ID, roomId: 'living', name: 'Film camera', nameJa: 'カメラ', year: '1979', glyph: '写', decision: 'open',
       story: 'My husband took every family photo with this camera. Kenji used to carry the bag for him on trips.', storyJa: '家族の写真は全部、夫がこのカメラで撮りました。旅行のときは健二がかばん持ちでした。', x: 62, y: 58,
       journey: [{ at: at('2026-08-15'), stage: 'home', by: 'Michiko Tanaka', note: 'On the shelf where it has always been' }], thanks: [] },
+    { id: 'sunglasses', share: { at: '2026-10-12', name: 'first', audio: false, photos: true }, hearts: 23, comments: [
+      { id: 'cm4', from: '', message: 'My father had a pair just like these. Thank you for sharing.', at: '2026-10-13T08:00:00Z', status: 'shown' },
+    ], homeId: HOME_ID, roomId: 'living', name: 'Sunglasses', nameJa: 'サングラス', year: '1985', glyph: '眼', decision: 'family',
+      story: "My husband bought these for our trip to Okinawa in 1985 and wore them every summer after. I'd like Kenji to have them.", storyJa: '1985年に沖縄へ旅行したとき、夫が買ったサングラスです。それから毎年、夏になるとかけていました。健二に持っていてほしいです。', x: 104, y: 36,
+      journey: [
+        { at: at('2026-10-10'), stage: 'home', by: 'Michiko Tanaka', note: 'In the drawer by the door' },
+        { at: at('2026-10-10'), stage: 'sorted', by: 'Yui and Arif', note: 'Michiko chose to give them to Kenji' },
+      ], thanks: [] },
     { id: 'tv', homeId: HOME_ID, roomId: 'living', name: 'Old television', nameJa: 'テレビ', year: '1998', glyph: '映', decision: 'recycle',
       story: "It stopped working years ago. I kept it because I didn't know where to take it.", storyJa: 'もう何年も前に映らなくなりました。どこに持っていけばいいか分からなくて、そのままにしていたの。', x: 146, y: 98,
       journey: [
@@ -193,11 +201,11 @@ export function seedItems(): Item[] {
 }
 
 // Each journey step gets its place; the desk is on its way to its new owner with Arif (simulated for the demo).
-// Demo photos live only in the local, git-ignored uploads folder; the seed uses them when they are there.
+// Demo photos are the team's own pictures, committed in apps/server/demo and copied into uploads at start-up.
+// Each comes with a pixel icon made from it (scripts/make-demo-asset.ts). Never a stranger's or a seller's photo.
 const DEMO_PHOTOS: Record<string, { file: string; kind: ItemPhoto['kind']; caption: string; captionJa: string }[]> = {
-  sewing: [
-    { file: 'demo-sewing-photo.webp', kind: 'photo', caption: 'The machine today, in the tatami room', captionJa: '今のミシン（和室にて）' },
-    { file: 'demo-sewing-illustration.webp', kind: 'illustration', caption: 'Illustration of her sewing the school bags', captionJa: '通園バッグを縫う様子のイラスト' },
+  sunglasses: [
+    { file: 'demo-sunglasses-photo.webp', kind: 'photo', caption: 'His sunglasses today, from the drawer by the door', captionJa: '今のサングラス（玄関横の引き出しから）' },
   ],
 };
 function demoPhotos(itemId: string): ItemPhoto[] {
@@ -213,7 +221,7 @@ function withTracks(items: Item[]): Item[] {
       ? { by: 'Arif', from: TRACK.home, to: TRACK.ownerNishi, startedAt: at('2026-10-10'), minutes: 35, simulated: true } : undefined;
     const photos = demoPhotos(it.id);
     const iconFile = path.join(UPLOAD_DIR, `demo-${it.id}-icon.json`);
-    const icon: ItemIcon | undefined = fs.existsSync(iconFile) ? JSON.parse(fs.readFileSync(iconFile, 'utf8')) : undefined;
+    const icon: ItemIcon | undefined = DEMO_PHOTOS[it.id] && fs.existsSync(iconFile) ? JSON.parse(fs.readFileSync(iconFile, 'utf8')) : undefined;
     return { ...it, journey, ...(delivery ? { delivery } : {}), ...(photos.length ? { photos } : {}), ...(icon ? { icon } : {}) };
   });
 }
