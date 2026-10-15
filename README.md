@@ -42,7 +42,7 @@ To start over with the example family: `npm run reset` (while the server runs).
 - The free service sleeps after about 15 minutes without visitors; the first visit after that takes up to a minute.
 - Demo data resets to the example family whenever the service restarts, and changes visitors make are shared by everyone using the link.
 - No API keys are set: AI estimates run offline and payments stay in demo mode. Don't add live keys to a public demo.
-- Demo photos kept only on a local machine (`apps/server/data/uploads`) are not part of the hosted demo.
+- Demo photos are the team's own pictures, committed in `apps/server/demo` (the sunglasses), so the hosted demo shows them too. Never use a stranger's or a seller's photo. To add one: `npx tsx scripts/make-demo-asset.ts <photo> <item id>` in `apps/server` makes a resized WebP without metadata (phone photos can carry GPS) and its pixel icon.
 
 To try the hosted build locally: `EXPO_PUBLIC_API_URL=same-origin npm run build:hosted`, then `npm run start:hosted` and open http://localhost:4100.
 
@@ -155,6 +155,8 @@ apps/server            Express API, JSON-file storage (apps/server/data, not com
   src/weather.ts       Live JMA weather warnings
   src/pixelize.ts      Pixel icons from item photos (sharp)
   src/nearby.ts        Real nearby places from OpenStreetMap
+  demo/                The team's own demo photos and their pixel icons
+  scripts/             make-demo-asset.ts (turns a photo into a demo asset)
 apps/mobile            Expo Router app (iOS, Android, web)
   app/                 Screens per role: her/, family/, student/, worker/, stories/, item/
   src/                 Shared components (3D house, maps, cards, i18n)
@@ -170,4 +172,4 @@ packages/shared        Types and rules shared by both
 
 ## Data and credits
 
-Map data © OpenStreetMap contributors (ODbL). Map tiles by OpenFreeMap. Weather warnings: Japan Meteorological Agency (気象庁). Places near the demo home were copied on 10 October 2026. Story globe coastlines: Natural Earth 1:50m land (public domain), via the world-atlas package.
+Map data © OpenStreetMap contributors (ODbL). Map tiles by OpenFreeMap. Weather warnings: Japan Meteorological Agency (気象庁). Places near the demo home were copied on 10 October 2026. Story globe coastlines: Natural Earth 1:50m land (public domain), via the world-atlas package. The sunglasses photo is our own.

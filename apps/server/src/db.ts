@@ -15,13 +15,18 @@ interface Db {
 }
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// The team's own demo photos (apps/server/demo, committed) are copied in, so the hosted demo has them too.
+const DEMO_DIR = path.resolve(__dirname, '..', 'demo');
+for (const f of fs.existsSync(DEMO_DIR) ? fs.readdirSync(DEMO_DIR) : []) {
+  if (!fs.existsSync(path.join(UPLOAD_DIR, f))) fs.copyFileSync(path.join(DEMO_DIR, f), path.join(UPLOAD_DIR, f));
+}
 
 function fresh(): Db {
   return { homes: [seedHome()], items: seedItems(), examples: exampleStories() };
 }
 
 // Older data files from earlier versions lack newer fields; demo data is simply re-seeded.
-const isCurrent = (d: Db) => Array.isArray(d.examples) && d.homes.every((h) => Array.isArray(h.activities) && Array.isArray(h.letters) && Array.isArray(h.fieldNotes) && Array.isArray(h.safety) && Array.isArray(h.future?.familyNotes) && Array.isArray(h.services) && Array.isArray(h.places) && h.places.some((p) => p.mine) && Array.isArray(h.outings) && Array.isArray(h.weather?.checks) && Array.isArray(h.pay) && h.services.some((s) => s.status === 'open') && d.items.some((i) => i.share) && d.items.some((i) => typeof i.hearts === 'number') && d.items.some((i) => i.delivery) && h.students.every((s) => s.passed) && h.rooms.every((r) => Array.isArray(r.photos)));
+const isCurrent = (d: Db) => Array.isArray(d.examples) && d.items.some((i) => i.id === 'sunglasses') && d.homes.every((h) => Array.isArray(h.activities) && Array.isArray(h.letters) && Array.isArray(h.fieldNotes) && Array.isArray(h.safety) && Array.isArray(h.future?.familyNotes) && Array.isArray(h.services) && Array.isArray(h.places) && h.places.some((p) => p.mine) && Array.isArray(h.outings) && Array.isArray(h.weather?.checks) && Array.isArray(h.pay) && h.services.some((s) => s.status === 'open') && d.items.some((i) => i.share) && d.items.some((i) => typeof i.hearts === 'number') && d.items.some((i) => i.delivery) && h.students.every((s) => s.passed) && h.rooms.every((r) => Array.isArray(r.photos)));
 
 function load(): Db {
   try {
