@@ -8,7 +8,6 @@ import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { workerName } from '../../src/Services';
-import { thread } from '../../src/VisitThread';
 import { WeatherNote } from '../../src/Weather';
 import { colors, fonts } from '../../src/theme';
 
@@ -59,16 +58,16 @@ export default function HerScreen() {
         left={<>
       <WeatherNote />
       {next ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, borderRadius: 20, backgroundColor: thread.cloth }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 18, backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line, borderLeftWidth: 5, borderLeftColor: colors.moss }}>
           <View style={{ flexDirection: 'row' }}>
             {pair.map((s, i) => (
-              <View key={s.id} style={{ width: 52, height: 52, borderRadius: 26, marginLeft: i ? -12 : 0, borderWidth: 3, borderColor: thread.cloth,
+              <View key={s.id} style={{ width: 52, height: 52, borderRadius: 26, marginLeft: i ? -12 : 0, borderWidth: 3, borderColor: colors.sheet,
                 backgroundColor: i ? colors.mossTint : colors.plumTint, alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 20, color: i ? colors.moss : colors.plum }}>{s.initial}</Text>
               </View>
             ))}
           </View>
-          <Text style={{ flex: 1, fontFamily: fonts.bold, fontSize: 20, lineHeight: 28, color: thread.thread }}>
+          <Text style={{ flex: 1, fontFamily: fonts.bold, fontSize: 20, lineHeight: 28, color: colors.ink }}>
             {t('herWithYou', { names: pair.map((s) => s.name).join(lang === 'ja' ? 'さんと' : ' and '), date: formatDate(next.date, lang) })}
           </Text>
         </View>
@@ -80,20 +79,20 @@ export default function HerScreen() {
         const w = home.workers.find((x) => x.id === s.workerId);
         const d = s.date ? new Date(`${s.date}T12:00:00`) : null;
         return (
-          <Card key={s.id} style={{ flexDirection: 'row', gap: 16, alignItems: 'center' }}>
+          <Card key={s.id} style={{ flexDirection: 'row', gap: 14, alignItems: 'flex-start' }}>
             {d ? (
-              <View style={{ width: 72, paddingVertical: 8, borderRadius: 14, backgroundColor: colors.aiTint, alignItems: 'center' }}>
+              <View style={{ width: 64, paddingVertical: 6, borderRadius: 14, backgroundColor: colors.aiTint, alignItems: 'center' }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 15, color: colors.ai }}>{lang === 'ja' ? `${d.getMonth() + 1}月` : d.toLocaleDateString('en-GB', { month: 'short' })}</Text>
-                <Text style={{ fontFamily: fonts.display, fontSize: 32, lineHeight: 38, color: colors.ai }}>{d.getDate()}</Text>
+                <Text style={{ fontFamily: fonts.display, fontSize: 28, lineHeight: 34, color: colors.ai }}>{d.getDate()}</Text>
               </View>
             ) : null}
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={big}>{workerName(w, lang)}</Text>
               <Text style={body}>{t(`svc_${s.kind}` as Key)}{s.hours ? `, ${t('hoursN', { n: s.hours })}` : ''}</Text>
               {w ? <Text style={[body, { fontSize: 16, color: colors.inkSoft }]}>{pick(lang, w.from, w.fromJa)}</Text> : null}
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Feather name="check-circle" size={18} color={colors.moss} />
-                <Text style={[body, { fontSize: 15, color: colors.moss, flex: 1 }]}>{t('checkedWorker')}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginTop: 2 }}>
+                <Feather name="check-circle" size={18} color={colors.moss} style={{ marginTop: 2 }} />
+                <Text style={[body, { fontSize: 15, lineHeight: 22, color: colors.moss, flex: 1 }]}>{t('checkedWorker')}</Text>
               </View>
             </View>
           </Card>
