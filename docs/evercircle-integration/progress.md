@@ -1,6 +1,6 @@
 # EverCircle integration progress and executed baseline
 
-Date: 15 October 2026 (Asia/Kuala_Lumpur). **Stages 0-4 complete at their documented implementation/web-verification scope. Later stages not started.** Repository `D:\kakehashi\Kakehashi`; initial baseline HEAD `8c9692a40214d3fbdd4f8221fc062274fb178fda`; Stage 3 starts from `96647b8`. Earlier-stage records below are historical. Native-device accessibility certification remains outstanding.
+Date: 16 October 2026 (Asia/Kuala_Lumpur). **Stages 0-5 complete at their documented implementation/web-verification scope. Stage 6 and later work not started.** Repository `D:\kakehashi\Kakehashi`; initial baseline HEAD `8c9692a40214d3fbdd4f8221fc062274fb178fda`; Stage 3 starts from `96647b8`; Stage 5 starts from `dafc086`. Earlier-stage records below are historical. Native-device accessibility certification remains outstanding.
 
 ## Stage 0 completed scope (historical)
 
@@ -510,3 +510,46 @@ The required documenter inspected final source, recorded the existing-world exte
 Native storage/IME/safe areas/gestures, VoiceOver/TalkBack, physical recording and OS font scaling remain untested. Native reading preferences remain session-only as previously documented. The local fictional profile is neither encrypted storage nor authenticated identity. Conversation recognition is deliberately limited and can propose ambiguous candidates, which remain unapproved. Optional voice features, real AI, friend matching, device controls and reminder scheduling are not implemented. Existing provider/media limitations from earlier stages remain.
 
 Impeccable context also reported an unset build-path preference for future Persuade/Experience surfaces. This Operate extension is code-led; no configuration drift was repaired. Canonical design/product scope text remains historical, with the documenter's comparison recording the extension instead of silently rewriting it.
+
+
+## Stage 5 ? friendship demonstration (16 October 2026)
+
+### Delivered scope
+
+- Eight authored fictional older-adult profiles plus the existing Tanaka identity; demo switching is explicitly local and limited to Friends.
+- Deterministic 40/20/15/10/10/5 matching, pure bilateral eligibility checks, approved-field allowlists and explainable human-first recommendations. Missing optional fields earn zero without reweighting.
+- Independent master, hobby and field-sharing controls; private profile revision changes invalidate extra field grants. No household records, recordings or unapproved companion candidates enter matching.
+- Structured agent permission/summary/comparison/score/recommendation events and explicit user-decision events, without transcript exchange.
+- Confirmed invitations, recipient-only acceptance/decline, accepted-only local messaging, labelled scripted replies, bilateral block/unblock and local reports.
+- Six fictional opt-in hobby communities with approximate regions. Existing students and household activity accept/Not now calls remain accessible for Tanaka.
+- Isolated persisted SocialProvider cooperates with the Stage 4 provider. Storage errors pause new actions; withdrawal/blocking is immediate in memory, with Retry. Corrupt storage offers a non-overwriting temporary session.
+- All new text localized in English/Japanese and all new screens reuse the Stage 1 shared design system and global reading preferences.
+
+Architecture, exact files, routes, permissions, algorithm and prototype limits: [stage5-implementation.md](stage5-implementation.md).
+
+### Executed checks to date
+
+Mobile and server typechecks exit 0. Pure domain commands pass: verify-social.cjs **14 groups**, verify-evercircle.cjs **12 groups**. The unchanged contrast suite passes **30 combinations**, exit 0, on an approved outside-sandbox retry after tsx failed before running checks with uv_os_get_passwd ENOMEM.
+
+The initial export succeeded but used the default localhost API configuration; no browser verdict used that export. It was rebuilt using command-scoped EXPO_PUBLIC_API_URL=same-origin for the disposable fixture host. Both exports exit 0. Initial browser execution was blocked by the sandboxed Chrome process exiting without exposing port 9223; an approved hidden dedicated Chrome launch resolved the verification environment.
+
+The first functional browser run completed approval/invitation/acceptance/messages but stopped because the harness expected a disabled HTML textarea. React Native Web correctly represents editable=false as readOnly. The assertion was corrected to inspect readOnly. The subsequent complete Stage 5 run passed **80 layouts and seven scenario groups**, zero measured overflow/undersized exposed controls, zero uncaught exceptions and zero household mutation requests. Layouts cover five routes, English/Japanese, widths 320/390/768/1440 and normal/Extra Large text with high contrast in enlarged cases.
+
+Existing-role fixture regressions pass: Stage 3 --interactions-only **15 groups**, Stage 2 --interactions-only **six groups**, all exit 0, no exceptions. These cover student reports/notes/consent/readiness/wallet, family dashboard/reports/letters/calls/payments, helper jobs, public story interactions, item decisions and sharing, older-adult help/feedback/activities/media/digital-house routes. Fixture evidence does not certify real server handlers or external providers.
+
+One batched visual inspection opened all 21 initial captures. It identified a message usability gap: a new bubble could remain off screen. One correction batch adds reduced-motion-aware latest-message scrolling and places the longer messaging privacy explanation in an expandable section. Mobile typecheck and corrected same-origin export pass (1,046 modules, approximately 3.2 MB JS; entry-9116a46201cc9b017c41ab5985108253.js). Final browser confirmation and independent review are pending below.
+
+The Impeccable detector ran once on changed social routes/components and the companion privacy entry: exit 0, no findings. This is limited web source analysis, not a native accessibility verdict. No dependency installation, server implementation, AI service, commit or deployment occurred.
+
+
+Final corrected Stage 5 browser output is complete: **80 layout cases, seven scenarios, no failures or uncaught exceptions** in stage5-verification.json. The session process handle expired when the chat resumed before the final exit code was collected; the earlier complete run's exit 0 and this completed final JSON are distinguished here. All 27 final captures were opened; latest-message shots confirm the bubble appears above the composer. Stage 4 --interactions-only also exits 0 with **nine groups** on the final build. Its first resumption attempt could not reach the stopped fixture host and ran no scenarios; after restarting the disposable host, the full command passed.
+
+
+The required independent finish reviewer opened all 27 captures and inspected the privacy/state boundaries, returning **ship** with no material findings within the **local Expo Web demonstration** scope. See [stage5-review.md](stage5-review.md), including all five contract sections. No native release approval is implied. The separate design-system comparison is completing; no post-review application edits were made. The dedicated Chrome was closed through its own debugging endpoint and the disposable fixture host stopped; ordinary browser sessions and household records were untouched.
+
+
+### Completion and remaining limits
+
+The required documenter completed [stage5-design-check.md](stage5-design-check.md), finding compatibility with the incumbent system. It preserved PRODUCT.md, DESIGN.md and the design sidecar, recording their historical Stage 1 scope without an unsolicited rewrite. Stage 5 is complete at the documented local Expo Web scope. No post-review application corrections were needed. Final diff whitespace checks pass. Server/shared code, API/DataProvider, package manifests and lockfile remain unchanged. The dedicated temporary Chrome profile was removed after its resolved path was verified inside the workspace.
+
+Native persistence/IME/safe areas/OS text scaling and VoiceOver/TalkBack remain untested. Demo switching is not authentication; local storage is not encrypted, reports are not delivered to a moderator, no remote messaging occurs, and simultaneous-tab synchronization is unsupported. Accepted chats are bounded to 100 messages of up to 800 characters per pair. These are stated prototype limits, not claims of production security or native certification. Existing external-provider/media limits remain as recorded in earlier stages. **Stop after Stage 5.**

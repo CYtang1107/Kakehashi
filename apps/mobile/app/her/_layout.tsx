@@ -8,13 +8,14 @@ import { useI18n, type Key } from '../../src/i18n';
 import { useData } from '../../src/data';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { EverCircleProvider } from '../../src/evercircle/store';
+import { SocialProvider } from '../../src/evercircle/social/store';
 
 const tabs = [
   ['home', '/her', 'hHome', 'sun'], ['friends', '/her/friends', 'hFriends', 'users'],
   ['house', '/her/my-home', 'hMyHome', 'home'], ['memories', '/her/memories', 'hMemories', 'book-open'],
 ] as const;
 export default function HerLayout() {
-  return <EverCircleProvider><HerNavigation /></EverCircleProvider>;
+  return <EverCircleProvider><SocialProvider><HerNavigation /></SocialProvider></EverCircleProvider>;
 }
 function HerNavigation() {
   const path = usePathname();

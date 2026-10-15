@@ -58,7 +58,7 @@ test('unapproved candidates never persist or hydrate; Remember persists the appr
   assert.deepEqual(approved.approved,[{id:'gardening',revision:1,shareForMatching:false}]);assert.deepEqual(approved.pending,[]);
 });
 test('clear conversation candidates keeps approved memories; reset clears feature data only',()=>{
-  change({type:'suggest',ids:['gardening']});change({type:'clearPending'});assert.equal(state.approved[0].id,'chess');assert.deepEqual(state.pending,[]);change({type:'reset'});assert.deepEqual(state,initialState('tanaka'));
+  change({type:'suggest',ids:['gardening']});change({type:'clearPending'});assert.equal(state.approved[0].id,'chess');assert.deepEqual(state.pending,[]);const revision=state.profileRevision??0;change({type:'reset'});assert.deepEqual(state,{...initialState('tanaka'),profileRevision:revision+1});
 });
 test('household bridge returns name/date only, ignores private records and unrelated homes',()=>{
   const home={id:'tanaka',seniorName:'Michiko Tanaka',seniorNameJa:'田中 美智子',visits:[{status:'planned',date:'2026-10-24',summary:'secret report'},{status:'planned',date:'2020-01-01'}],seniorInterests:['secret'],familyNotes:['secret']};

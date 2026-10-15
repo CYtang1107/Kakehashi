@@ -24,6 +24,7 @@ export function PrivacyScreen() {
       {eligible.length ? eligible.map(id => <AppText key={id}>{t(interestKey(id))}</AppText>) : <AppText>{t('cEligibleNone')}</AppText>}
     </View>
     <Button label={t('cProfile')} kind="secondary" onPress={() => router.navigate('/her/profile')} />
+    <Button label={t('sPermissions')} kind="secondary" onPress={() => router.push('/her/friends/permissions')} />
     {cleared ? <StatusBanner tone="success" title={t('cCleared')} /> : null}
     <Button label={t('cClearChat')} kind="secondary" disabled={busy} onPress={() => setClear('chat')} />
     <Button label={t('cClearProfile')} kind="danger" disabled={busy} onPress={() => setClear('profile')} />

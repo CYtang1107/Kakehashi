@@ -73,16 +73,15 @@ export function MyDayScreen() {
     {past.length ? <View style={{ gap: 12 }}><AppText variant="section">{t('hPastPlans')}</AppText><AppText variant="caption">{t('hPastNote')}</AppText>{entries(past)}</View> : null}
   </HerPage>;
 }
-export function FriendsScreen() {
-  const { data, refresh, showToast } = useData(); const { t, lang } = useI18n();
+export function LegacyFriendsContent() {
+  const { data, refresh, showToast, error: loadError } = useData(); const { t, lang } = useI18n();
   const [busy, setBusy] = useState<string | null>(null), [error, setError] = useState(false);
   const choose = async (id: string, status: 'accepted' | 'not-now') => {
     setBusy(id); setError(false);
     try { await api.activity(data!.home.id, id, status); await refresh(); showToast(t('saved')); } catch { setError(true); } finally { setBusy(null); }
   };
-  return <HerPage title={t('hFriends')} description={t('hFriendsBody')}>
-    <StatusBanner title={t('hSoon')} message={t('hMatchingBody')} />
-    <Destination label="cProfile" href="/her/profile" icon="user" />
+  return <View style={{gap:20}}>
+    {loadError ? <StatusBanner tone="error" title={t('dsConnectionTitle')} action={{label:t('retry'),onPress:refresh}}/> : null}
     <View style={{ gap: 16 }}><AppText variant="section">{t('hStudents')}</AppText>{data?.home.students.map(s => <View key={s.id} style={{ gap: 8 }}>
       <AppText variant="bodyBold">{s.name}</AppText><AppText>{pick(lang, s.university, s.universityJa)}</AppText><AppText>{pick(lang, s.interests, s.interestsJa)}</AppText><StudentBadges student={s} />
     </View>)}</View>
@@ -94,7 +93,7 @@ export function FriendsScreen() {
       <AppText variant="caption">{t(`act_${a.status}` as Key)}</AppText>
       {a.status === 'proposed' ? <><Button label={t('hJoin')} disabled={busy !== null} busy={busy === a.id} onPress={() => choose(a.id, 'accepted')} /><Button label={t('act_not-now')} kind="secondary" disabled={busy !== null} onPress={() => choose(a.id, 'not-now')} /></> : null}
     </Card>) : <EmptyState title={t('hNothingPlanned')} message={t('hNothingBody')} />}
-  </HerPage>;
+  </View>;
 }
 export function MyHomeScreen() {
   const { t } = useI18n();

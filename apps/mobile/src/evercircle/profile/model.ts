@@ -14,7 +14,7 @@ export type Profile = {
   locations: (typeof LOCATIONS[number])[];
 };
 export type ApprovedInterest = { id: InterestId; revision: number; shareForMatching: boolean };
-export type SavedState = { version: 1; householdId: string; profile: Profile; approved: ApprovedInterest[]; pending: InterestId[]; matchingEnabled: boolean };
+export type SavedState = { version: 1; householdId: string; profile: Profile; profileRevision?: number; approved: ApprovedInterest[]; pending: InterestId[]; matchingEnabled: boolean };
 export type SavedAction =
   | { type: 'suggest'; ids: InterestId[] }
   | { type: 'approve' | 'reject' | 'delete'; id: InterestId }
@@ -47,7 +47,7 @@ export function parseSaved(raw: string | null, householdId: string): SavedState 
       revision: Number.isSafeInteger(entry.revision) && entry.revision > 0 ? entry.revision : 1,
       shareForMatching: entry.shareForMatching === true && value.matchingEnabled === true });
   }
-  return { version: 1, householdId, profile: cleanProfile(value.profile), approved,
+  return { version: 1, householdId, profile: cleanProfile(value.profile), profileRevision: Number.isSafeInteger(value.profileRevision) && value.profileRevision >= 0 ? value.profileRevision : 0, approved,
     pending: [], matchingEnabled: value.matchingEnabled === true };
 }
 // Candidates are session-only. Older demo files may contain them; hydration ignores them too.
@@ -66,11 +66,11 @@ export function reduceSaved(state: SavedState, action: SavedAction): SavedState 
       return { ...state, pending: state.pending.filter(id => id !== action.id && id !== action.replacement),
         approved: [...state.approved.filter(i => i.id !== action.id && i.id !== action.replacement), { id: action.replacement, revision, shareForMatching: false }] };
     }
-    case 'profile': return { ...state, profile: cleanProfile(action.profile) };
+    case 'profile': return { ...state, profile: cleanProfile(action.profile), profileRevision: (state.profileRevision ?? 0) + 1 };
     case 'matching': return { ...state, matchingEnabled: action.enabled,
       approved: action.enabled ? state.approved : state.approved.map(i => ({ ...i, shareForMatching: false })) };
     case 'share': return { ...state, approved: state.approved.map(i => i.id === action.id ? { ...i, shareForMatching: action.enabled && state.matchingEnabled } : i) };
     case 'clearPending': return { ...state, pending: [] };
-    case 'reset': return initialState(state.householdId);
+    case 'reset': return { ...initialState(state.householdId), profileRevision: (state.profileRevision ?? 0) + 1 };
   }
 }
