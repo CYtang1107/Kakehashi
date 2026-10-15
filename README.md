@@ -106,6 +106,10 @@ With her consent, a story can be shared publicly, named as she chooses (her firs
 
 Above the posts, a **story globe** (adapted from EVE's EVEth) shows every shared story as a light on its town, rounded to about 10 km and never the home. Drag to spin, zoom in and out, and tap a light to open the story with "Where it went": the stages and dates of its journey, with no names or places. The demo adds six invented example stories from other towns (Akita, Sendai, Kanazawa, Onomichi, Kagoshima, Sapporo) so the globe shows how it fills up; they are marked "Example" in gold and take no messages. Messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
 
+### Her circle (preview)
+
+A mock-up of a future idea: people she chooses (family, her students, one neighbour) get a gentle "could someone check on her?" message when a morning does not look normal. Her screen shows who is in it and a switch only she controls; the family sees what she chose. Nothing is sensed or sent yet, a person always calls, and it never replaces 119. Camera-free Wi-Fi sensing such as RuView is one possible signal later (see the proposal).
+
 ## No pressure to let go
 
 - **"Not now" is the first and default choice.** Most visits, nothing leaves the house.

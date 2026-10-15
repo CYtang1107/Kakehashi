@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { HELP_KINDS, pick, type ServiceFeedback, type ServiceKind } from '@kakehashi/shared';
 import { Card, Columns, Screen, formatDate } from '../../src/ui';
+import { HerCircleCard } from '../../src/HerCircle';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -102,6 +103,7 @@ export default function HerScreen() {
         <Feather name="shield" size={28} color={colors.kaki} />
         <Text style={[body, { flex: 1 }]}>{t('doorRule')}</Text>
       </View>
+      <HerCircleCard mode="her" />
 
         </>}
         right={<>

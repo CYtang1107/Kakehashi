@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { pick } from '@kakehashi/shared';
 import { Button, Card, Columns, Fold, Screen, formatDate } from '../../src/ui';
+import { HerCircleCard } from '../../src/HerCircle';
 import { useData } from '../../src/data';
 import { ActivitiesCard, StudentsCard } from '../../src/Community';
 import { ServicesCard } from '../../src/Services';
@@ -45,6 +46,7 @@ export default function FamilyHome() {
             ) : null}
             </>}
             right={<>
+            <HerCircleCard mode="family" />
             <Fold title={t('studentsTitleShort')} icon="award" summary={t('foldStudents', { a: a.name, b: b.name })}>
               <StudentsCard />
             </Fold>
