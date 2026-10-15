@@ -51,7 +51,7 @@ export default function RolePicker() {
     <View style={{ flex: 1, backgroundColor: colors.paper }}>
       <TopBar />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-        <NightBand header={{ title: '実家じまい, started early and done together', sub: t('appTagline'), large: true }} maxWidth={maxWidth} />
+        <NightBand header={{ title: '実家じまい, started early and done together' }} maxWidth={maxWidth} />
         <View style={{ padding: 16, gap: 16, maxWidth, width: '100%', alignSelf: 'center' }}>
           {body}
         </View>
