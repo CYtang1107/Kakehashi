@@ -90,7 +90,7 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
     </Card>
   );
   const tourButtons = (
-    <View style={{ flexDirection: 'row', gap: 8 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
       <View style={{ flex: 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
       <View style={{ flex: 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} disabled={reducedMotion} onPress={() => setTouring((x) => !x)} /></View>
       <View style={{ flex: 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
@@ -204,18 +204,18 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
       </View>
       <PhotoCarousel item={item} dark />
       {item.story || item.storyJa ? (
-        <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', borderLeftWidth: 3, borderLeftColor: memoryColors.lantern, paddingLeft: 12 }}>“{pick(lang, item.story, item.storyJa)}”</Text>
+        <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', paddingLeft: 12 }}>“{pick(lang, item.story, item.storyJa)}”</Text>
       ) : null}
       {item.audioUrl ? <StoryPlayer path={item.audioUrl} /> : null}
       <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: memoryColors.lantern }}>{now}</Text>
       {isTrackable(item) ? (
         <View style={{ gap: 6 }}>
-          <Text style={{ fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1, color: '#CDBFAE' }}>{t('whereNow')}</Text>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 17, letterSpacing: 1, color: '#CDBFAE' }}>{t('whereNow')}</Text>
           <TrackMap item={item} height={220} />
         </View>
       ) : null}
       {thanks ? (
-        <Text style={{ fontFamily: fonts.regular, fontSize: 14, lineHeight: 21, color: '#CDBFAE' }}>{t('thanksFrom', { name: thanks.from })}: “{thanks.message}”</Text>
+        <Text style={{ fontFamily: fonts.regular, fontSize: 17, lineHeight: 21, color: '#CDBFAE' }}>{t('thanksFrom', { name: thanks.from })}: “{thanks.message}”</Text>
       ) : null}
     </View>
   );

@@ -1,8 +1,9 @@
+import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { CONDITION_PARTS, HOUSE_STEPS, HOUSE_WISHES, emptyHouseCost, pick, type ConditionLevel, type HouseWish } from '@kakehashi/shared';
-import { Button, Card, Field, Pill, formatDate } from './ui';
+import { StatusBanner, Button, Card, Field, Pill, formatDate } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api } from './api';
@@ -36,7 +37,7 @@ export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
   const run = async (key: string, fn: () => Promise<unknown>, done?: string) => {
     setBusy(key); setError(null);
     try { await fn(); await refresh(); if (done) showToast(done); return true; }
-    catch (e) { setError(e instanceof Error ? e.message : 'Could not save.'); return false; }
+    catch (e) { setError(t('rSaveError')); return false; }
     finally { setBusy(null); }
   };
 
@@ -62,7 +63,7 @@ export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
         )}
         {f.words ? (
           <View style={{ gap: 4 }}>
-            <Text style={[type.story, { borderLeftWidth: 3, borderLeftColor: colors.ai, paddingLeft: 12 }]}>“{pick(lang, f.words, f.wordsJa)}”</Text>
+            <Text style={[type.story, { paddingLeft: 12 }]}>“{pick(lang, f.words, f.wordsJa)}”</Text>
             {f.recordedBy && f.recordedAt ? <Text style={type.caption}>{t('inHerWords', { by: f.recordedBy, date: formatDate(f.recordedAt, lang) })}</Text> : null}
           </View>
         ) : null}
@@ -89,7 +90,7 @@ export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
           const c = f.condition[part];
           return (
             <View key={part} style={{ gap: 4 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8,  }}>
                 <Text style={[type.body, { flex: 1, minWidth: 120 }]}>{t(`part_${part}` as Key)}</Text>
                 {mode === 'student'
                   ? LEVELS.map((l) => <Chip key={l} small label={t(`level_${l}` as Key)} on={c?.level === l} tone={levelTone[l]}
@@ -120,7 +121,7 @@ export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
               const done = f.steps[s];
               return (
                 <Pressable key={s} accessibilityRole="checkbox" accessibilityState={{ checked: Boolean(done) }} disabled={busy === s}
-                  onPress={() => run(s, () => api.houseStep(home.id, s, !done))} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+                  onPress={() => run(s, () => api.houseStep(home.id, s, !done))} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start' }}>
                   <Feather name={done ? 'check-square' : 'square'} size={20} color={done ? colors.moss : colors.inkSoft} />
                   <View style={{ flex: 1 }}>
                     <Text style={[type.body, done ? { color: colors.inkSoft } : null]}>{t(`step_${s}` as Key)}</Text>
@@ -132,7 +133,7 @@ export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
           </View>
         </>
       ) : null}
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
     </Card>
   );
 }
@@ -141,7 +142,7 @@ function Chip({ label, on, onPress, small, tone }: { label: string; on: boolean;
   const fg = tone?.fg ?? colors.ai, bg = tone?.bg ?? colors.aiTint;
   return (
     <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={onPress}
-      style={{ paddingHorizontal: small ? 10 : 12, paddingVertical: small ? 5 : 8, borderRadius: 99, borderWidth: 1, borderColor: on ? fg : colors.line, backgroundColor: on ? bg : colors.sheet }}>
+      style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: small ? 10 : 12, paddingVertical: small ? 5 : 8, borderRadius: 99, borderWidth: 1, borderColor: on ? fg : colors.line, backgroundColor: on ? bg : colors.sheet }}>
       <Text style={{ fontFamily: fonts.bold, fontSize: small ? 12 : 13, color: on ? fg : colors.ink }}>{label}</Text>
     </Pressable>
   );
@@ -149,7 +150,7 @@ function Chip({ label, on, onPress, small, tone }: { label: string; on: boolean;
 
 function Row({ label, value, strong, color }: { label: string; value: string; strong?: boolean; color?: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
       <Text style={[strong ? type.bodyBold : type.body, { flex: 1 }]}>{label}</Text>
       <Text style={[strong ? type.section : type.body, { color: color ?? colors.ink, fontVariant: ['tabular-nums'] }]}>{value}</Text>
     </View>

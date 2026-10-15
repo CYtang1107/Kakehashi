@@ -1,8 +1,9 @@
+import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import type { Home } from '@kakehashi/shared';
-import { Button, Card, Columns, Pill, Screen, formatDate } from '../../src/ui';
+import { Button, Card, Columns, Pill, Screen, StatusBanner, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -30,26 +31,27 @@ export default function PlanScreen() {
       else showToast(`${t('paid')} · ${yen(r.payment.amountJpy)}`);
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Payment failed.');
+      setError(t('rPaymentError'));
     } finally {
       setBusy(false);
     }
   };
 
   const setProceeds = async (choice: Home['proceedsChoice']) => {
-    try { await api.proceeds(data.home.id, choice); await refresh(); } catch (e) { setError(e instanceof Error ? e.message : 'Could not save.'); }
+    try { await api.proceeds(data.home.id, choice); await refresh(); } catch (e) { setError(t('rSaveError')); }
   };
 
   return (
     <Screen wide fit header={{ title: t('plansTitle'), sub: t('plansLead') }}>
       <Columns fill scrollLeft
         left={<>
+      <StatusBanner title={t('rDemo')} message={t(data.services.payments === 'stripe-test' ? 'rPaymentTest' : 'rPaymentDemo')} />
       {data.plans.map((p) => {
         const active = p.id === planId;
         return (
           <Pressable key={p.id} accessibilityRole="radio" accessibilityState={{ checked: active }} onPress={() => setChosen(p.id)}
-            style={{ padding: 14, borderRadius: 16, borderWidth: active ? 2 : 1, borderColor: active ? colors.ai : colors.line, backgroundColor: colors.sheet, gap: 6 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+            style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  padding: 14, borderRadius: 16, borderWidth: active ? 2 : 1, borderColor: active ? colors.ai : colors.line, backgroundColor: colors.sheet, gap: 6 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 6 }}>
               <Text style={[type.section, { flex: 1 }]}>{lang === 'ja' ? p.nameJa : p.name}</Text>
               <Text style={{ fontFamily: fonts.display, fontSize: 22, color: colors.ink }}>{yen(p.priceJpy)}</Text>
               <Text style={type.caption}>{t('perMonth')}</Text>
@@ -62,13 +64,13 @@ export default function PlanScreen() {
         </>}
         right={<>
       <Card>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
           <Text style={[type.bodyBold, { flex: 1 }]}>{t('youPay')}</Text>
           <Text style={[type.section, { fontVariant: ['tabular-nums'] }]}>{yen(plan.priceJpy)}</Text>
         </View>
         <Button label={t('payNow')} icon="credit-card" busy={busy} onPress={pay} />
         <Text style={type.caption}>{data.services.payments === 'stripe-test' ? t('stripeTest') : t('demoMode')}</Text>
-        {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+        {error ? <StatusBanner tone="error" title={error} /> : null}
       </Card>
 
       <Card style={{ backgroundColor: colors.mossTint, borderColor: 'transparent' }}>
@@ -80,8 +82,8 @@ export default function PlanScreen() {
             const on = data.home.proceedsChoice === c;
             return (
               <Pressable key={c} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => setProceeds(c)}
-                style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: on ? colors.moss : colors.line, backgroundColor: on ? colors.sheet : 'transparent' }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: on ? colors.moss : colors.inkSoft }}>{t(`proceeds_${c}`)}</Text>
+                style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: on ? colors.moss : colors.line, backgroundColor: on ? colors.sheet : 'transparent' }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.moss : colors.inkSoft }}>{t(`proceeds_${c}`)}</Text>
               </Pressable>
             );
           })}
@@ -92,7 +94,7 @@ export default function PlanScreen() {
       {data.home.payments.length === 0 ? <Text style={type.caption}>{t('noPayments')}</Text> : data.home.payments.map((p) => (
         <Card key={p.id}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={[type.body, { flex: 1 }]}>{formatDate(p.at, lang)} · {p.mode === 'demo' ? 'demo' : 'Stripe test'}</Text>
+            <Text style={[type.body, { flex: 1 }]}>{formatDate(p.at, lang)} · {t(p.mode === 'demo' ? 'demoMode' : 'stripeTest')}</Text>
             <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'] }]}>{yen(p.amountJpy)}</Text>
           </View>
           <Text style={type.caption}>{t('paid')}</Text>

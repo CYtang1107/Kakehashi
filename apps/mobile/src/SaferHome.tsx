@@ -2,7 +2,7 @@ import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { FIX_CATALOG, FIX_KINDS, fixCost, pick, safetyEstimate, type FixKind, type FixStatus, type SafetyFix } from '@kakehashi/shared';
-import { Button, Card, Field, Pill } from './ui';
+import { StatusBanner, Button, Card, Field, Pill } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api } from './api';
@@ -44,13 +44,13 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | '
 
   const run = async (key: string, fn: () => Promise<unknown>, done?: string) => {
     setBusy(key); setError(null);
-    try { await fn(); await refresh(); if (done) showToast(done); }
-    catch (e) { setError(e instanceof Error ? e.message : 'Could not save.'); }
+    try { await fn(); await refresh(); if (done) showToast(done); return true; }
+    catch { setError(t('rSaveError')); return false; }
     finally { setBusy(null); }
   };
 
   const add = () => run('add', () => api.addFix(home.id, { roomId: roomId ?? home.rooms[0].id, kind, amount: Number(amount), note: note.trim() || undefined }), t('saved'))
-    .then(() => { setNote(''); setAmount('1'); });
+    .then(ok => { if (ok) { setNote(''); setAmount('1'); } });
 
   return (
     <Card>
@@ -98,8 +98,8 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | '
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {FIX_KINDS.map((k) => (
               <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} onPress={() => setKind(k)}
-                style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: kind === k ? colors.ai : colors.ink }}>{t(`fix_${k}`)}</Text>
+                style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: kind === k ? colors.ai : colors.ink }}>{t(`fix_${k}`)}</Text>
               </Pressable>
             ))}
           </View>
@@ -109,14 +109,14 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | '
           <Button label={t('addFix')} icon="plus" busy={busy === 'add'} disabled={!(Number(amount) > 0)} onPress={add} />
         </View>
       ) : null}
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
     </Card>
   );
 }
 
 function Row({ label, value, strong, quiet, color }: { label: string; value: string; strong?: boolean; quiet?: boolean; color?: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
       <Text style={[strong ? type.bodyBold : type.body, { flex: 1, color: quiet ? colors.inkSoft : colors.ink }]}>{label}</Text>
       <Text style={[strong ? type.section : type.body, { color: color ?? (quiet ? colors.inkSoft : colors.ink), fontVariant: ['tabular-nums'] }]}>{value}</Text>
     </View>

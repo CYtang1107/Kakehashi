@@ -41,7 +41,7 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
       if (event.key === 'Escape') { event.preventDefault(); if (!busyRef.current) cancelRef.current(); return; }
       if (event.key !== 'Tab') return;
       const element = panel.current as unknown as HTMLElement | null;
-      const controls = Array.from(element?.querySelectorAll<HTMLElement>('button:not([disabled]),[role="button"]:not([aria-disabled="true"]),input:not([disabled]),[role="switch"]:not([aria-disabled="true"]),[tabindex="0"]') ?? [])
+      const controls = Array.from(element?.querySelectorAll<HTMLElement>('button:not([disabled]),[role="button"]:not([aria-disabled="true"]),input:not([disabled]),textarea:not([disabled]),[role="switch"]:not([aria-disabled="true"]),[tabindex="0"]') ?? [])
         .filter(item => item.getClientRects().length > 0);
       if (!controls.length) { event.preventDefault(); return; }
       const first = controls[0], last = controls[controls.length - 1];

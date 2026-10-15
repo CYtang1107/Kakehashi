@@ -1,6 +1,6 @@
 # EverCircle integration progress and executed baseline
 
-Date: 15 October 2026 (Asia/Kuala_Lumpur). **Stages 0–2 complete at their documented implementation/web-verification scope. Stages 3–5 not started.** Repository `D:\kakehashi\Kakehashi`; baseline HEAD `8c9692a40214d3fbdd4f8221fc062274fb178fda`. Earlier-stage records below are historical; the Stage 2 implementation follows them. Native-device accessibility certification remains outstanding.
+Date: 15 October 2026 (Asia/Kuala_Lumpur). **Stages 0–3 complete at their documented implementation/web-verification scope. Stages 4–5 not started.** Repository `D:\kakehashi\Kakehashi`; initial baseline HEAD `8c9692a40214d3fbdd4f8221fc062274fb178fda`; Stage 3 starts from `96647b8`. Earlier-stage records below are historical. Native-device accessibility certification remains outstanding.
 
 ## Stage 0 completed scope (historical)
 
@@ -359,3 +359,108 @@ The first inspection found undersized map controls and missing web selected-tab 
 Final handoff: the independent finish reviewer resumed after a temporary usage limit and returned **ship** after confirming its sole localized-editor finding was resolved. The design documenter confirmed an ordinary extension of the incumbent system, preserving DESIGN.md and its sidecar. The pre-existing lockfile SHA-256 remains `F42FD20AA9D08324E340CC59DC84E3B8EF238E23D389A4A90869156559DF4315`. Final source-scope inspection confirms no changes to server/shared source, API functions, DataProvider or manifests. The disposable fixture host and dedicated test browser were stopped; regular user browser sessions were not touched.
 
 **Stage 2 is complete at the implemented older-adult experience and this documented verification scope. Stop after Stage 2.** Stage 3 has not started.
+
+## Stage 3 — existing role experiences
+
+15 October 2026. Earlier stop statements above are historical. Stage 3 continues from committed `96647b8` and preserves the completed older-adult shell. See [stage3-implementation.md](stage3-implementation.md) for route/workflow details, [stage3-review.md](stage3-review.md) for independent review and [stage3-design-check.md](stage3-design-check.md) for the source comparison with the incumbent design system.
+
+### Delivered changes
+
+Family retains Home, Digital House, Plan and Reports. Visit continuity is now a readable dated history rather than tiny SVG month labels; next recorded visit, students/readiness, memories, services, activities, letters, calls, safety and recorded payment modes remain available. Student retains Today's Visit, Add Item, Wallet and Team, with explicit numbered Before / With Her / After steps and larger task controls. Helper keeps its checked, skill-filtered board and existing acceptance/booking/earnings behavior; recorded service feedback is now visible in own jobs. Public story readers keep the globe and text list, media, public journeys and moderated comments, with visible heart/comment/share labels and focus-managed dialogs. Item pages preserve family wishes, every decision and hold state, media/icon actions, handover/delivery, optional value, sharing and moderation. Not now remains first and directly available; other student choices receive explicit review.
+
+Shared controls and typography extend the Stage 1 system. Family/student Expo tab state and destinations remain, with wrapping one/two-row labels and semantic selected state. Secondary role/language/reading controls are grouped under Settings to reduce toolbar height; Back remains visible. Shared `useStoryDraft` applies the Stage 2 localized-editor safeguards to both item presentations. Recoverable feedback now covers notes, reports, letters, calls, activities, weather operations, safety additions and selection-dependent wallet/helper loads. Failed saves retain the relevant entry. Public stories load independently of the household endpoint. Globe automatic motion respects reduced-motion preferences.
+
+### Exact Stage 3 file scope
+
+Updated routes:
+
+```text
+apps/mobile/app/family/_layout.tsx
+apps/mobile/app/family/index.tsx
+apps/mobile/app/family/house.tsx
+apps/mobile/app/family/plan.tsx
+apps/mobile/app/family/reports.tsx
+apps/mobile/app/student/_layout.tsx
+apps/mobile/app/student/index.tsx
+apps/mobile/app/student/add.tsx
+apps/mobile/app/student/team.tsx
+apps/mobile/app/student/wallet.tsx
+apps/mobile/app/worker/index.tsx
+apps/mobile/app/stories/index.tsx
+apps/mobile/app/item/[id].tsx
+```
+
+Updated shared/source files:
+
+```text
+apps/mobile/src/Community.tsx
+apps/mobile/src/Handover.tsx
+apps/mobile/src/HouseFuture.tsx
+apps/mobile/src/Outing.tsx
+apps/mobile/src/SaferHome.tsx
+apps/mobile/src/Services.tsx
+apps/mobile/src/StoryGlobe.tsx
+apps/mobile/src/StoryShare.tsx
+apps/mobile/src/Touchpoints.tsx
+apps/mobile/src/VisitThread.tsx
+apps/mobile/src/Weather.tsx
+apps/mobile/src/design-system/ConfirmationDialog.tsx
+apps/mobile/src/design-system/Controls.tsx
+apps/mobile/src/her/ItemDetail.tsx
+apps/mobile/src/i18n.tsx
+apps/mobile/src/ui.tsx
+```
+
+New files: `apps/mobile/src/design-system/RoleTabBar.tsx`, `apps/mobile/src/useStoryDraft.ts`, `apps/mobile/scripts/verify-stage3.cjs`, `apps/mobile/.impeccable/surfaces/roles.md`; documentation `stage3-implementation.md`, `stage3-review.md`, `stage3-design-check.md`. Updated verification host `apps/mobile/scripts/preview-design-system.cjs`, previous-stage readiness selector in `scripts/verify-stage2.cjs`, and this progress record. Existing API functions, DataProvider, shared contracts, server source, package manifests, lockfile and Expo configuration were not edited. No dependency/browser installation, reset, real household mutation, commit or deployment occurred.
+
+### Executed checks
+
+| Command / check | Outcome and precise scope |
+| --- | --- |
+| `npm.cmd run typecheck -w apps/mobile` | Final source exit 0; no diagnostics. An initial implementation pass caught duplicate style properties and an unavailable transitive type import; these were corrected, using Expo's exported component prop type. |
+| `npm.cmd run typecheck -w apps/server` | Exit 0 |
+| `npm.cmd run contrast -w apps/mobile` | Sandbox attempt failed before checks with tsx `uv_os_get_passwd` ENOMEM; approved retry exit 0, all **30 pairs passed** |
+| `npm.cmd run build:hosted`, command-scoped `EXPO_PUBLIC_API_URL=same-origin` | Final source exit 0; **1,017 modules**, approximately 3.1 MB JS, `entry-d692f5b2a83f8b8766c90916abcfd535.js`. Prior environment restored. Color-environment/empty-cache warnings were nonfatal. |
+| `node apps/mobile/scripts/verify-stage3.cjs`, layout portion | Second inspection records **116 layouts**, zero measured horizontal overflow, zero undersized exposed controls and zero uncaught exceptions. Combined command later stopped on a harness checkbox-name selector, so this is not reported as a complete exit-0 run. |
+| `node apps/mobile/scripts/verify-stage3.cjs --interactions-only` | Exit 0, **15 scenario groups**, zero uncaught exceptions |
+| `node apps/mobile/scripts/verify-stage3.cjs --drafts-only` | Exit 0; both student and older-adult Japanese item workflows pass localized initial value, no unchanged PATCH, dirty language switch and save/reload checks. An additional focus probe exposed a Settings return issue, listed below; exit 0 did not certify that nonasserting probe. |
+| `node apps/mobile/scripts/verify-stage3.cjs --review-fixes` | Final source exit 0; **24 refreshed layouts/captures**, zero measured layout failures and zero uncaught exceptions. EN/JA compact visit summary is fully within the first viewport; direct activeElement equals localized Settings after Reading settings → Escape in both languages. |
+| `node apps/mobile/scripts/verify-stage2.cjs --interactions-only` | Exit 0, all **6 prior older-adult scenario groups**, 4 empty-state routes and 6 legacy route smokes; zero uncaught exceptions in this run, including synthetic photo/audio controls |
+| Impeccable web `detect --json` on changed route/role targets | Exit 0; **6 advisory** existing colors in family memory views and public examples/globe, deliberately retained. One scan; no native accessibility verdict. |
+| `git diff --check` | Exit 0 after source corrections |
+
+Matrix composition: 12 routes × English/Japanese × 320/390/768/1440 in Extra Large/high contrast (96); the 12 routes at English/Normal/1440 (12); With Her/After states × English/Japanese × 390/1440 in Extra Large (8). Twelve routes: family Home/House `?view=map`/Plan/Reports, student Visit/Add/Wallet/Team, Helper, Stories, family Item and student Item. OS font scaling was not simulated. DOM measurement excludes SVG geometry and embedded iframe contents; hidden controls are excluded. Passing layout measurements do not certify spatial hotspots, accessibility-tree behavior or every off-screen state.
+
+The 15 passing scenario groups verify:
+
+1. Report wording flag, acceptable rewording, personal-read gate, failed send retaining text, retry and family access to the saved report.
+2. Field-note save and explicit recording-consent withdrawal/restoration.
+3. Student decision cancel without mutation, immediate Not now, confirmed Pass, story save, failed handover retaining recipient/retry, sharing withdrawal/explicit opt-in without automatic audio, and family wish.
+4. Optional estimate and creation of a new item in the current room.
+5. Letter preparation, note save, personal-read checkpoint, print/mail statuses and call logging.
+6. Wallet load failure/retry, demonstration payout, goal save/removal.
+7. Readiness withdrawal payload and fixture sign-off withdrawal.
+8. Demonstration checkout, recorded payment presentation and proceeds preference.
+9. Student job posting with price consent and booked-service completion.
+10. Checked-helper board load, failed acceptance/retry and booked status.
+11. Public heart/undo, pending comment submission and labelled globe-story dialog/Escape.
+12. Public stories remaining available after household-load failure and their own read failure/retry.
+13. Explicit student comment moderation.
+14. All four digital-house views and recorded-room-photograph section.
+15. Family house note and common Settings → reading-dialog access/dismissal.
+
+These are actual frontend input events and outgoing request assertions against **disposable in-memory fixtures** derived from existing seed data. The fixture host does not import db.ts, change saved files or contact providers. Its modeled report checks, readiness/commission/payment transitions and comment moderation do not execute or certify the real Express handlers. Contact-pattern rejection, external sharing sheets/clipboard, real Stripe test checkout, physical media capture/upload and GPS were not exercised. Prior synthetic media tests cover playback/gallery controls, not a physical-device recording workflow.
+
+Evidence is ignored under `apps/mobile/.impeccable/review/`: `stage3-layouts.json`, `stage3-interactions.json`, `stage3-drafts.json`, `stage3-review-fixes.json`, Stage 2 interaction evidence, and the 24 named Stage 3 PNG captures. Five surfaces (family, student, helper, stories, student item) × English/Japanese × 390/1440, plus With Her/After × English/Japanese at 390. Final English desktop captures use Normal/two columns with high contrast; other captures use Extra Large/high contrast. At 1440/Extra Large, viewport-height eligibility intentionally selects ordinary scrolling. Captures reset the document/internal scroll to top and show the viewport; they are not native or full-scroll-content screenshots. The implementation agent and independent reviewer opened every required capture.
+
+### Findings and remaining limits
+
+The first inspection exposed story-action overflow and toolbar/visit-step controls consuming excessive compact space. One correction batch made actions wrap and shortened/grouped navigation controls. Harness failures involved a malformed quoted CSS expression, an incorrect wish-key name and a checkbox's icon glyph in textContent; the selectors were corrected without changing API behavior. Compilation caught and resolved mechanical migration issues before browser verification.
+
+The independent review returned **fix** for exactly two issues: compact family alerts displaced visit continuity/next visit, and closing Reading settings after the Settings transition left focus on BODY. The final correction adds a compact recorded-visit summary before alert details and a stable Settings focus return. Alerts, enlarged text and data sources remain. Focus-only evidence explicitly distinguishes BODY from an unlabeled control; the next Tab had reached Settings, but immediate restoration was missing.
+
+Native devices/screen readers/OS font scaling/IME, safe-area gestures and hardware performance remain untested. Native reading preferences remain session-only. Some retained custom selectors/semantic surfaces still use static palette values; spatial SVG/WebGL/maps and server-hosted HTML require separate accessibility verification. Existing stored English-only descriptions and provider strings can still fall back to English. Stage 2's intermittent expo-audio web play/pause `AbortError` remains a known library limitation despite a passing Stage 3 media regression run. Demo role selection is not authentication. No AI/matching/device features or Stage 4 work were added.
+
+Final handoff: the independent reviewer scored **both listed corrections resolved** and returned **ship** for that bounded verdict pass. Its initial 24-capture/source review and subsequent verdict are preserved in `stage3-review.md`; this is not a blanket native/live-integration approval. The documenter rechecked the final family/toolbar edits and preserved the canonical design files. Final `git diff --check` passed. Lockfile SHA-256 remains `F42FD20AA9D08324E340CC59DC84E3B8EF238E23D389A4A90869156559DF4315`, and no server/shared/API/data/config/manifest changes were found. The disposable fixture host and dedicated temporary Chrome were stopped; regular browser sessions were untouched.
+
+**Stage 3 is complete at this implementation and verification scope. Stop after Stage 3.** Stage 4 has not started.

@@ -1,8 +1,9 @@
+import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, Share, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { Modal, Platform, Pressable, ScrollView, Share, TextInput, View, type TextInputProps } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick, type PublicStory } from '@kakehashi/shared';
-import { Columns, Screen, formatDate, useWide } from '../../src/ui';
+import { Button, Card, ConfirmationDialog, Field, StatusBanner, Columns, Screen, formatDate, useWide } from '../../src/ui';
 import { StoryPlayer } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { PhotoCarousel } from '../../src/PhotoCarousel';
@@ -11,26 +12,29 @@ import { StoryGlobe } from '../../src/StoryGlobe';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { colors, fonts, type } from '../../src/theme';
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
 export default function StoriesFeed() {
   const { t, lang } = useI18n();
   // On a laptop the page fits the window: the globe fills the left, the posts scroll on the right.
   const fit = useWide();
+  const { reducedMotion } = useAccessibilityPreferences();
   const [stories, setStories] = useState<PublicStory[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const load = useCallback(() => api.stories().then(setStories).catch((e) => setError(String(e.message ?? e))), []);
+  const load = useCallback(async () => { setError(null); try { setStories(await api.stories()); } catch { setError(t('rLoadError')); } }, [t]);
   useEffect(() => { load(); }, [load]);
   // A shared link (…/stories#sewing) opens at that story.
   useEffect(() => {
     if (!stories || Platform.OS !== 'web' || typeof window === 'undefined' || !window.location.hash) return;
-    document.getElementById(`story-${window.location.hash.slice(1)}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [stories]);
+    document.getElementById(`story-${window.location.hash.slice(1)}`)?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+  }, [stories, reducedMotion]);
 
   return (
-    <Screen wide fit header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+    <Screen requiresHome={false} wide fit header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
+      {error ? <StatusBanner tone="error" title={error} action={{ label: t('retry'), onPress: load }} /> : null}
+      {!stories && !error ? <Text>{t('rNoStories')}</Text> : null}
       <Columns fill
         left={stories?.length ? (
         <View style={{ gap: 8, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
@@ -39,9 +43,9 @@ export default function StoriesFeed() {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {stories.map((st) => (
               <Pressable key={st.id} accessibilityRole="button" onPress={() => setSelected(st.id)}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 4, paddingRight: 10, paddingVertical: 4, borderRadius: 99, borderWidth: 1, borderColor: st.id === selected ? colors.ai : colors.line, backgroundColor: st.id === selected ? colors.aiTint : colors.sheet }}>
+                style={{ minHeight: 56, maxWidth: '100%', flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: st.id === selected ? colors.ai : colors.line, backgroundColor: st.id === selected ? colors.aiTint : colors.sheet }}>
                 <PixelIcon sprite={spriteFor({ id: st.id, name: st.name, nameJa: st.nameJa, icon: st.icon })} size={22} />
-                <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: colors.ink }}>{pick(lang, st.name, st.nameJa)}</Text>
+                <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: colors.ink }}>{pick(lang, st.name, st.nameJa)}</Text>
                 {st.example ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#D9B26A' }} /> : null}
               </Pressable>
             ))}
@@ -57,21 +61,9 @@ export default function StoriesFeed() {
       />
 
       {/* A story opened from the globe, with where it went */}
-      <Modal visible={!!selected} transparent animationType="slide" onRequestClose={() => { setSelected(null); load(); }}>
-        <Pressable onPress={() => { setSelected(null); load(); }} style={{ flex: 1, backgroundColor: 'rgba(18,26,42,0.55)', justifyContent: 'flex-end', alignItems: 'center' }}>
-          <Pressable onPress={() => {}} style={{ width: '100%', maxWidth: 560, maxHeight: '90%', backgroundColor: colors.paper, borderTopLeftRadius: 22, borderTopRightRadius: 22 }}>
-            <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 30, gap: 10 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                <Pressable accessibilityRole="button" accessibilityLabel={t('close')} onPress={() => { setSelected(null); load(); }}
-                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line, alignItems: 'center', justifyContent: 'center' }}>
-                  <Feather name="x" size={18} color={colors.ink} />
-                </Pressable>
-              </View>
-              {stories?.filter((st) => st.id === selected).map((st) => <StoryPost key={st.id} story={st} withJourney />)}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      <ConfirmationDialog visible={!!selected} title={t('feedTitle')} onCancel={() => { setSelected(null); load(); }}>
+        {stories?.filter(st => st.id === selected).map(st => <StoryPost key={st.id} story={st} withJourney />)}
+      </ConfirmationDialog>
     </Screen>
   );
 }
@@ -88,6 +80,7 @@ function rememberHeart(id: string, on: boolean) {
 function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: boolean }) {
   const { t, lang } = useI18n();
   const [hearts, setHearts] = useState(story.hearts);
+  const [heartBusy, setHeartBusy] = useState(false);
   const [hearted, setHearted] = useState(() => heartedIds().includes(story.id));
   const [writing, setWriting] = useState(false);
   const [allComments, setAllComments] = useState(false);
@@ -101,10 +94,12 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
   const comments = allComments ? story.comments : story.comments.slice(0, 2);
 
   const heart = async () => {
+    if (heartBusy) return; setHeartBusy(true);
     const undo = hearted;
     setHearted(!undo); setHearts((n) => Math.max(0, n + (undo ? -1 : 1))); rememberHeart(story.id, !undo);
     try { setHearts((await api.storyHeart(story.id, undo)).hearts); }
-    catch { setHearted(undo); setHearts((n) => Math.max(0, n + (undo ? 1 : -1))); rememberHeart(story.id, undo); }
+    catch { setHearted(undo); setHearts((n) => Math.max(0, n + (undo ? 1 : -1))); rememberHeart(story.id, undo); setNote({ ok: false, text: t('rStoryError') }); }
+    finally { setHeartBusy(false); }
   };
   const share = async () => {
     const title = pick(lang, story.name, story.nameJa);
@@ -119,24 +114,24 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
   const send = async () => {
     setBusy(true); setNote(null);
     try { await api.storyComment(story.id, from.trim(), message); setMessage(''); setWriting(false); setNote({ ok: true, text: t('feedSent') }); }
-    catch (e) { setNote({ ok: false, text: e instanceof Error ? e.message : 'Could not send.' }); }
+    catch { setNote({ ok: false, text: t('rStoryError') }); }
     finally { setBusy(false); }
   };
 
   return (
     <View nativeID={`story-${story.id}`} style={{ backgroundColor: colors.sheet, borderRadius: 16, borderWidth: 1, borderColor: colors.line, paddingVertical: 12, gap: 10 }}>
       {/* Header: the item's icon as the avatar, who told it, when */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingHorizontal: 14 }}>
         <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', backgroundColor: colors.paper, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line }}>
           <PixelIcon sprite={spriteFor({ id: story.id, name: story.name, nameJa: story.nameJa, icon: story.icon })} size={30} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: fonts.bold, fontSize: 14.5, color: colors.ink }}>{pick(lang, story.name, story.nameJa)}{story.year ? ` · ${story.year}` : ''}</Text>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ink }}>{pick(lang, story.name, story.nameJa)}{story.year ? ` · ${story.year}` : ''}</Text>
           <Text style={type.caption}>{teller} · {formatDate(story.sharedAt, lang)}</Text>
         </View>
         {story.example ? (
           <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99, backgroundColor: '#F3E9D2' }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 12, color: '#7A5B1E' }}>{t('feedExample')}</Text>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: '#7A5B1E' }}>{t('feedExample')}</Text>
           </View>
         ) : null}
       </View>
@@ -154,8 +149,8 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
       </View>
 
       {/* Actions: heart, message, share */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18, paddingHorizontal: 14 }}>
-        <Action icon="heart" label={t('feedHeart')} count={hearts} on={hearted} onPress={heart} />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: 14 }}>
+        <Action icon="heart" label={t('feedHeart')} count={hearts} on={hearted} disabled={heartBusy} onPress={heart} />
         <Action icon="message-circle" label={t('feedComment')} count={story.comments.length} onPress={openWriting} />
         <Action icon="send" label={t('feedShare')} onPress={share} />
       </View>
@@ -170,7 +165,7 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
           <Text key={i} style={type.body}><Text style={type.bodyBold}>{c.from || t('feedAnon')} </Text>{c.message}</Text>
         ))}
         {story.comments.length > 2 && !allComments ? (
-          <Pressable accessibilityRole="button" onPress={() => setAllComments(true)}>
+          <Pressable accessibilityRole="button" onPress={() => setAllComments(true)} style={{ minHeight: 56, justifyContent: 'center' }}>
             <Text style={type.caption}>{t('feedViewAll', { n: story.comments.length })}</Text>
           </Pressable>
         ) : null}
@@ -179,46 +174,23 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
           <Text style={type.caption}>{t('feedExampleNote')}</Text>
         ) : writing ? (
           <View style={{ gap: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
-            <Input value={from} onChangeText={setFrom} placeholder={t('feedNameOptional')} maxLength={40} accessibilityLabel={t('feedNameOptional')} />
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
-              <Input ref={messageRef} value={message} onChangeText={setMessage} placeholder={t('feedMessage')} multiline maxLength={400}
-                accessibilityLabel={t('feedMessage')} style={{ flex: 1, minHeight: 44, textAlignVertical: 'top' }} />
-              <Pressable accessibilityRole="button" accessibilityLabel={t('send')} disabled={busy || message.trim().length < 2} onPress={send}
-                style={{ height: 44, paddingHorizontal: 14, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: message.trim().length >= 2 ? colors.ai : colors.line }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: '#fff' }}>{busy ? '…' : t('send')}</Text>
-              </Pressable>
-            </View>
+            <Field label={t('feedNameOptional')} value={from} onChangeText={setFrom} placeholder={t('feedNameOptional')} maxLength={40} accessibilityLabel={t('feedNameOptional')} />
+            <Field label={t('feedMessage')} ref={messageRef} value={message} onChangeText={setMessage} multiline maxLength={400} editable={!busy} />
+            <Button label={t('send')} busy={busy} disabled={message.trim().length < 2} onPress={send} />
           </View>
         ) : (
           <Pressable accessibilityRole="button" onPress={openWriting} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text style={[type.caption, { fontSize: 13.5 }]}>{t('feedAddMessage')}</Text>
+            <Text style={[type.caption, { fontSize: 17 }]}>{t('feedAddMessage')}</Text>
           </Pressable>
         )}
-        {note ? <Text style={[type.caption, { color: note.ok ? colors.moss : colors.danger }]}>{note.text}</Text> : null}
+        {note ? <StatusBanner tone={note.ok ? 'success' : 'error'} title={note.text} /> : null}
       </View>
     </View>
   );
 }
 
-// A text box that shows focus with the app's blue border instead of the browser's black outline.
-const Input = React.forwardRef<TextInput, TextInputProps>(function Input({ style, ...props }, ref) {
-  const [focused, setFocused] = useState(false);
-  return (
-    <TextInput ref={ref} placeholderTextColor={colors.inkSoft} {...props}
-      onFocus={(e) => { setFocused(true); props.onFocus?.(e); }} onBlur={(e) => { setFocused(false); props.onBlur?.(e); }}
-      style={[{ borderWidth: focused ? 2 : 1, borderColor: focused ? colors.ai : colors.line, borderRadius: 12, paddingHorizontal: focused ? 11 : 12, paddingVertical: focused ? 9 : 10,
-        fontFamily: fonts.regular, fontSize: 15, color: colors.ink, backgroundColor: colors.paper }, Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : null, style]} />
-  );
-});
-
-function Action({ icon, label, count, on, onPress }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; count?: number; on?: boolean; onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={on === undefined ? undefined : { selected: on }} onPress={onPress} hitSlop={8}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 44 }}>
-      <Feather name={icon} size={23} color={on ? colors.kaki : colors.ink} style={on ? { opacity: 1 } : undefined} />
-      {count !== undefined ? <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: colors.ink }}>{count}</Text> : null}
-    </Pressable>
-  );
+function Action({ icon, label, count, on, onPress, disabled }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; count?: number; on?: boolean; onPress: () => void; disabled?: boolean }) {
+  return <Button label={count === undefined ? label : label + ' (' + count + ')'} kind="secondary" icon={icon} selected={on} disabled={disabled} onPress={onPress} />;
 }
 
 // Where it went: the stages and dates only, never names or places.

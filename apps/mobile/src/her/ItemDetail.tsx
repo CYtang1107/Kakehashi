@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useStoryDraft } from '../useStoryDraft';
 import { View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { CHOICES, pick, type Decision, type Item } from '@kakehashi/shared';
@@ -22,15 +23,7 @@ export function ItemDetail() {
   const { data, replaceItem, showToast } = useData(); const { t, lang } = useI18n();
   const item = data?.items.find(i => i.id === id);
   const [decision, setDecision] = useState<Decision | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState(false);
-  const [draft, setDraft] = useState({ itemId: item?.id, language: lang, value: item ? pick(lang, item.story, item.storyJa) : '', original: item ? pick(lang, item.story, item.storyJa) : '' });
-  // A clean editor follows the displayed translation. A dirty editor keeps its language and text.
-  useEffect(() => {
-    setDraft(previous => {
-      if (previous.itemId === item?.id && previous.value !== previous.original) return previous;
-      const value = item ? pick(lang, item.story, item.storyJa) : '';
-      return { itemId: item?.id, language: lang, value, original: value };
-    });
-  }, [item?.id, item?.story, item?.storyJa, lang]);
+  const { draft, setValue, markSaved, dirty } = useStoryDraft(item, lang);
   const save = async (fn: () => Promise<Item>) => { setBusy(true); setError(false);
     try { replaceItem(await fn()); setDecision(null); showToast(t('saved')); return true; } catch { setError(true); return false; } finally { setBusy(false); }
   };
@@ -54,10 +47,10 @@ export function ItemDetail() {
       </ConfirmationDialog>
       {item.holdUntil && householdDay() < item.holdUntil ? <AppText>{t('heldUntil', { date: formatDate(item.holdUntil, lang) })}</AppText> : null}
       <AddPhotoCard item={item} author={data?.home.seniorName} />
-      <Card><AppText variant="section">{t('hStories')}</AppText><Field label={t('hYourStory')} multiline editable={!busy} value={draft.value} onChangeText={value => setDraft(previous => ({ ...previous, value }))} />
+      <Card><AppText variant="section">{t('hStories')}</AppText><Field label={t('hYourStory')} multiline editable={!busy} value={draft.value} onChangeText={setValue} />
         {draft.language !== lang ? <AppText variant="caption">{t('hDraftLanguage', { language: draft.language === 'ja' ? '日本語' : 'English' })}</AppText> : null}
-        <Button label={t('saveStory')} kind="secondary" busy={busy} disabled={draft.value === draft.original}
-          onPress={() => save(() => api.update(item.id, { story: draft.value })).then(ok => { if (ok) setDraft(previous => ({ ...previous, original: previous.value })); })} />
+        <Button label={t('saveStory')} kind="secondary" busy={busy} disabled={!dirty}
+          onPress={() => save(() => api.update(item.id, { story: draft.value })).then(ok => { if (ok) markSaved(); })} />
         <StoryRecorder item={item} consent={Boolean(data?.home.consent.recording)} onSaved={it => { replaceItem(it); showToast(t('recordingSaved')); }} />
       </Card>
       <ShareCard item={item} mode="her" />

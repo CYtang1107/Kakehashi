@@ -1,9 +1,10 @@
+import { AppText as Text } from './design-system/AppText';
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import * as Location from 'expo-location';
 import { Feather } from '@expo/vector-icons';
 import { outingIsLive, pick, type Outing } from '@kakehashi/shared';
-import { Button, Card } from './ui';
+import { StatusBanner, Button, Card } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
 import { api } from './api';
@@ -67,19 +68,19 @@ export function OutingCard() {
       <Text style={type.caption}>{t('outingLead')}</Text>
       {live ? (
         <>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
             <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.kaki }} />
             <Text style={[type.bodyBold, { flex: 1 }]}>{t('outingLiveNow', { place: home.places.find((p) => p.id === live.placeId)?.nameJa ?? '' })}</Text>
           </View>
           <Text style={type.caption}>
             {live.simulated ? t('outingSimulated') : watch.current ? t('outingSending', { n: sent }) : t('outingPaused')}
           </Text>
-          {!live.simulated && !watch.current ? <Button label={t('outingResume')} kind="secondary" icon="navigation" onPress={() => startWatch(live)} /> : null}
+          {!live.simulated && !watch.current ? <Button label={t('outingResume')} kind="secondary" icon="navigation" onPress={() => startWatch(live).catch(() => setError(t('rLoadError')))} /> : null}
           <Button label={t('outingEnd')} icon="square" busy={busy} onPress={() => end(live)} />
         </>
       ) : going.length ? (
         <>
-          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} onPress={() => setAgreed(!agreed)} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} onPress={() => setAgreed(!agreed)} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start' }}>
             <Feather name={agreed ? 'check-square' : 'square'} size={20} color={agreed ? colors.moss : colors.inkSoft} />
             <Text style={[type.body, { flex: 1 }]}>{t('outingConsent')}</Text>
           </Pressable>
@@ -90,7 +91,7 @@ export function OutingCard() {
       ) : (
         <Text style={type.caption}>{t('outingNone')}</Text>
       )}
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
     </Card>
   );
 }
@@ -106,11 +107,11 @@ export function LiveOutingBanner({ onOpenMap }: { onOpenMap?: () => void }) {
   const place = data.home.places.find((p) => p.id === live.placeId);
   return (
     <Pressable accessibilityRole="button" onPress={onOpenMap} disabled={!onOpenMap}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.kakiTint, borderLeftWidth: 4, borderLeftColor: colors.kaki }}>
+      style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingVertical: 9, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.kakiTint, }}>
       <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: colors.kaki }} />
       <View style={{ flex: 1, gap: 1 }}>
-        <Text style={{ fontFamily: fonts.bold, fontSize: 13.5, color: colors.kaki }} numberOfLines={2}>{t('outingFamily', { by: live.by, what: act ? pick(lang, act.title, act.titleJa) : '', place: place?.nameJa ?? '' })}</Text>
-        <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.inkSoft }}>{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</Text>
+        <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.kaki }} >{t('outingFamily', { by: live.by, what: act ? pick(lang, act.title, act.titleJa) : '', place: place?.nameJa ?? '' })}</Text>
+        <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: colors.inkSoft }}>{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</Text>
       </View>
       {onOpenMap ? <Feather name="chevron-right" size={18} color={colors.kaki} /> : null}
     </Pressable>

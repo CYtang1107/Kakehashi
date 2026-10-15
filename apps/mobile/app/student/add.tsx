@@ -1,9 +1,10 @@
+import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useState } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import type { Estimate } from '@kakehashi/shared';
-import { Button, Card, Columns, Field, Screen } from '../../src/ui';
+import { StatusBanner, Button, Card, Columns, Field, Screen } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
@@ -28,7 +29,7 @@ export default function AddItem() {
     try {
       if (camera) {
         const perm = await ImagePicker.requestCameraPermissionsAsync();
-        if (!perm.granted) { setError('Camera permission was not given.'); return; }
+        if (!perm.granted) { setError(t('rCameraDenied')); return; }
       }
       const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.5, base64: true, allowsEditing: false };
       const r = camera ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts);
@@ -37,7 +38,7 @@ export default function AddItem() {
       setPhoto({ uri: a.uri, base64: a.base64, mime: a.mimeType ?? 'image/jpeg' });
       setEstimate(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not get the photo.');
+      setError(t('rSaveError'));
     }
   };
 
@@ -45,7 +46,7 @@ export default function AddItem() {
     setBusy('estimate');
     setError(null);
     try { setEstimate(await api.estimate({ base64: photo?.base64, mime: photo?.mime, name: name.trim() || undefined })); }
-    catch (e) { setError(e instanceof Error ? e.message : 'Estimate failed.'); }
+    catch (e) { setError(t('rSaveError')); }
     finally { setBusy(null); }
   };
 
@@ -59,7 +60,7 @@ export default function AddItem() {
       setPhoto(null); setName(''); setEstimate(null);
       router.push(`/item/${item.id}?as=student`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not add the item.');
+      setError(t('rSaveError'));
     } finally {
       setBusy(null);
     }
@@ -70,18 +71,19 @@ export default function AddItem() {
       <Columns fill scrollLeft
         left={<>
       <Card>
-        {photo ? <Image source={{ uri: photo.uri }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 12 }} resizeMode="cover" accessibilityLabel="Item photo" /> : null}
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Text variant="bodyBold">{t('rMemoryFirst')}</Text>
+        {photo ? <Image source={{ uri: photo.uri }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 12 }} resizeMode="cover" accessibilityLabel={t('rItemPhoto')} /> : null}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" kind={photo ? 'secondary' : 'primary'} onPress={() => pick(true)} /></View>
           <View style={{ flex: 1 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => pick(false)} /></View>
         </View>
-        <Field label={t('itemName')} value={name} onChangeText={setName} placeholder="Sewing machine / ミシン" />
+        <Field label={t('itemName')} value={name} onChangeText={setName} placeholder={t('rItemExample')} />
         <Text style={type.bodyBold}>{t('room')}</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {data.home.rooms.map((r) => (
             <Pressable key={r.id} accessibilityRole="radio" accessibilityState={{ checked: r.id === room }} onPress={() => setRoomId(r.id)}
-              style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: r.id === room ? colors.ai : colors.line, backgroundColor: r.id === room ? colors.aiTint : colors.sheet }}>
-              <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: r.id === room ? colors.ai : colors.ink }}>{lang === 'ja' ? r.nameJa : r.name}</Text>
+              style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: r.id === room ? colors.ai : colors.line, backgroundColor: r.id === room ? colors.aiTint : colors.sheet }}>
+              <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: r.id === room ? colors.ai : colors.ink }}>{lang === 'ja' ? r.nameJa : r.name}</Text>
             </Pressable>
           ))}
         </View>
@@ -100,10 +102,10 @@ export default function AddItem() {
             <Text style={type.caption}>{estimate.reason}</Text>
           </View>
         ) : null}
-        <Button label={busy === 'estimate' ? t('estimating') : t('getEstimate')} kind="secondary" icon="zap" busy={busy === 'estimate'} disabled={!photo && !name.trim()} onPress={getEstimate} />
+        <Button label={busy === 'estimate' ? t('estimating') : t('getEstimate')} kind="secondary" icon="zap" busy={busy === 'estimate'} disabled={busy !== null || (!photo && !name.trim())} onPress={getEstimate} />
       </Card>
-      <Button label={t('addItem')} icon="plus" busy={busy === 'save'} disabled={!name.trim()} onPress={save} />
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      <Button label={t('addItem')} icon="plus" busy={busy === 'save'} disabled={busy !== null || !name.trim()} onPress={save} />
+      {error ? <StatusBanner tone="error" title={error} /> : null}
         </>}
       />
     </Screen>

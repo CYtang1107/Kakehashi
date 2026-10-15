@@ -54,7 +54,7 @@ async function main() {
     await command('Page.navigate', { url: base + route });
     for (let attempt = 0; attempt < 120; attempt++) {
       await wait(100);
-      if (await evaluate(`document.body?.innerText.includes(${JSON.stringify(language === 'en' ? (route.startsWith('/her') ? 'Settings' : 'Reading settings') : '\u8a2d\u5b9a')})`)) break;
+      if (await evaluate(`document.body?.innerText.includes(${JSON.stringify(language === 'en' ? 'Settings' : '\u8a2d\u5b9a')})`)) break;
       if (attempt === 119) throw new Error('Screen did not load: ' + route);
     }
     await evaluate('document.fonts.ready.then(() => true)'); await wait(120);

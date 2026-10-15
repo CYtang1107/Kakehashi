@@ -1,8 +1,9 @@
+import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { READINESS, pick, type ReadinessStep, type Student } from '@kakehashi/shared';
-import { Avatar, Card, Columns, Screen, formatDate } from '../../src/ui';
+import { StatusBanner, Avatar, Card, Columns, Screen, formatDate } from '../../src/ui';
 import { StudentBadges } from '../../src/Community';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
@@ -14,23 +15,24 @@ export default function Team() {
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   if (!data) return <Screen>{null}</Screen>;
 
   const toggle = async (s: Student, step: ReadinessStep) => {
-    setError(null);
+    if (busy) return; setBusy(true); setError(null);
     try {
       await api.studentStep(data.home.id, s.id, step, !s.passed[step]);
       await refresh();
       showToast(t('saved'));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save.');
-    }
+      setError(t('rSaveError'));
+    } finally { setBusy(false); }
   };
 
   // One card per student; on a laptop they sit in two columns.
   const studentCard = (s: (typeof data.home.students)[number], i: number) => (
         <Card key={s.id}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
             <Avatar initial={s.initial} tone={i % 2 ? 'moss' : 'plum'} />
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={type.bodyBold}>{s.name} · <Text style={type.caption}>{pick(lang, s.university, s.universityJa)}</Text></Text>
@@ -41,8 +43,8 @@ export default function Team() {
           {READINESS.map((step) => {
             const done = s.passed[step];
             return (
-              <Pressable key={step} accessibilityRole="checkbox" accessibilityState={{ checked: Boolean(done) }} onPress={() => toggle(s, step)}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 }}>
+              <Pressable key={step} accessibilityRole="checkbox" disabled={busy} accessibilityState={{ checked: Boolean(done), disabled: busy }} onPress={() => toggle(s, step)}
+                style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingVertical: 6 }}>
                 <Feather name={done ? 'check-square' : 'square'} size={20} color={done ? colors.moss : colors.inkSoft} />
                 <Text style={[type.body, { flex: 1, color: done ? colors.ink : colors.inkSoft }]}>{t(`step_${step}`)}</Text>
                 {done ? <Text style={type.caption}>{formatDate(done, lang)}</Text> : null}
@@ -54,7 +56,8 @@ export default function Team() {
 
   return (
     <Screen wide fit header={{ title: t('teamTitle'), sub: t('teamLead') }}>
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      <StatusBanner title={t('rDemo')} message={t('rCoordinator')} />
+      {error ? <StatusBanner tone="error" title={error} /> : null}
       <Columns fill scrollLeft
         left={data.home.students.map((s, i) => (i % 2 ? null : studentCard(s, i)))}
         right={data.home.students.map((s, i) => (i % 2 ? studentCard(s, i) : null))}

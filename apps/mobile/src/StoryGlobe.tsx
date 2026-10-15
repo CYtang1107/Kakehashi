@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { PublicStory } from '@kakehashi/shared';
 import { LAND_ROWS } from './landMask';
+import { useAccessibilityPreferences } from './design-system/preferences';
 
 // The story globe: every shared story is a light on its town (rounded to about 10 km, never the home).
 // Adapted from the EVEth globe in EVE, with real coastlines and a start facing Japan.
@@ -68,6 +69,7 @@ type Drag = { x: number; y: number; active: boolean };
 type Picker = { current: ((nx: number, ny: number) => string | null) | null };
 
 function Globe({ stories, selected, drag, zoom, picker }: { stories: PublicStory[]; selected: string | null; drag: React.MutableRefObject<Drag>; zoom: React.MutableRefObject<number>; picker: Picker }) {
+  const { reducedMotion } = useAccessibilityPreferences();
   const spin = useRef<THREE.Group>(null);
   const markers = useRef<THREE.Group>(null);
   const globe = useRef<THREE.Mesh>(null);
@@ -85,16 +87,16 @@ function Globe({ stories, selected, drag, zoom, picker }: { stories: PublicStory
     if (!g) return;
     const t = state.clock.elapsedTime;
     // A gentle sway while nobody is touching it, so it feels alive without spinning Japan away.
-    const sway = drag.current.active || selected ? 0 : Math.sin(t * 0.35) * 0.08;
+    const sway = reducedMotion || drag.current.active || selected ? 0 : Math.sin(t * 0.35) * 0.08;
     g.rotation.y = drag.current.y + sway;
     g.rotation.x = drag.current.x;
-    camera.position.z += (zoom.current - camera.position.z) * 0.12;
+    camera.position.z += (zoom.current - camera.position.z) * (reducedMotion ? 1 : 0.12);
     // Lights keep the same size on screen at any zoom.
     const s = camera.position.z / ZOOM.start;
     markers.current?.children.forEach((m) => m.scale.setScalar(s));
     Object.entries(rings.current).forEach(([id, m]) => {
       if (!m) return;
-      const k = 1 + ((t * 0.8 + id.length * 0.17) % 1) * 0.9;
+      const k = reducedMotion ? 1 : 1 + ((t * 0.8 + id.length * 0.17) % 1) * 0.9;
       m.scale.setScalar(k);
       (m.material as THREE.MeshBasicMaterial).opacity = 0.7 * (1 - (k - 1) / 0.9);
     });
@@ -232,7 +234,7 @@ export function StoryGlobe({ stories, selected, onSelect, height = 360, fill, la
 function GlobeButton({ icon, label, onPress }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={4}
-      style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(250,251,248,0.14)', borderWidth: 1, borderColor: 'rgba(250,251,248,0.25)', alignItems: 'center', justifyContent: 'center' }}>
+      style={{ width: 56, height: 56, borderRadius: 12, backgroundColor: '#235A46', borderWidth: 1, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
       <Feather name={icon} size={17} color="#FAFBF8" />
     </Pressable>
   );

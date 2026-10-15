@@ -1,11 +1,13 @@
+import { AppText as Text } from '../../src/design-system/AppText';
 import { Worth } from '../../src/ItemWorth';
 import React, { useEffect, useState } from 'react';
 import { ItemDetail } from '../../src/her/ItemDetail';
-import { Image, Pressable, Text, View } from 'react-native';
+import { useStoryDraft } from '../../src/useStoryDraft';
+import { Image, Pressable, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { CHOICES, WISHES, pick, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
-import { Button, Card, Columns, DecisionChip, Field, Fold, Glyph, Screen, formatDate } from '../../src/ui';
+import { StatusBanner, Button, Card, Columns, ConfirmationDialog, DecisionChip, Field, Fold, Glyph, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
@@ -30,12 +32,11 @@ function LegacyItemScreen() {
   const { data, replaceItem, showToast } = useData();
   const { t, lang } = useI18n();
   const item = data?.items.find((i) => i.id === id);
-  const [story, setStory] = useState(item?.story ?? '');
+  const { draft, setValue, markSaved, dirty } = useStoryDraft(item, lang);
+  const [decision, setDecision] = useState<Decision | null>(null);
   const [handoverBy, setHandoverBy] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => { setStory(item?.story ?? ''); }, [item?.id]);
 
   const run = async (key: string, fn: () => Promise<Item>, done?: string) => {
     setBusy(key);
@@ -43,15 +44,17 @@ function LegacyItemScreen() {
     try {
       replaceItem(await fn());
       if (done) showToast(done);
+      setDecision(null); return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.');
+      setError(t('rSaveError'));
+      return false;
     } finally {
       setBusy(null);
     }
   };
 
   if (!data) return <Screen back>{null}</Screen>;
-  if (!item) return <Screen back><Text style={type.body}>Item not found.</Text></Screen>;
+  if (!item) return <Screen back><Text>{t('rNoItem')}</Text></Screen>;
   const room = data.home.rooms.find((r) => r.id === item.roomId);
   const name = lang === 'ja' && item.nameJa ? item.nameJa : item.name;
   const held = Boolean(item.holdUntil && today() < item.holdUntil);
@@ -74,15 +77,14 @@ function LegacyItemScreen() {
       <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('icon', () => api.setIcon(item.id, { photoId }), t('photoPixelMade')) : undefined} />
       {student && item.icon ? (
         <Pressable accessibilityRole="button" onPress={() => run('icon', () => api.setIcon(item.id, { reset: true }), t('saved'))} style={{ alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' }}>
-          <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.inkSoft }}>{t('iconReset')}</Text>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: colors.inkSoft }}>{t('iconReset')}</Text>
         </Pressable>
       ) : null}
 
       {/* Her words first, on the paper itself: the story is what this page is about. */}
-      {item.story ? (
+      {item.story || item.storyJa ? (
         <View style={{ gap: 10, paddingVertical: 6 }}>
-          <Text style={{ fontFamily: fonts.display, fontSize: 72, lineHeight: 64, color: colors.ai, marginBottom: -30 }}>“</Text>
-          <Text style={{ fontFamily: fonts.displaySemi, fontSize: 21, lineHeight: 34, color: colors.ink }}>{pick(lang, item.story, item.storyJa)}</Text>
+          <Text variant="story">{pick(lang, item.story, item.storyJa)}</Text>
           <Text style={type.caption}>{t('inHerOwnWords', { name: data.home.seniorNameJa && lang === 'ja' ? data.home.seniorNameJa.split(' ')[1] : data.home.seniorName.split(' ')[0] })}</Text>
         </View>
       ) : null}
@@ -100,14 +102,16 @@ function LegacyItemScreen() {
           ) : null}
           <Card>
             <Text style={type.section}>{t('decisionBySenior')}</Text>
-            <ChoiceGrid value={item.decision} onPick={(d) => run('decision', () => api.update(item.id, { decision: d }), t('saved'))} />
+            <Text>{t('hMemoryLead')}</Text>
+            <ChoiceGrid value={item.decision} disabled={busy !== null} onPick={d => d === 'open' ? run('decision', () => api.update(item.id, { decision: d }), t('saved')) : setDecision(d)} />
             {held ? <Text style={[type.caption, { color: colors.moss }]}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text> : null}
           </Card>
           <AddPhotoCard item={item} />
           <Card>
             <Text style={type.section}>{t('storyTag')}</Text>
-            <Field label={t('storyInHerWords')} multiline value={story} onChangeText={setStory} />
-            <Button label={t('saveStory')} kind="secondary" busy={busy === 'story'} onPress={() => run('story', () => api.update(item.id, { story }), t('saved'))} />
+            <Field label={t('storyInHerWords')} multiline editable={busy === null} value={draft.value} onChangeText={setValue} />
+            {draft.language !== lang ? <Text variant="caption">{t('hDraftLanguage', { language: draft.language === 'ja' ? '日本語' : 'English' })}</Text> : null}
+            <Button label={t('saveStory')} kind="secondary" busy={busy === 'story'} disabled={!dirty || busy !== null} onPress={() => run('story', () => api.update(item.id, { story: draft.value }), t('saved')).then(ok => { if (ok) markSaved(); })} />
             <StoryRecorder item={item} consent={data.home.consent.recording} onSaved={(it) => { replaceItem(it); showToast(t('recordingSaved')); }} />
           </Card>
           {item.decision === 'pass' || item.decision === 'recycle' ? (
@@ -117,12 +121,12 @@ function LegacyItemScreen() {
                 <Text style={type.body}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text>
               ) : (
                 <>
-                  <Field label={t('handoverBy')} value={handoverBy} onChangeText={setHandoverBy} placeholder={nextStage === 'recycler' || nextStage === 'collected' ? 'Licensed recycler' : 'Partner repair shop'} />
+                  <Field label={t('handoverBy')} value={handoverBy} onChangeText={setHandoverBy} placeholder={t('rHandoverExample')} />
                   <Button label={t('logHandover')} kind="secondary" icon="check-circle" busy={busy === 'handover'} disabled={!handoverBy.trim()}
-                    onPress={() => run('handover', () => api.handover(item.id, nextStage, handoverBy.trim()), t('handoverSaved')).then(() => setHandoverBy(''))} />
+                    onPress={() => run('handover', () => api.handover(item.id, nextStage, handoverBy.trim()), t('handoverSaved')).then(ok => { if (ok) setHandoverBy(''); })} />
                   {item.decision === 'pass' && !item.delivery && !item.journey.some((j) => j.stage === 'delivered') ? (
                     <Button label={t('startDelivery')} kind="secondary" icon="truck" busy={busy === 'delivery'} disabled={!handoverBy.trim()}
-                      onPress={() => run('delivery', () => api.startDelivery(item.id, handoverBy.trim()), t('deliveryStarted')).then(() => setHandoverBy(''))} />
+                      onPress={() => run('delivery', () => api.startDelivery(item.id, handoverBy.trim()), t('deliveryStarted')).then(ok => { if (ok) setHandoverBy(''); })} />
                   ) : null}
                 </>
               )}
@@ -132,7 +136,7 @@ function LegacyItemScreen() {
       ) : (
         <>
           <View style={{ gap: 4, paddingVertical: 10, borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.line }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
               <Text style={[type.body, { flex: 1 }]}>{t('motherDecided')}</Text>
               <DecisionChip decision={item.decision} />
             </View>
@@ -147,8 +151,8 @@ function LegacyItemScreen() {
                 return (
                   <Pressable key={w} accessibilityRole="radio" accessibilityState={{ checked: on }}
                     onPress={() => run('wish', () => api.wish(item.id, w), t('wishSent'))}
-                    style={{ paddingVertical: 9, paddingHorizontal: 13, borderRadius: 99, borderWidth: on ? 2 : 1, borderColor: on ? colors.plum : colors.line, backgroundColor: on ? colors.plumTint : colors.sheet }}>
-                    <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: on ? colors.plum : colors.ink }}>{t(wishKey(w))}</Text>
+                    style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingVertical: 9, paddingHorizontal: 13, borderRadius: 99, borderWidth: on ? 2 : 1, borderColor: on ? colors.plum : colors.line, backgroundColor: on ? colors.plumTint : colors.sheet }}>
+                    <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.plum : colors.ink }}>{t(wishKey(w))}</Text>
                   </Pressable>
                 );
               })}
@@ -172,12 +176,18 @@ function LegacyItemScreen() {
       <Worth item={item} />
         </>}
       />
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
+      <ConfirmationDialog visible={decision !== null} title={t('hReviewDecision')} busy={busy !== null}
+        message={decision ? t('hDecisionBody', { name, decision: t(`decision_${decision}`) }) : ''}
+        confirmLabel={decision ? t(`decision_${decision}`) : t('dsConfirm')} onCancel={() => { setDecision(null); setError(null); }}
+        onConfirm={() => { if (decision) run('decision', () => api.update(item.id, { decision }), t('saved')); }}>
+        {error ? <StatusBanner tone="error" title={error} /> : null}
+      </ConfirmationDialog>
     </Screen>
   );
 }
 
-function ChoiceGrid({ value, onPick }: { value?: Decision; onPick: (d: Decision) => void }) {
+function ChoiceGrid({ value, onPick, disabled }: { value?: Decision; onPick: (d: Decision) => void; disabled?: boolean }) {
   const { t } = useI18n();
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -186,9 +196,9 @@ function ChoiceGrid({ value, onPick }: { value?: Decision; onPick: (d: Decision)
         const c = decisionColor[d];
         const first = d === 'open';
         return (
-          <Pressable key={d} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => onPick(d)}
-            style={{ flexBasis: first ? '100%' : '47%', flexGrow: 1, paddingVertical: 11, borderRadius: 12, alignItems: 'center', borderWidth: on ? 2 : 1, borderColor: on ? (first ? colors.ink : c.fg) : colors.line, backgroundColor: on ? c.bg : colors.sheet }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: on ? (first ? colors.ink : c.fg) : colors.ink }}>{t(`decision_${d}`)}</Text>
+          <Pressable key={d} accessibilityRole="radio" accessibilityState={{ checked: on, disabled }} disabled={disabled} onPress={() => onPick(d)}
+            style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center', flexBasis: first ? '100%' : 180, flexGrow: 1, padding: 16, borderRadius: 12, alignItems: 'center', borderWidth: 2, borderColor: on ? (first ? colors.ink : c.fg) : colors.line, backgroundColor: on ? c.bg : colors.sheet }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? (first ? colors.ink : c.fg) : colors.ink }}>{t(`decision_${d}`)}</Text>
           </Pressable>
         );
       })}

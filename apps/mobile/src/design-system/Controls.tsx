@@ -22,7 +22,7 @@ export function Button({ label, onPress, kind = 'primary', icon, disabled, busy,
   return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
     accessibilityHint={accessibilityHint} accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }}
     disabled={inactive} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-    style={({ pressed }) => [{ minHeight: primary ? control.primary : control.secondary, minWidth: control.minimum,
+    style={({ pressed }) => [{ minHeight: primary ? control.primary : control.secondary, minWidth: control.minimum, maxWidth: '100%', flexShrink: 1,
       paddingHorizontal: spacing.xl, paddingVertical: spacing.md, borderRadius: radii.control,
       flexDirection: 'row', gap: spacing.md, alignItems: 'center', justifyContent: 'center',
       borderWidth: 2, borderColor: focused ? palette.focus : primary ? palette.primary : selected ? palette.primary : palette.border,

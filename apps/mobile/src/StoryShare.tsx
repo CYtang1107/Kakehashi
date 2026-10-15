@@ -74,7 +74,7 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
           {pending.map((c) => (
             <View key={c.id} style={{ gap: 6 }}>
               <Text style={type.body}><Text style={type.bodyBold}>{c.from || t('feedAnon')}: </Text>{c.message}</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                 <Button label={t('showMessage')} kind="secondary" icon="check" busy={busy === c.id} onPress={() => run(c.id, () => api.moderate(item.id, c.id, 'shown'))} />
                 <Button label={t('hideMessage')} kind="secondary" icon="x" onPress={() => run(c.id, () => api.moderate(item.id, c.id, 'hidden'))} />
               </View>

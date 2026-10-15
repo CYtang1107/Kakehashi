@@ -1,8 +1,9 @@
+import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Feather } from '@expo/vector-icons';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { HELP_KINDS, SERVICE_CATALOG, WORKER_SHARE, isCleared, pick, type ServiceKind, type ServiceRequest, type ServiceStatus, type Worker } from '@kakehashi/shared';
-import { Button, Card, Field, Pill, formatDate } from './ui';
+import { StatusBanner, Button, Card, Field, Pill, formatDate } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api } from './api';
@@ -40,7 +41,7 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
   const run = async (key: string, fn: () => Promise<unknown>, done?: string) => {
     setBusy(key); setError(null);
     try { await fn(); await refresh(); if (done) showToast(done); return true; }
-    catch (e) { setError(e instanceof Error ? e.message : 'Could not save.'); return false; }
+    catch (e) { setError(t('rSaveError')); return false; }
     finally { setBusy(null); }
   };
 
@@ -64,7 +65,7 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
         const hourly = SERVICE_CATALOG[s.kind].unit === 'hour';
         return (
           <View key={s.id} style={{ gap: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8,  }}>
               <Text style={[type.bodyBold, { flex: 1 }]}>{t(`svc_${s.kind}` as Key)}{fix ? ` · ${t(`fix_${fix.kind}` as Key)}${room ? ` (${lang === 'ja' ? room.nameJa : room.name})` : ''}` : ''}</Text>
               {s.priceJpy ? <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'] }]}>{yen(s.priceJpy)}</Text> : null}
             </View>
@@ -99,7 +100,7 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
                     <Field label={t('dateLabel')} value={date} onChangeText={setDate} placeholder="2026-10-20" />
                     <Field label={t('hoursLabel')} value={hours} onChangeText={setHours} keyboardType="decimal-pad" />
                     <Text style={type.caption}>{t('postSplit', { worker: yen((Number(price) || 0) * WORKER_SHARE), fee: yen((Number(price) || 0) * (1 - WORKER_SHARE)) })}</Text>
-                    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} onPress={() => setAgreed(!agreed)} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} onPress={() => setAgreed(!agreed)} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                       <Feather name={agreed ? 'check-square' : 'square'} size={20} color={agreed ? colors.moss : colors.inkSoft} />
                       <Text style={[type.body, { flex: 1 }]}>{t('priceAgreed')}</Text>
                     </Pressable>
@@ -116,8 +117,8 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
                         const on = workerId === x.id;
                         return (
                           <Pressable key={x.id} accessibilityRole="radio" accessibilityState={{ checked: on, disabled: !ok }} disabled={!ok} onPress={() => setWorkerId(x.id)}
-                            style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: on ? colors.ai : colors.line, backgroundColor: on ? colors.aiTint : colors.sheet, opacity: ok ? 1 : 0.55 }}>
-                            <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: on ? colors.ai : colors.ink }}>{workerName(x, lang)}</Text>
+                            style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: on ? colors.ai : colors.line, backgroundColor: on ? colors.aiTint : colors.sheet, opacity: ok ? 1 : 0.55 }}>
+                            <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.ai : colors.ink }}>{workerName(x, lang)}</Text>
                             <Text style={type.caption}>{ok ? `${pick(lang, x.from, x.fromJa)} · ${t('jobsDone', { n: x.jobs })}` : t('notCleared')}</Text>
                           </Pressable>
                         );
@@ -157,8 +158,8 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {HELP_KINDS.map((k) => (
               <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: askKind === k }} onPress={() => setAskKind(k)}
-                style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: askKind === k ? colors.ai : colors.line, backgroundColor: askKind === k ? colors.aiTint : colors.sheet }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: askKind === k ? colors.ai : colors.ink }}>{t(`svc_${k}` as Key)}</Text>
+                style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: askKind === k ? colors.ai : colors.line, backgroundColor: askKind === k ? colors.aiTint : colors.sheet }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: askKind === k ? colors.ai : colors.ink }}>{t(`svc_${k}` as Key)}</Text>
               </Pressable>
             ))}
           </View>
@@ -167,7 +168,7 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
       ) : (
         <Text style={type.caption}>{t('servicesWorkers')}</Text>
       )}
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
     </Card>
   );
 }
