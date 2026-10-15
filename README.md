@@ -4,11 +4,13 @@
 
 TGIC 2026 (Tokyo Global Innovation Challenge) entry. The app ships with an example family: Michiko Tanaka in Niigata, her son Kenji, and students Yui and Arif. All people are illustrative.
 
+**Try it online:** https://kakehashi-epq6.onrender.com (free hosting: the first visit after a quiet spell takes up to a minute, and the example family resets when the service restarts).
+
 ## Who uses it
 
 | Role | What they can do |
 | --- | --- |
-| **Michiko** (her own screen) | Large text, few choices. See who is visiting next and who is coming to help, with the door rule against repair scams. Ask for help in two taps. Say how a job went. |
+| **Michiko** (her own screen) | Large text, few choices. See who is visiting next and who is coming to help, with the door rule against repair scams. Ask for help in two taps. Say how a job went. See **her circle** (a preview) and switch it on or off. |
 | **Family** | The visit thread (every visit as a knot on a thread). The **digital 実家**: 3D house, floor plan, memory mode, neighbourhood map. Item stories and recordings. Share a **wish** about an item (never a vote). Safer home plan with costs, the house's future, help bookings, live outings. Plan and payment, visit reports, the monthly letter, call notes. |
 | **Students** | A **Wallet** of earnings and a savings goal. A visit in three steps: **Before** (field notes, consent), **With her** (items, her stories, item photos, room photos, safer home, help, the house's future, activities, outing sharing), **After** (visit report with a fresh-eyes check, monthly letter, calls). **Team** tab: the seven-step evaluation every student passes. |
 | **Helpers** | Checked local workers find jobs on the **job board**, at a price set beforehand, and see what they receive after the 15% fee. |
@@ -34,6 +36,8 @@ This starts the API server on port 4100 and the Expo app on port 8081.
 - An "error installing React Native DevTools" line at start-up is harmless; the app runs without the debugger.
 
 To start over with the example family: `npm run reset` (while the server runs).
+
+To check colour contrast after changing the theme: `npm run contrast -w apps/mobile` (every text and background pair must meet WCAG AA).
 
 ### Public demo link (Render)
 
@@ -128,9 +132,13 @@ A mock-up of a future idea: people she chooses (family, her students, one neighb
 
 ## Design
 
-- **Visit thread:** the family home opens on a year of visits drawn as knots on a white thread over indigo cloth (藍染): done, next, and months ahead.
-- Cool washi-grey paper, indigo (藍) accent, sentence-case labels, Zen Kaku Gothic New and Shippori Mincho.
+- **Night band:** every screen opens under a night-indigo band (夜) holding the title, with kinari text and persimmon (柿) accents; the bottom tab bars match. Pages sit on cool washi-grey paper below. Zen Kaku Gothic New for text, Shippori Mincho for titles and her words.
+- **Decision colours keep their meaning everywhere:** moss = keep, plum = family, indigo = pass on, persimmon = recycle (in lists, the floor plan and the 3D house).
+- **Laptop layout:** at 900 px and wider every page fits the window without the page scrolling. It splits into two columns (for example the 3D house beside the item list, the story globe beside the posts); a column that holds more scrolls on its own and fades at the bottom while there is more. Phones keep one column that scrolls as usual. Her screen keeps its large text in both.
+- **Accessibility:** every text and background pair meets WCAG AA (checked by `npm run contrast`), text is at least 12 px, and buttons and links are at least 44 px tall. The chosen language is remembered after a reload.
+- **Visit thread:** the family home shows a year of visits drawn as knots on a white thread over indigo cloth (藍染): done, next, and months ahead.
 - Long screens use **folds**: a section shows one line (title and status) until tapped.
+- The design decisions and the build plan are in `docs/superpowers/`.
 
 ## AI features (optional)
 
@@ -159,14 +167,18 @@ apps/server            Express API, JSON-file storage (apps/server/data, not com
   src/nearby.ts        Real nearby places from OpenStreetMap
 apps/mobile            Expo Router app (iOS, Android, web)
   app/                 Screens per role: her/, family/, student/, worker/, stories/, item/
-  src/                 Shared components (3D house, maps, cards, i18n)
+  src/                 Shared components (3D house, maps, story globe, cards, i18n)
+  scripts/             check-contrast.ts (WCAG check for the theme colours)
 packages/shared        Types and rules shared by both
+docs/superpowers       Design spec and build plan for the night band and laptop layout
+render.yaml            The public demo on Render
 ```
 
 ## Known limits
 
 - A pilot prototype: no real sign-in (helpers pick who they are), and data is a JSON file.
 - Not yet tested end to end on a phone.
+- Her circle is a preview only: nothing is sensed or sent.
 - Prices, fees and subsidy figures are examples to verify.
 - Demo IDs include the example family's surname; a real build should use random IDs.
 
