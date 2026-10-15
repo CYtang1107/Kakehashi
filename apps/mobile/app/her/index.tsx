@@ -103,7 +103,6 @@ export default function HerScreen() {
         <Feather name="shield" size={28} color={colors.kaki} />
         <Text style={[body, { flex: 1 }]}>{t('doorRule')}</Text>
       </View>
-      <HerCircleCard mode="her" />
 
         </>}
         right={<>
@@ -158,6 +157,7 @@ export default function HerScreen() {
           </View>
         </Card>
       ))}
+      <HerCircleCard mode="her" />
         </>}
       />
     </Screen>

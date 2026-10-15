@@ -98,7 +98,9 @@ export default function ItemScreen() {
             <ChoiceGrid value={item.decision} onPick={(d) => run('decision', () => api.update(item.id, { decision: d }), t('saved'))} />
             {held ? <Text style={[type.caption, { color: colors.moss }]}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text> : null}
           </Card>
-          <AddPhotoCard item={item} />
+          <Fold title={t('photoAddTitle')} icon="camera" summary={t('photoAddSummary')}>
+            <AddPhotoCard item={item} />
+          </Fold>
           <Card>
             <Text style={type.section}>{t('storyTag')}</Text>
             <Field label={t('storyInHerWords')} multiline value={story} onChangeText={setStory} />
@@ -159,7 +161,11 @@ export default function ItemScreen() {
           ? <Fold title={t('everyStep', { n: item.journey.length })} icon="list"><Journey steps={item.journey} /></Fold>
           : <Journey steps={item.journey} />}
       </Card>
-      {student ? <ShareCard item={item} mode="student" /> : (
+      {student ? (
+        <Fold title={t('shareTitle')} icon="globe" summary={item.share ? t('sharedOn', { date: formatDate(item.share.at, lang) }) : t('notSharedShort')}>
+          <ShareCard item={item} mode="student" />
+        </Fold>
+      ) : (
         <Fold title={t('shareTitle')} icon="globe" summary={item.share ? t('sharedOn', { date: formatDate(item.share.at, lang) }) : t('notSharedShort')}>
           <ShareCard item={item} mode="family" />
         </Fold>

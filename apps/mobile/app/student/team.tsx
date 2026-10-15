@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { READINESS, pick, type ReadinessStep, type Student } from '@kakehashi/shared';
-import { Avatar, Card, Columns, Screen, formatDate } from '../../src/ui';
+import { Avatar, Card, Columns, Fold, Screen, formatDate } from '../../src/ui';
 import { StudentBadges } from '../../src/Community';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
@@ -38,6 +38,7 @@ export default function Team() {
             </View>
           </View>
           <StudentBadges student={s} />
+          <Fold title={t('teamStepsDone', { done: READINESS.filter((x) => s.passed[x]).length, total: READINESS.length })} icon="check-square" open={READINESS.some((x) => !s.passed[x])}>
           {READINESS.map((step) => {
             const done = s.passed[step];
             return (
@@ -49,6 +50,7 @@ export default function Team() {
               </Pressable>
             );
           })}
+          </Fold>
         </Card>
   );
 

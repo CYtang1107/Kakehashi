@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick } from '@kakehashi/shared';
+import { Fold } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
 import { colors, fonts, type } from './theme';
@@ -22,48 +23,51 @@ export function HerCircleCard({ mode }: { mode: 'her' | 'family' }) {
     { icon: 'users', who: pair.join(lang === 'ja' ? '・' : ' & '), role: t('circleRoleStudents') },
     { icon: 'home', who: t('circleNeighbourName'), role: t('circleRoleNeighbour') },
   ];
-  const size = her ? { title: 22, body: 18, small: 15 } : { title: 17, body: 15, small: 12.5 };
+  const fs = her ? 16 : 14;
+
+  // Who is in the circle, as a row of name chips.
+  const chips = (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      {people.map((p) => (
+        <View key={p.role} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 99, backgroundColor: colors.mossTint }}>
+          <Feather name={p.icon} size={fs} color={colors.moss} />
+          <Text style={{ fontFamily: fonts.bold, fontSize: fs, color: colors.ink }}>{p.who}<Text style={{ fontFamily: fonts.medium, color: colors.inkSoft }}> · {p.role}</Text></Text>
+        </View>
+      ))}
+    </View>
+  );
+  const note = <Text style={type.caption}>{t('circleNote')}</Text>;
+
+  // The family sees what she chose, folded to one line like the other sections of their home screen.
+  if (!her) {
+    return (
+      <Fold title={t('circleTitleFamily', { name: first })} icon="shield" summary={t('circleSummary', { n: people.length })}>
+        <Text style={type.body}>{t('circleRuleFamily', { name: first })}</Text>
+        {chips}
+        {note}
+      </Fold>
+    );
+  }
 
   return (
-    <View style={{ gap: 12, padding: her ? 18 : 16, borderRadius: 16, backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line }}>
+    <View style={{ gap: 12, padding: 16, borderRadius: 16, backgroundColor: colors.sheet, borderWidth: 1, borderColor: colors.line }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <Feather name="shield" size={her ? 26 : 20} color={on ? colors.moss : colors.inkSoft} />
-        <Text style={{ flex: 1, fontFamily: fonts.bold, fontSize: size.title, color: colors.ink }}>{her ? t('circleTitleHer') : t('circleTitleFamily', { name: first })}</Text>
+        <Feather name="shield" size={24} color={on ? colors.moss : colors.inkSoft} />
+        <Text style={{ flex: 1, fontFamily: fonts.bold, fontSize: 22, color: colors.ink }}>{t('circleTitleHer')}</Text>
         <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99, backgroundColor: '#F3E9D2' }}>
           <Text style={{ fontFamily: fonts.bold, fontSize: 12, color: '#7A5B1E' }}>{t('circlePreview')}</Text>
         </View>
       </View>
-
-      <Text style={{ fontFamily: fonts.medium, fontSize: size.body, lineHeight: size.body * 1.5, color: colors.ink }}>
-        {on ? t(her ? 'circleRuleHer' : 'circleRuleFamily', { name: first }) : t('circleOff')}
-      </Text>
-
-      {on ? (
-        <View style={{ gap: 8 }}>
-          {people.map((p) => (
-            <View key={p.role} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <View style={{ width: her ? 40 : 32, height: her ? 40 : 32, borderRadius: 99, backgroundColor: colors.mossTint, alignItems: 'center', justifyContent: 'center' }}>
-                <Feather name={p.icon} size={her ? 20 : 16} color={colors.moss} />
-              </View>
-              <Text style={{ flex: 1, fontFamily: fonts.bold, fontSize: size.body, color: colors.ink }}>{p.who}
-                <Text style={{ fontFamily: fonts.medium, color: colors.inkSoft }}>  {p.role}</Text>
-              </Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
-
+      <Text style={{ fontFamily: fonts.medium, fontSize: 18, lineHeight: 27, color: colors.ink }}>{on ? t('circleRuleHer') : t('circleOff')}</Text>
+      {on ? chips : null}
       {/* Only she can switch it; the family sees what she chose. */}
-      {her ? (
-        <Pressable accessibilityRole="switch" accessibilityState={{ checked: on }} onPress={() => setOn((x) => !x)}
-          style={{ minHeight: 56, borderRadius: 14, borderWidth: 2, borderColor: on ? colors.moss : colors.line, backgroundColor: on ? colors.mossTint : colors.sheet,
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-          <Feather name={on ? 'toggle-right' : 'toggle-left'} size={28} color={on ? colors.moss : colors.inkSoft} />
-          <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: on ? colors.moss : colors.ink }}>{on ? t('circleSwitchOff') : t('circleSwitchOn')}</Text>
-        </Pressable>
-      ) : null}
-
-      <Text style={[type.caption, { fontSize: size.small, lineHeight: size.small * 1.45 }]}>{t('circleNote')}</Text>
+      <Pressable accessibilityRole="switch" accessibilityState={{ checked: on }} onPress={() => setOn((x) => !x)}
+        style={{ minHeight: 52, borderRadius: 14, borderWidth: 2, borderColor: on ? colors.moss : colors.line, backgroundColor: on ? colors.mossTint : colors.sheet,
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+        <Feather name={on ? 'toggle-right' : 'toggle-left'} size={26} color={on ? colors.moss : colors.inkSoft} />
+        <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: on ? colors.moss : colors.ink }}>{on ? t('circleSwitchOff') : t('circleSwitchOn')}</Text>
+      </Pressable>
+      {note}
     </View>
   );
 }

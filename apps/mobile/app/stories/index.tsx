@@ -34,9 +34,9 @@ export default function StoriesFeed() {
       <Columns fill
         left={stories?.length ? (
         <View style={{ gap: 8, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
-          <StoryGlobe fill={fit} stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
+          <StoryGlobe fill={fit} height={300} stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
           <Text style={[type.caption, { textAlign: 'center' }]}>{t('globeHint')}</Text>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <ScrollView horizontal={!fit} showsHorizontalScrollIndicator={false} contentContainerStyle={fit ? { flexDirection: 'row', flexWrap: 'wrap', gap: 8 } : { gap: 8, paddingRight: 16 }}>
             {stories.map((st) => (
               <Pressable key={st.id} accessibilityRole="button" onPress={() => setSelected(st.id)}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingLeft: 4, paddingRight: 10, paddingVertical: 4, borderRadius: 99, borderWidth: 1, borderColor: st.id === selected ? colors.ai : colors.line, backgroundColor: st.id === selected ? colors.aiTint : colors.sheet }}>
@@ -45,7 +45,7 @@ export default function StoriesFeed() {
                 {st.example ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#D9B26A' }} /> : null}
               </Pressable>
             ))}
-          </View>
+          </ScrollView>
           <Text style={type.caption}>{t('globeLegend')}</Text>
         </View>
       ) : null}
