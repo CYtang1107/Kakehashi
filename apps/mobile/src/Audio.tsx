@@ -1,5 +1,6 @@
+import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus, useAudioRecorder } from 'expo-audio';
 import { api, fileUrl, uriToBase64 } from './api';
@@ -25,12 +26,12 @@ export function StoryPlayer({ path }: { path?: string }) {
   const progress = status.duration > 0 ? Math.min(1, status.currentTime / status.duration) : 0;
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.paper, borderRadius: 14, padding: 10 }}>
-      <Pressable accessibilityRole="button" accessibilityLabel={t('playStory')} onPress={toggle}
-        style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.ai, alignItems: 'center', justifyContent: 'center' }}>
+      <Pressable accessibilityRole="button" accessibilityLabel={t(status.playing ? 'hPauseStory' : 'playStory')} onPress={toggle}
+        style={{ width: 56, height: 56, borderRadius: 12, backgroundColor: colors.ai, alignItems: 'center', justifyContent: 'center' }}>
         <Feather name={status.playing ? 'pause' : 'play'} size={18} color={colors.sheet} />
       </Pressable>
       <View style={{ flex: 1, gap: 6 }}>
-        <Text style={{ fontFamily: fonts.medium, fontSize: 13, color: colors.ink }}>{t('playStory')}</Text>
+        <Text style={{ fontFamily: fonts.medium, fontSize: 18, color: colors.ink }}>{t(status.playing ? 'hPauseStory' : 'playStory')}</Text>
         <View style={{ height: 6, borderRadius: 3, backgroundColor: colors.line, overflow: 'hidden' }}>
           <View style={{ width: `${progress * 100}%`, height: '100%', backgroundColor: colors.ai }} />
         </View>
@@ -81,7 +82,7 @@ export function StoryRecorder({ item, consent, onSaved }: { item: Item; consent:
   return (
     <View style={{ gap: 8 }}>
       {state === 'recording' ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
           <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.kaki }} />
           <Text style={[type.bodyBold, { flex: 1 }]}>{t('recording')}</Text>
           <Button label={t('stopRecording')} icon="square" onPress={stop} />

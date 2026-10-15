@@ -1,9 +1,9 @@
 // WCAG contrast check for the colour pairs the app uses. Run: npm run contrast -w apps/mobile
-import { colors, decisionColor } from '../src/theme';
+import { colors, decisionColor, highContrastColors } from '../src/theme';
 
 const lum = (hex: string) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-    .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
 export const ratio = (a: string, b: string) => {
@@ -26,6 +26,19 @@ const pairs: [string, string, string, number][] = [
   ['body on paper', c.ink, c.paper, 4.5],
   ['caption on paper', c.inkSoft, c.paper, 4.5],
   ['caption on sheet', c.inkSoft, c.sheet, 4.5],
+  ['primary on sage', c.primary, c.secondary, 4.5],
+  ['body on accent', c.ink, c.accent, 4.5],
+  ['secondary on sage', c.inkSoft, c.secondary, 4.5],
+  ['open service status', c.warningText, c.warningSurface, 4.5],
+  ['danger on surface', c.danger, c.surface, 4.5],
+  ['danger on error surface', c.danger, c.dangerSurface, 4.5],
+  ['input outline', c.border, c.surface, 3],
+  ['focus on paper', c.focus, c.paper, 3],
+  ['focus on sage', c.focus, c.secondary, 3],
+  ['high contrast body', highContrastColors.ink, c.paper, 7],
+  ['high contrast supporting text', highContrastColors.inkSoft, c.paper, 7],
+  ['high contrast outline', highContrastColors.border, c.surface, 3],
+  ['high contrast primary', c.onNight, highContrastColors.primary, 4.5],
   ...Object.entries(decisionColor).map(([k, d]) => [`decision ${k}`, d.fg, d.bg, 4.5] as [string, string, string, number]),
 ];
 

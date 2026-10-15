@@ -1,28 +1,25 @@
 import type { Decision, RoomStatus } from '@kakehashi/shared';
 
-// Night-indigo band (夜), kinari text on it, persimmon (柿) accents; washi-grey paper below.
-// Decision colours keep their meanings: moss = keep, plum = family, indigo = pass on, persimmon = recycle.
+// Semantic tokens; legacy names stay compatible with existing screens.
 export const colors = {
-  paper: '#ECEEEA',
-  sheet: '#FAFBF8',
-  ink: '#1C2330',
-  inkSoft: '#59616F',
-  line: '#D5D9D1',
-  night: '#121A2A',
-  nightRaised: '#1E2A40',
-  onNight: '#F3EEE4',
-  onNightSoft: '#A9B3C6',
-  kakiNight: '#F08A4B',
-  kakiInk: '#A04A22',
-  ai: '#2B4C7E',
-  aiTint: '#E3E9F3',
+  background: '#F8F7F2', surface: '#FFFFFF', secondary: '#E3EFE7', accent: '#F3D9C9',
+  primary: '#235A46', primaryPressed: '#173F31', text: '#202923', textSecondary: '#506358',
+  border: '#718578', separator: '#D3DED5', focus: '#235A46', dangerSurface: '#FAEAE7',
+  warningText: '#73501B', warningSurface: '#F5EBD6',
+  paper: '#F8F7F2', sheet: '#FFFFFF', ink: '#202923', inkSoft: '#506358', line: '#718578',
+  night: '#235A46', nightRaised: '#173F31', onNight: '#FFFFFF', onNightSoft: '#E3EFE7',
+  kakiNight: '#F3D9C9', kakiInk: '#8E401F', ai: '#235A46', aiTint: '#E3EFE7',
   moss: '#4F6B3A',
   mossTint: '#E6ECDF',
   plum: '#7A4A6E',
   plumTint: '#EFE3EC',
-  kaki: '#A04A22',
-  kakiTint: '#F4E3D9',
-  danger: '#B3261E',
+  indigo: '#2B4C7E', indigoTint: '#E3E9F3',
+  kaki: '#8E401F', kakiTint: '#F3D9C9', danger: '#A52B23',
+} as const;
+
+export const highContrastColors = {
+  ...colors, text: '#101B14', ink: '#101B14', textSecondary: '#263E30', inkSoft: '#263E30',
+  border: '#263E30', line: '#263E30', primary: '#173F31', focus: '#101B14',
 } as const;
 
 export const fonts = {
@@ -34,19 +31,29 @@ export const fonts = {
 } as const;
 
 export const type = {
-  title: { fontFamily: fonts.display, fontSize: 26, lineHeight: 34, color: colors.ink },
-  section: { fontFamily: fonts.bold, fontSize: 17, color: colors.ink },
-  body: { fontFamily: fonts.regular, fontSize: 15, lineHeight: 22, color: colors.ink },
-  bodyBold: { fontFamily: fonts.bold, fontSize: 15, lineHeight: 22, color: colors.ink },
-  caption: { fontFamily: fonts.medium, fontSize: 12.5, lineHeight: 18, color: colors.inkSoft },
-  eyebrow: { fontFamily: fonts.medium, fontSize: 13, color: colors.kakiInk },
-  story: { fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: colors.ink },
+  title: { fontFamily: fonts.bold, fontSize: 30, lineHeight: 42, color: colors.ink },
+  section: { fontFamily: fonts.bold, fontSize: 23, lineHeight: 34, color: colors.ink },
+  body: { fontFamily: fonts.regular, fontSize: 19, lineHeight: 30, color: colors.ink },
+  bodyBold: { fontFamily: fonts.bold, fontSize: 19, lineHeight: 30, color: colors.ink },
+  caption: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 27, color: colors.inkSoft },
+  eyebrow: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 27, color: colors.kakiInk },
+  story: { fontFamily: fonts.displaySemi, fontSize: 20, lineHeight: 34, color: colors.ink },
+  value: { fontFamily: fonts.bold, fontSize: 28, lineHeight: 40, color: colors.ink },
+  button: { fontFamily: fonts.bold, fontSize: 19, lineHeight: 28, color: colors.ink },
 } as const;
+
+export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, section: 40 } as const;
+export const radii = { control: 12, card: 16, dialog: 20 } as const;
+export const layout = { compactWidth: 680, wideWidth: 1200, wideMin: 1000, margin: 20, gap: 24 } as const;
+export const control = { minimum: 48, secondary: 56, primary: 60, icon: 24 } as const;
+export const textScale = { normal: 1, large: 1.15, extraLarge: 1.3 } as const;
+export const motion = { feedbackMs: 140, toastMs: 6000 } as const;
+export const elevation = { shadowColor: '#202923', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 12, elevation: 2 } as const;
 
 export const decisionColor: Record<Decision, { fg: string; bg: string }> = {
   keep: { fg: colors.moss, bg: colors.mossTint },
   family: { fg: colors.plum, bg: colors.plumTint },
-  pass: { fg: colors.ai, bg: colors.aiTint },
+  pass: { fg: colors.indigo, bg: colors.indigoTint },
   recycle: { fg: colors.kaki, bg: colors.kakiTint },
   open: { fg: colors.inkSoft, bg: colors.paper },
 };

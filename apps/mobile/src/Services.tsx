@@ -10,7 +10,7 @@ import { colors, fonts, type, yen } from './theme';
 
 export const serviceTone: Record<ServiceStatus, { fg: string; bg: string }> = {
   requested: { fg: colors.kaki, bg: colors.kakiTint },
-  open: { fg: '#9A6A12', bg: '#F5EBD6' },
+  open: { fg: colors.warningText, bg: colors.warningSurface },
   booked: { fg: colors.ai, bg: colors.aiTint },
   done: { fg: colors.moss, bg: colors.mossTint },
   cancelled: { fg: colors.inkSoft, bg: colors.paper },

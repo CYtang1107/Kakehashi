@@ -125,8 +125,10 @@ Above the posts, a **story globe** (adapted from EVE's EVEth) shows every shared
 ## Design
 
 - **Visit thread:** the family home opens on a year of visits drawn as knots on a white thread over indigo cloth (藍染): done, next, and months ahead.
-- Cool washi-grey paper, indigo (藍) accent, sentence-case labels, Zen Kaku Gothic New and Shippori Mincho.
-- Long screens use **folds**: a section shows one line (title and status) until tapped.
+- Warm ivory backgrounds, sage surfaces, deep-green actions and charcoal text. Shared body text starts at 19 logical units; primary actions have a minimum height of 60. Zen Kaku Gothic New carries the interface and Shippori Mincho remains for stories.
+- **Reading settings** in the toolbar offer Normal, Large and Extra Large text, stronger contrast and reduced motion across roles. Shared controls and the older-adult pilot adopt these preferences; inline screen styles are being migrated separately. Preferences persist on web and are session-only on native.
+- Long screens use **folds** with a stable labelled header, wrapping status and an announced expanded state.
+- [Design system](apps/mobile/DESIGN.md), [component reference](apps/mobile/app/design-system.tsx) (`/design-system`), and [Stage 1 verification](docs/evercircle-integration/progress.md) document the implemented foundations and remaining device checks.
 
 ## AI features (optional)
 

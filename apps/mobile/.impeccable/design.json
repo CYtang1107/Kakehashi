@@ -1,0 +1,584 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T21:16:10Z",
+  "title": "Design System: KAKEHASHI",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Deep Green",
+        "tonalRamp": [
+          "oklch(15% 0.0675 166.43)",
+          "oklch(26% 0.0675 166.43)",
+          "oklch(38% 0.0675 166.43)",
+          "oklch(49% 0.0675 166.43)",
+          "oklch(61% 0.0675 166.43)",
+          "oklch(72% 0.0675 166.43)",
+          "oklch(84% 0.0675 166.43)",
+          "oklch(95% 0.0675 166.43)"
+        ]
+      },
+      "primary-pressed": {
+        "role": "primary",
+        "displayName": "Pressed Green",
+        "tonalRamp": [
+          "oklch(15% 0.0519 167.43)",
+          "oklch(26% 0.0519 167.43)",
+          "oklch(38% 0.0519 167.43)",
+          "oklch(49% 0.0519 167.43)",
+          "oklch(61% 0.0519 167.43)",
+          "oklch(72% 0.0519 167.43)",
+          "oklch(84% 0.0519 167.43)",
+          "oklch(95% 0.0519 167.43)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Warm Ivory",
+        "tonalRamp": [
+          "oklch(15% 0.0067 97.35)",
+          "oklch(26% 0.0067 97.35)",
+          "oklch(38% 0.0067 97.35)",
+          "oklch(49% 0.0067 97.35)",
+          "oklch(61% 0.0067 97.35)",
+          "oklch(72% 0.0067 97.35)",
+          "oklch(84% 0.0067 97.35)",
+          "oklch(95% 0.0067 97.35)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "secondary": {
+        "role": "primary",
+        "displayName": "Sage",
+        "tonalRamp": [
+          "oklch(15% 0.0166 156.90)",
+          "oklch(26% 0.0166 156.90)",
+          "oklch(38% 0.0166 156.90)",
+          "oklch(49% 0.0166 156.90)",
+          "oklch(61% 0.0166 156.90)",
+          "oklch(72% 0.0166 156.90)",
+          "oklch(84% 0.0166 156.90)",
+          "oklch(95% 0.0166 156.90)"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Peach",
+        "tonalRamp": [
+          "oklch(15% 0.0361 53.69)",
+          "oklch(26% 0.0361 53.69)",
+          "oklch(38% 0.0361 53.69)",
+          "oklch(49% 0.0361 53.69)",
+          "oklch(61% 0.0361 53.69)",
+          "oklch(72% 0.0361 53.69)",
+          "oklch(84% 0.0361 53.69)",
+          "oklch(95% 0.0361 53.69)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Charcoal",
+        "tonalRamp": [
+          "oklch(15% 0.0168 155.93)",
+          "oklch(26% 0.0168 155.93)",
+          "oklch(38% 0.0168 155.93)",
+          "oklch(49% 0.0168 155.93)",
+          "oklch(61% 0.0168 155.93)",
+          "oklch(72% 0.0168 155.93)",
+          "oklch(84% 0.0168 155.93)",
+          "oklch(95% 0.0168 155.93)"
+        ]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "Soft Charcoal Green",
+        "tonalRamp": [
+          "oklch(15% 0.0290 159.70)",
+          "oklch(26% 0.0290 159.70)",
+          "oklch(38% 0.0290 159.70)",
+          "oklch(49% 0.0290 159.70)",
+          "oklch(61% 0.0290 159.70)",
+          "oklch(72% 0.0290 159.70)",
+          "oklch(84% 0.0290 159.70)",
+          "oklch(95% 0.0290 159.70)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Visible Green Grey",
+        "tonalRamp": [
+          "oklch(15% 0.0304 156.87)",
+          "oklch(26% 0.0304 156.87)",
+          "oklch(38% 0.0304 156.87)",
+          "oklch(49% 0.0304 156.87)",
+          "oklch(61% 0.0304 156.87)",
+          "oklch(72% 0.0304 156.87)",
+          "oklch(84% 0.0304 156.87)",
+          "oklch(95% 0.0304 156.87)"
+        ]
+      },
+      "separator": {
+        "role": "neutral",
+        "displayName": "Pale Green Grey",
+        "tonalRamp": [
+          "oklch(15% 0.0169 151.08)",
+          "oklch(26% 0.0169 151.08)",
+          "oklch(38% 0.0169 151.08)",
+          "oklch(49% 0.0169 151.08)",
+          "oklch(61% 0.0169 151.08)",
+          "oklch(72% 0.0169 151.08)",
+          "oklch(84% 0.0169 151.08)",
+          "oklch(95% 0.0169 151.08)"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger Red",
+        "tonalRamp": [
+          "oklch(15% 0.1598 28.42)",
+          "oklch(26% 0.1598 28.42)",
+          "oklch(38% 0.1598 28.42)",
+          "oklch(49% 0.1598 28.42)",
+          "oklch(61% 0.1598 28.42)",
+          "oklch(72% 0.1598 28.42)",
+          "oklch(84% 0.1598 28.42)",
+          "oklch(95% 0.1598 28.42)"
+        ]
+      },
+      "danger-surface": {
+        "role": "tertiary",
+        "displayName": "Soft Error Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0179 30.27)",
+          "oklch(26% 0.0179 30.27)",
+          "oklch(38% 0.0179 30.27)",
+          "oklch(49% 0.0179 30.27)",
+          "oklch(61% 0.0179 30.27)",
+          "oklch(72% 0.0179 30.27)",
+          "oklch(84% 0.0179 30.27)",
+          "oklch(95% 0.0179 30.27)"
+        ]
+      },
+      "warning-text": {
+        "role": "tertiary",
+        "displayName": "Warning Brown",
+        "tonalRamp": [
+          "oklch(15% 0.0824 73.89)",
+          "oklch(26% 0.0824 73.89)",
+          "oklch(38% 0.0824 73.89)",
+          "oklch(49% 0.0824 73.89)",
+          "oklch(61% 0.0824 73.89)",
+          "oklch(72% 0.0824 73.89)",
+          "oklch(84% 0.0824 73.89)",
+          "oklch(95% 0.0824 73.89)"
+        ]
+      },
+      "warning-surface": {
+        "role": "tertiary",
+        "displayName": "Soft Warning Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0298 85.56)",
+          "oklch(26% 0.0298 85.56)",
+          "oklch(38% 0.0298 85.56)",
+          "oklch(49% 0.0298 85.56)",
+          "oklch(61% 0.0298 85.56)",
+          "oklch(72% 0.0298 85.56)",
+          "oklch(84% 0.0298 85.56)",
+          "oklch(95% 0.0298 85.56)"
+        ]
+      },
+      "moss": {
+        "role": "tertiary",
+        "displayName": "Moss",
+        "tonalRamp": [
+          "oklch(15% 0.0805 132.94)",
+          "oklch(26% 0.0805 132.94)",
+          "oklch(38% 0.0805 132.94)",
+          "oklch(49% 0.0805 132.94)",
+          "oklch(61% 0.0805 132.94)",
+          "oklch(72% 0.0805 132.94)",
+          "oklch(84% 0.0805 132.94)",
+          "oklch(95% 0.0805 132.94)"
+        ]
+      },
+      "moss-tint": {
+        "role": "tertiary",
+        "displayName": "Soft Moss",
+        "tonalRamp": [
+          "oklch(15% 0.0184 127.15)",
+          "oklch(26% 0.0184 127.15)",
+          "oklch(38% 0.0184 127.15)",
+          "oklch(49% 0.0184 127.15)",
+          "oklch(61% 0.0184 127.15)",
+          "oklch(72% 0.0184 127.15)",
+          "oklch(84% 0.0184 127.15)",
+          "oklch(95% 0.0184 127.15)"
+        ]
+      },
+      "plum": {
+        "role": "tertiary",
+        "displayName": "Plum",
+        "tonalRamp": [
+          "oklch(15% 0.0824 336.57)",
+          "oklch(26% 0.0824 336.57)",
+          "oklch(38% 0.0824 336.57)",
+          "oklch(49% 0.0824 336.57)",
+          "oklch(61% 0.0824 336.57)",
+          "oklch(72% 0.0824 336.57)",
+          "oklch(84% 0.0824 336.57)",
+          "oklch(95% 0.0824 336.57)"
+        ]
+      },
+      "plum-tint": {
+        "role": "tertiary",
+        "displayName": "Soft Plum",
+        "tonalRamp": [
+          "oklch(15% 0.0176 334.19)",
+          "oklch(26% 0.0176 334.19)",
+          "oklch(38% 0.0176 334.19)",
+          "oklch(49% 0.0176 334.19)",
+          "oklch(61% 0.0176 334.19)",
+          "oklch(72% 0.0176 334.19)",
+          "oklch(84% 0.0176 334.19)",
+          "oklch(95% 0.0176 334.19)"
+        ]
+      },
+      "indigo": {
+        "role": "tertiary",
+        "displayName": "Indigo",
+        "tonalRamp": [
+          "oklch(15% 0.0925 258.49)",
+          "oklch(26% 0.0925 258.49)",
+          "oklch(38% 0.0925 258.49)",
+          "oklch(49% 0.0925 258.49)",
+          "oklch(61% 0.0925 258.49)",
+          "oklch(72% 0.0925 258.49)",
+          "oklch(84% 0.0925 258.49)",
+          "oklch(95% 0.0925 258.49)"
+        ]
+      },
+      "indigo-tint": {
+        "role": "tertiary",
+        "displayName": "Soft Indigo",
+        "tonalRamp": [
+          "oklch(15% 0.0150 260.73)",
+          "oklch(26% 0.0150 260.73)",
+          "oklch(38% 0.0150 260.73)",
+          "oklch(49% 0.0150 260.73)",
+          "oklch(61% 0.0150 260.73)",
+          "oklch(72% 0.0150 260.73)",
+          "oklch(84% 0.0150 260.73)",
+          "oklch(95% 0.0150 260.73)"
+        ]
+      },
+      "kaki": {
+        "role": "secondary",
+        "displayName": "Warm Clay",
+        "tonalRamp": [
+          "oklch(15% 0.1155 41.95)",
+          "oklch(26% 0.1155 41.95)",
+          "oklch(38% 0.1155 41.95)",
+          "oklch(49% 0.1155 41.95)",
+          "oklch(61% 0.1155 41.95)",
+          "oklch(72% 0.1155 41.95)",
+          "oklch(84% 0.1155 41.95)",
+          "oklch(95% 0.1155 41.95)"
+        ]
+      },
+      "high-contrast-text": {
+        "role": "neutral",
+        "displayName": "High-Contrast Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0211 156.17)",
+          "oklch(26% 0.0211 156.17)",
+          "oklch(38% 0.0211 156.17)",
+          "oklch(49% 0.0211 156.17)",
+          "oklch(61% 0.0211 156.17)",
+          "oklch(72% 0.0211 156.17)",
+          "oklch(84% 0.0211 156.17)",
+          "oklch(95% 0.0211 156.17)"
+        ]
+      },
+      "high-contrast-support": {
+        "role": "neutral",
+        "displayName": "High-Contrast Support",
+        "tonalRamp": [
+          "oklch(15% 0.0389 157.92)",
+          "oklch(26% 0.0389 157.92)",
+          "oklch(38% 0.0389 157.92)",
+          "oklch(49% 0.0389 157.92)",
+          "oklch(61% 0.0389 157.92)",
+          "oklch(72% 0.0389 157.92)",
+          "oklch(84% 0.0389 157.92)",
+          "oklch(95% 0.0389 157.92)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Title",
+        "purpose": "Screen title."
+      },
+      "section": {
+        "displayName": "Section",
+        "purpose": "Card and section heading."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Principal prose."
+      },
+      "body-bold": {
+        "displayName": "Body Bold",
+        "purpose": "Important label."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Supporting explanation."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Retained warm-clay context label."
+      },
+      "story": {
+        "displayName": "Story",
+        "purpose": "Memory and story reading."
+      },
+      "value": {
+        "displayName": "Value",
+        "purpose": "Existing prominent value."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Wrapping action label."
+      },
+      "navigation": {
+        "displayName": "Navigation",
+        "purpose": "Family and student tab label."
+      },
+      "pill-label": {
+        "displayName": "Pill Label",
+        "purpose": "Static pill and decision label with the bold caption override."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-ambient",
+        "value": "0 3px 12px rgba(32,41,35,0.06)",
+        "purpose": "Web approximation of React Native shadow offset (0,3), opacity .06, radius 12, Android elevation 2 on ordinary white cards."
+      }
+    ],
+    "effects": {
+      "modalScrim": "rgba(32,41,35,0.48)",
+      "webFocusOutline": "3px solid #235A46; outline-offset: 3px",
+      "highContrastCardBorder": "2px solid #263E30"
+    },
+    "motion": [
+      {
+        "name": "feedback-ms",
+        "value": "140ms",
+        "purpose": "Exported theme duration; immediate shared control state styles do not currently consume it."
+      },
+      {
+        "name": "toast-ms",
+        "value": "6000ms",
+        "purpose": "Retained toast visibility."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "userPreference || systemPreference",
+        "purpose": "Disable root stack transitions and modal fade; OS preference cannot be overridden. Legacy 3D motion awaits migration."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "narrow-frame-padding",
+        "value": "360px"
+      },
+      {
+        "name": "wide-min-width",
+        "value": "1000px × appScale"
+      },
+      {
+        "name": "wide-min-height",
+        "value": "700px × appScale"
+      },
+      {
+        "name": "wide-max-native-font-scale",
+        "value": "1.2"
+      }
+    ],
+    "readingPreferences": {
+      "normal": 1,
+      "large": 1.15,
+      "extraLarge": 1.3,
+      "scope": "Shared across roles; shared AppText and input font sizing retain OS scaling.",
+      "storage": "Web localStorage; nonweb session only; web session fallback when storage unavailable."
+    },
+    "implementation": {
+      "sources": [
+        "src/theme.ts",
+        "src/ui.tsx",
+        "src/design-system/",
+        "app/_layout.tsx",
+        "app/family/_layout.tsx",
+        "app/student/_layout.tsx"
+      ],
+      "previewNotes": "Self-contained HTML/CSS visual translations of React Native components; font family uses a sans-serif fallback when the app fonts are not available. Native Switch geometry varies by OS. Preview markup does not implement preference updates or modal focus behavior.",
+      "tonalRampNotes": "Eight-step OKLCH ramps synthesized for panel exploration; these ramps are metadata, not implemented app palette variants.",
+      "limitations": [
+        "Native screenshots, OS scaling and VoiceOver/TalkBack untested.",
+        "Native preference persistence and dark appearance unimplemented.",
+        "Legacy inline typography and raw controls only partially migrated.",
+        "Legacy 3D house reduced motion requires later work."
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Labelled principal action; minimum height 60 logical units.",
+      "html": "<button class=\"ds-btn-primary\">Choose a visit</button>",
+      "css": ".ds-btn-primary{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:19px;line-height:28px;min-height:60px;min-width:48px;padding:12px 24px;border:2px solid #235A46;border-radius:12px;background:#235A46;color:#FFFFFF;white-space:normal;cursor:pointer}.ds-btn-primary:hover{cursor:pointer}.ds-btn-primary:focus-visible{outline:3px solid #235A46;outline-offset:3px;}.ds-btn-primary:active{background:#173F31}.ds-btn-primary:disabled{opacity:.6;cursor:default}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting action or selected size choice; minimum height 56 logical units.",
+      "html": "<button class=\"ds-btn-secondary\" aria-pressed=\"false\">Not now</button>",
+      "css": ".ds-btn-secondary{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:19px;line-height:28px;min-height:56px;min-width:48px;padding:12px 24px;border:2px solid #718578;border-radius:12px;background:#FFFFFF;color:#202923;white-space:normal;cursor:pointer}.ds-btn-secondary:hover{cursor:pointer}.ds-btn-secondary:focus-visible{outline:3px solid #235A46;outline-offset:3px;}.ds-btn-secondary:active{background:#E3EFE7}.ds-btn-secondary:disabled{opacity:.6;cursor:default}.ds-btn-secondary[aria-pressed=\"true\"]{background:#E3EFE7;border-color:#235A46}"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Explicit destructive action; keeps text and surface separate from primary green.",
+      "html": "<button class=\"ds-btn-danger\">Remove recording</button>",
+      "css": ".ds-btn-danger{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:19px;line-height:28px;min-height:56px;min-width:48px;padding:12px 24px;border:2px solid #718578;border-radius:12px;background:#FAEAE7;color:#A52B23;white-space:normal;cursor:pointer}.ds-btn-danger:hover{cursor:pointer}.ds-btn-danger:focus-visible{outline:3px solid #235A46;outline-offset:3px;}.ds-btn-danger:active{background:#E3EFE7}.ds-btn-danger:disabled{opacity:.6;cursor:default}"
+    },
+    {
+      "name": "Labelled Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Visible label and optional hint; scalable input with error and focus stroke.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-visit-note\">Visit note</label><input class=\"ds-field-input\" id=\"ds-visit-note\" aria-describedby=\"ds-visit-note-hint\" placeholder=\"What would you like to do?\"><span class=\"ds-field-hint\" id=\"ds-visit-note-hint\">You can change this later.</span></div>",
+      "css": ".ds-field{display:grid;gap:8px;font-family:'Zen Kaku Gothic New',sans-serif;color:#202923}.ds-field-label{font-size:19px;line-height:30px;font-weight:700}.ds-field-input{font-family:'Zen Kaku Gothic New',sans-serif;font-size:19px;line-height:30px;min-height:56px;min-width:0;padding:16px;border:2px solid #718578;border-radius:12px;color:#202923;background:#FFFFFF}.ds-field-input::placeholder{color:#506358}.ds-field-input:hover{border-color:#718578}.ds-field-input:focus{border-color:#235A46}.ds-field-input:focus-visible{outline:3px solid #235A46;outline-offset:3px;}.ds-field-input[aria-invalid=\"true\"]{border-color:#A52B23}.ds-field-hint{font-size:17px;line-height:27px;color:#506358}"
+    },
+    {
+      "name": "Role Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Representative family tabs with below-icon labels and the Normal-mode base bar height.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Family\"><a class=\"ds-nav-link\" aria-current=\"page\" href=\"#home\"><svg aria-hidden=\"true\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 9l9-7 9 7v12H3zM9 21v-8h6v8\"/></svg><span>Home</span></a><a class=\"ds-nav-link\" href=\"#house\"><svg aria-hidden=\"true\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 7l9-5 9 5v10l-9 5-9-5zM3 7l9 5 9-5M12 12v10\"/></svg><span>House</span></a><a class=\"ds-nav-link\" href=\"#plan\"><svg aria-hidden=\"true\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/><path d=\"M2 10h20\"/></svg><span>Plan</span></a><a class=\"ds-nav-link\" href=\"#reports\"><svg aria-hidden=\"true\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M14 2H6v20h12V6zM14 2v5h5M9 12h6M9 16h6\"/></svg><span>Reports</span></a></nav>",
+      "css": ".ds-nav{display:flex;min-height:104px;background:#FFFFFF;border-top:1px solid #D3DED5;padding:8px 0;gap:0}.ds-nav-link{font-family:'Zen Kaku Gothic New',sans-serif;display:flex;flex:1;min-width:0;flex-direction:column;justify-content:center;align-items:center;gap:8px;color:#506358;text-decoration:none;font-size:16px;font-weight:500;line-height:24px;text-align:center}.ds-nav-link[aria-current=\"page\"]{color:#235A46}.ds-nav-link:hover{cursor:pointer}.ds-nav-link:focus-visible{outline:3px solid #235A46;outline-offset:3px;}.ds-nav-link:active{color:#235A46}"
+    },
+    {
+      "name": "Decision Label",
+      "kind": "chip",
+      "refersTo": "decision-keep",
+      "description": "Static semantic label; this example is the retained keep decision.",
+      "html": "<span class=\"ds-decision-chip\">Keep</span>",
+      "css": ".ds-decision-chip{font-family:'Zen Kaku Gothic New',sans-serif;display:inline-block;align-self:flex-start;background:#E6ECDF;color:#4F6B3A;padding:3px 9px;border-radius:99px;font-size:17px;line-height:27px;font-weight:700}"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "White content surface with shared heading, generous spacing and quiet elevation.",
+      "html": "<article class=\"ds-card\"><h2 class=\"ds-card-title\">Upcoming visit</h2><p class=\"ds-card-detail\">Tuesday · 10:00</p><p class=\"ds-card-body\">A chance to share a story together.</p></article>",
+      "css": ".ds-card{font-family:'Zen Kaku Gothic New',sans-serif;display:grid;gap:16px;padding:24px;border-radius:16px;background:#FFFFFF;color:#202923;box-shadow:0 3px 12px rgba(32,41,35,.06)}.ds-card-title{margin:0;font-size:23px;line-height:34px;font-weight:700}.ds-card-detail{margin:0;font-size:17px;line-height:27px;font-weight:500;color:#506358}.ds-card-body{margin:0;font-size:19px;line-height:30px;font-weight:400}"
+    },
+    {
+      "name": "Labelled Switch Row",
+      "kind": "custom",
+      "refersTo": "switch-row",
+      "description": "A single focusable switch target with visible label and description.",
+      "html": "<button class=\"ds-switch-row\" role=\"switch\" aria-checked=\"true\"><span class=\"ds-switch-copy\"><span class=\"ds-switch-label\">High contrast</span><span class=\"ds-switch-detail\">Make text and borders stronger.</span></span><span class=\"ds-switch-track\" aria-hidden=\"true\"><span class=\"ds-switch-thumb\"></span></span></button>",
+      "css": ".ds-switch-row{font-family:'Zen Kaku Gothic New',sans-serif;display:flex;align-items:center;gap:16px;min-height:56px;padding:12px;border:2px solid #718578;border-radius:12px;background:#FFFFFF;color:#202923;text-align:left;cursor:pointer}.ds-switch-copy{display:grid;gap:4px;flex:1}.ds-switch-label{font-size:19px;line-height:30px;font-weight:700}.ds-switch-detail{font-size:17px;line-height:27px;font-weight:500;color:#506358}.ds-switch-track{display:block;width:48px;height:28px;border-radius:20px;background:#718578;flex-shrink:0;padding:2px}.ds-switch-thumb{display:block;width:24px;height:24px;background:#FFFFFF;border-radius:50%}.ds-switch-row[aria-checked=\"true\"] .ds-switch-track{background:#235A46}.ds-switch-row[aria-checked=\"true\"] .ds-switch-thumb{margin-left:24px}.ds-switch-row:hover{cursor:pointer}.ds-switch-row:focus-visible{border-color:#235A46;outline:3px solid #235A46;outline-offset:3px;}.ds-switch-row:active{border-color:#235A46}.ds-switch-row:disabled{cursor:default}"
+    },
+    {
+      "name": "Status Banner",
+      "kind": "custom",
+      "refersTo": "status-info",
+      "description": "Polite informational or success notice with icon and supporting text.",
+      "html": "<div class=\"ds-status\" role=\"status\"><svg class=\"ds-status-icon\" aria-hidden=\"true\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 11v6M12 7h.01\"/></svg><div class=\"ds-status-copy\"><strong class=\"ds-status-title\">Your choice is saved</strong><p class=\"ds-status-body\">You can change it when you are ready.</p></div></div>",
+      "css": ".ds-status{font-family:'Zen Kaku Gothic New',sans-serif;display:flex;align-items:flex-start;gap:12px;padding:24px;border-radius:16px;background:#E3EFE7;color:#235A46}.ds-status-icon{flex-shrink:0}.ds-status-copy{display:grid;gap:8px;min-width:0}.ds-status-title{font-size:19px;line-height:30px;font-weight:700}.ds-status-body{margin:0;font-size:19px;line-height:30px;color:#202923}"
+    },
+    {
+      "name": "Reading Settings Dialog",
+      "kind": "custom",
+      "refersTo": "dialog",
+      "description": "Visual preview of the shared scrollable modal. The application component supplies focus containment and preference behavior.",
+      "html": "<div class=\"ds-dialog-scrim\"><section class=\"ds-dialog\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"ds-reading-title\"><h2 class=\"ds-dialog-title\" id=\"ds-reading-title\">Reading settings</h2><p class=\"ds-dialog-body\">Choose the text size that feels comfortable.</p><div class=\"ds-dialog-choices\"><button class=\"ds-dialog-choice\">Normal</button><button class=\"ds-dialog-choice\" aria-pressed=\"true\">Large</button><button class=\"ds-dialog-choice\">Extra Large</button></div><button class=\"ds-dialog-close\">Close</button></section></div>",
+      "css": ".ds-dialog-scrim{display:flex;align-items:center;justify-content:center;background:rgba(32,41,35,.48);padding:16px}.ds-dialog{font-family:'Zen Kaku Gothic New',sans-serif;width:100%;max-width:560px;max-height:100%;overflow:auto;display:grid;gap:24px;padding:24px;border-radius:20px;background:#FFFFFF;color:#202923}.ds-dialog-title{margin:0;font-size:23px;line-height:34px;font-weight:700}.ds-dialog-body{margin:0;font-size:19px;line-height:30px}.ds-dialog-choices{display:grid;gap:12px}.ds-dialog-choice,.ds-dialog-close{font-family:'Zen Kaku Gothic New',sans-serif;font-size:19px;line-height:28px;font-weight:700;min-height:56px;min-width:48px;padding:12px 24px;border:2px solid #718578;border-radius:12px;background:#FFFFFF;color:#202923;cursor:pointer;white-space:normal}.ds-dialog-choice[aria-pressed=\"true\"]{background:#E3EFE7;border-color:#235A46}.ds-dialog-choice:hover,.ds-dialog-close:hover{cursor:pointer}.ds-dialog-choice:focus-visible,.ds-dialog-close:focus-visible{outline:3px solid #235A46;outline-offset:3px;}.ds-dialog-choice:active,.ds-dialog-close:active{background:#E3EFE7}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Welcoming Home",
+    "overview": "Warm, readable and calm: KAKEHASHI uses ivory surroundings, white cards, sage notes and deep-green actions to help an older adult understand the next useful choice. Rounded rectangles and restrained shadows give controls a familiar, welcoming character. English and Japanese share a spacious hierarchy.\n\nThe older adult's autonomy shapes visual emphasis. Actions, consent and the option to defer remain readable and named. Shared reading preferences adapt the interface without taking the user away from the current task.",
+    "keyCharacteristics": [
+      "Large, wrapping text with labelled actions.",
+      "Warm surfaces and clear dark foregrounds.",
+      "Gentle corners and restrained card depth.",
+      "Reading preferences shared across roles."
+    ],
+    "rules": [
+      {
+        "name": "The Readable Surface Rule",
+        "body": "Use dark text on sage and peach. Keep light text for deep-green fills.",
+        "section": "colors"
+      },
+      {
+        "name": "The Meaning Stays Rule",
+        "body": "Preserve the separate decision-color mapping and its labels when migrating screens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Reading First Rule",
+        "body": "Let text wrap and increase control height; do not clamp important shared action labels to a fixed single line.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fit Must Fit Rule",
+        "body": "Use the full wide-eligibility condition before choosing a fitted or two-column layout; readable text takes precedence over fitting a desktop composition.",
+        "section": "layout"
+      },
+      {
+        "name": "The Quiet Depth Rule",
+        "body": "Use the shared card shadow for ordinary white cards and tonal layering for sage surfaces.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** build shared reading content with AppText and palette-aware components.",
+      "**Do** keep clear labels alongside icons and allow English and Japanese text to wrap.",
+      "**Do** honor OS scaling and reduced motion in addition to the app preferences.",
+      "**Do** preserve consent, deferral, family-wish labels and existing routes when migrating presentation.",
+      "**Do** use the complete wide-eligibility condition and permit vertical scrolling at larger text sizes.",
+      "**Do** validate native devices and screen readers before claiming native accessibility coverage."
+    ],
+    "donts": [
+      "**Don't** put pale text on sage or peach surfaces.",
+      "**Don't** use fixed-height text containers that clip enlarged shared action labels.",
+      "**Don't** turn static pills into unlabelled interactive controls.",
+      "**Don't** claim all legacy text is adjustable or all raw controls meet the shared target minima.",
+      "**Don't** claim native preference persistence, dark appearance, device integration or legacy 3D reduced-motion support is implemented.",
+      "**Don't** treat web screenshots or source semantics as completed VoiceOver, TalkBack or native OS-scaling tests."
+    ]
+  }
+}

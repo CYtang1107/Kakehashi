@@ -1,5 +1,6 @@
+import { AppText as Text } from './design-system/AppText';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import type { Handover } from '@kakehashi/shared';
 import { colors, type } from './theme';
 import { useI18n } from './i18n';

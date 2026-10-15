@@ -1,5 +1,9 @@
+import { HerPage } from '../../src/her/HerPage';
+import { AppText as Text } from '../../src/design-system/AppText';
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
+import { Destination } from '../../src/her/Screens';
 import React, { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
 import { Button, Card, Columns, DecisionChip, Glyph, Screen, useWide } from '../../src/ui';
@@ -22,7 +26,9 @@ import { colors, decisionColor, fonts, roomColor, type } from '../../src/theme';
 type View3 = '3d' | '2d' | 'memory' | 'map';
 const TOUR_MS = 7000;
 
-export default function House() {
+export default function House({ olderAdult = false }: { olderAdult?: boolean }) {
+  const Frame = olderAdult ? HerPage : Screen;
+  const { reducedMotion } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const params = useLocalSearchParams<{ view?: string }>();
@@ -40,7 +46,7 @@ export default function House() {
 
   // The memory tour steps through every item with a story, one every few seconds.
   useEffect(() => {
-    if (!touring || memories.length === 0) return;
+    if (reducedMotion || !touring || memories.length === 0) return;
     const timer = setInterval(() => {
       setSelected((cur) => {
         const i = memories.findIndex((m) => m.id === cur);
@@ -48,7 +54,7 @@ export default function House() {
       });
     }, TOUR_MS);
     return () => clearInterval(timer);
-  }, [touring, memories.length]);
+  }, [touring, memories.length, reducedMotion]);
 
   const pickView = (v: View3) => {
     setView(v);
@@ -59,7 +65,7 @@ export default function House() {
   const onSelect = (id: string) => {
     setSelected(id);
     if (memory) setTouring(false);
-    else router.push(`/item/${id}`);
+    else router.push(`${olderAdult ? "/her" : ""}/item/${id}`);
   };
 
   const step = (dir: 1 | -1) => {
@@ -72,7 +78,8 @@ export default function House() {
   const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
   // On a laptop the whole page fits the window: the stage fills the height, the side panel scrolls on its own.
-  const fit = useWide();
+  const isWide = useWide();
+  const fit = isWide && !olderAdult;
   const colourCard = (
     <Card style={{ gap: 10 }}>
       <Segment label={t('colourBy')} value={colorBy} options={(['none', 'decision', 'stories', 'fixes'] as const).map((v) => [v, t(`colour_${v}`)])}
@@ -85,7 +92,7 @@ export default function House() {
   const tourButtons = (
     <View style={{ flexDirection: 'row', gap: 8 }}>
       <View style={{ flex: 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
-      <View style={{ flex: 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} onPress={() => setTouring((x) => !x)} /></View>
+      <View style={{ flex: 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} disabled={reducedMotion} onPress={() => setTouring((x) => !x)} /></View>
       <View style={{ flex: 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
     </View>
   );
@@ -96,15 +103,15 @@ export default function House() {
   } : undefined;
 
   return (
-    <Screen wide fit header={header}>
+    <Frame back={olderAdult} wide fit={!olderAdult} header={header}>
       {data ? (
-        <Columns fill
+        <Columns fill={!olderAdult}
           left={<>
-          <View style={{ flexDirection: 'row', backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
             {(['3d', '2d', 'memory', 'map'] as const).map((v) => (
               <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: view === v }} onPress={() => pickView(v)}
-                style={{ flex: 1, paddingVertical: 8, borderRadius: 9, alignItems: 'center', backgroundColor: view === v ? (v === 'memory' ? memoryColors.sky : colors.aiTint) : 'transparent' }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: view === v ? (v === 'memory' ? memoryColors.lantern : colors.ai) : colors.inkSoft }}>{labels[v]}</Text>
+                style={{ flexGrow: 1, flexBasis: '42%', minHeight: 56, padding: 12, borderRadius: 9, alignItems: 'center', backgroundColor: view === v ? (v === 'memory' ? memoryColors.sky : colors.aiTint) : 'transparent' }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: view === v ? (v === 'memory' ? memoryColors.lantern : colors.ai) : colors.inkSoft }}>{labels[v]}</Text>
               </Pressable>
             ))}
           </View>
@@ -147,8 +154,8 @@ export default function House() {
             <>
               <Segment label="" value={section} onChange={setSection}
                 options={[['items', t('items')], ['safer', t('saferShort')], ['future', t('futureShort')], ['photos', t('photosShort')]]} />
-              {section === 'safer' ? <SaferHomeCard mode="family" /> : null}
-              {section === 'future' ? <HouseFutureCard mode="family" /> : null}
+              {section === 'safer' ? <SaferHomeCard mode={olderAdult ? 'her' : 'family'} /> : null}
+              {section === 'future' ? olderAdult ? <Destination label="hHouseInfo" href="/her/house-information" /> : <HouseFutureCard mode="family" /> : null}
               {section === 'photos' ? <RoomGallery /> : null}
               {section === 'items' ? data.items.map((it) => {
                 const room = data.home.rooms.find((r) => r.id === it.roomId);
@@ -169,7 +176,7 @@ export default function House() {
           </>}
         />
       ) : null}
-    </Screen>
+    </Frame>
   );
 }
 
@@ -192,7 +199,7 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
         <PixelIcon sprite={spriteFor(item)} size={46} />
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: fonts.display, fontSize: 20, color: '#F5EBDD' }}>{lang === 'ja' && item.nameJa ? item.nameJa : item.name}</Text>
-          <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: '#CDBFAE' }}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{item.year ? ` · ${item.year}` : ''}</Text>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: '#CDBFAE' }}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{item.year ? ` · ${item.year}` : ''}</Text>
         </View>
       </View>
       <PhotoCarousel item={item} dark />
@@ -200,7 +207,7 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
         <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', borderLeftWidth: 3, borderLeftColor: memoryColors.lantern, paddingLeft: 12 }}>“{pick(lang, item.story, item.storyJa)}”</Text>
       ) : null}
       {item.audioUrl ? <StoryPlayer path={item.audioUrl} /> : null}
-      <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: memoryColors.lantern }}>{now}</Text>
+      <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: memoryColors.lantern }}>{now}</Text>
       {isTrackable(item) ? (
         <View style={{ gap: 6 }}>
           <Text style={{ fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1, color: '#CDBFAE' }}>{t('whereNow')}</Text>
@@ -221,8 +228,8 @@ function Segment<V extends string>({ label, value, options, onChange }: { label:
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {options.map(([v, l]) => (
           <Pressable key={v} accessibilityRole="radio" accessibilityState={{ checked: value === v }} onPress={() => onChange(v)}
-            style={{ paddingHorizontal: 11, paddingVertical: 6, borderRadius: 99, borderWidth: 1, borderColor: value === v ? colors.ai : colors.line, backgroundColor: value === v ? colors.aiTint : colors.sheet }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 12.5, color: value === v ? colors.ai : colors.ink }}>{l}</Text>
+            style={{ paddingHorizontal: 16, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: value === v ? colors.ai : colors.line, backgroundColor: value === v ? colors.aiTint : colors.sheet }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: value === v ? colors.ai : colors.ink }}>{l}</Text>
           </Pressable>
         ))}
       </View>

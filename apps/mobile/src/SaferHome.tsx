@@ -1,5 +1,6 @@
+import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { FIX_CATALOG, FIX_KINDS, fixCost, pick, safetyEstimate, type FixKind, type FixStatus, type SafetyFix } from '@kakehashi/shared';
 import { Button, Card, Field, Pill } from './ui';
 import { useData } from './data';
@@ -25,7 +26,7 @@ function amountLabel(f: Pick<SafetyFix, 'kind' | 'amount'>, lang: 'en' | 'ja') {
 
 // Safer home plan (安心リフォーム): students note small fixes with her; she decides; the family sees the cost
 // and an estimate of the care-insurance home-modification subsidy.
-export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student'; roomId?: string }) {
+export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | 'her'; roomId?: string }) {
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [kind, setKind] = useState<FixKind>('handrail');
@@ -54,7 +55,7 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student'; ro
   return (
     <Card>
       <Text style={type.section}>{t('saferTitle')}</Text>
-      <Text style={type.caption}>{mode === 'student' ? t('saferLeadStudent') : t('saferLeadFamily')}</Text>
+      <Text style={type.caption}>{t(mode === 'student' ? 'saferLeadStudent' : mode === 'her' ? 'hSafetyBody' : 'saferLeadFamily')}</Text>
 
       {home.safety.map((f) => (
         <View key={f.id} style={{ gap: 4, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>

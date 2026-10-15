@@ -1,5 +1,6 @@
+import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import type { Item } from '@kakehashi/shared';
 import { Button, Card, Pill, formatDate } from './ui';
@@ -11,7 +12,7 @@ import { colors, fonts, type } from './theme';
 
 // Sharing one story on the public feed: only with her consent, named as she chooses, and she can withdraw.
 // Students approve messages from visitors before they show (and read them to her on visits).
-export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'family' }) {
+export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'family' | 'her' }) {
   const { replaceItem, showToast } = useData();
   const { t, lang } = useI18n();
   const [name, setName] = useState<'first' | 'anonymous'>(item.share?.name ?? 'anonymous');
@@ -45,7 +46,7 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
   return (
     <Card>
       <Text style={type.section}>{t('shareTitle')}</Text>
-      <Text style={type.caption}>{t('shareLead')}</Text>
+      <Text style={type.caption}>{t(mode === 'her' ? 'hSharingBody' : 'shareLead')}</Text>
       {item.share ? (
         <>
           <Pill label={t('sharedOn', { date: formatDate(item.share.at, lang) })} color={colors.moss} bg={colors.mossTint} />
@@ -61,13 +62,13 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
             {item.audioUrl ? <Chip label={t('shareVoice')} on={audio} onPress={() => setAudio(!audio)} /> : null}
             {hasPhotos ? <Chip label={t('sharePhotos')} on={photos} onPress={() => setPhotos(!photos)} /> : null}
           </View>
-          <Button label={t('shareAgree')} icon="check" busy={busy === 'share'} onPress={() => run('share', () => api.shareStory(item.id, { share: true, name, audio, photos: hasPhotos && photos }), t('saved'))} />
+          <Button label={t(mode === 'her' ? 'hPublish' : 'shareAgree')} icon="check" busy={busy === 'share'} onPress={() => run('share', () => api.shareStory(item.id, { share: true, name, audio, photos: hasPhotos && photos }), t('saved'))} />
         </>
       ) : (
         <Text style={type.caption}>{t('shareNeedsStory')}</Text>
       )}
 
-      {pending.length ? (
+      {pending.length && mode === 'student' ? (
         <View style={{ gap: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
           <Text style={type.eyebrow}>{t('messagesWaiting', { n: pending.length })}</Text>
           {pending.map((c) => (
@@ -90,9 +91,9 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
     <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} onPress={onPress}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: on ? colors.ai : colors.line, backgroundColor: on ? colors.aiTint : colors.sheet }}>
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: on ? colors.ai : colors.line, backgroundColor: on ? colors.aiTint : colors.sheet }}>
       {on ? <Feather name="check" size={14} color={colors.ai} /> : null}
-      <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: on ? colors.ai : colors.ink }}>{label}</Text>
+      <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: on ? colors.ai : colors.ink }}>{label}</Text>
     </Pressable>
   );
 }

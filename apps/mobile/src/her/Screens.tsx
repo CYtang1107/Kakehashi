@@ -1,0 +1,170 @@
+import React, { useState } from 'react';
+import { View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { CONDITION_PARTS, outingIsLive, pick } from '@kakehashi/shared';
+import { AppText, Button, Card, EmptyState, StatusBanner, UpcomingVisitCard, AccessibleSwitch, LangToggle, formatDate } from '../ui';
+import { HerPage } from './HerPage';
+import { useData } from '../data';
+import { useI18n, type Key } from '../i18n';
+import { useWeather } from '../Weather';
+import { api } from '../api';
+import { ReadingSettings } from '../design-system/ReadingSettings';
+import { itemPhotos } from '../PhotoCarousel';
+import { DecisionChip } from '../ui';
+import { householdDay, planDate, plans } from './plans';
+import { StudentBadges } from '../Community';
+
+export function Destination({ label, href, icon }: { label: Key; href: string; icon?: React.ComponentProps<typeof Button>['icon'] }) {
+  const { t } = useI18n();
+  return <Button label={t(label)} kind="secondary" icon={icon ?? 'chevron-right'} onPress={() => router.push(href as never)} />;
+}
+export function WeatherAdvice({ always = false }: { always?: boolean }) {
+  const { data } = useData();
+  const { w, load } = useWeather();
+  const { t, lang } = useI18n();
+  if (!always && !w?.callNeeded) return null;
+  if (!w || w.source === 'unavailable') return <StatusBanner title={t('hWeather')} message={t('hWeatherUnavailable')} action={{ label: t('retry'), onPress: load }} />;
+  const alerts = w.alerts.filter(a => a.callHer);
+  return <View style={{ gap: 12 }}>{alerts.length ? alerts.map(a => <StatusBanner key={a.code} tone="warning"
+    title={pick(lang, a.name, a.nameJa)} message={`${t(`wxAdvice_${a.kind}` as Key)} ${data?.home.students.find(s => s.role === 'pair') ? t('wxWillCall', { name: data.home.students.find(s => s.role === 'pair')!.name }) : ''}`} />) : <AppText>{t('hWeatherClear')}</AppText>}
+    <AppText variant="caption">{t(w.source === 'demo' ? 'wxDemoLabel' : 'wxSourceShort')}</AppText>
+  </View>;
+}
+export function HomeScreen() {
+  const { data } = useData(); const { t, lang } = useI18n();
+  const date = new Date().toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Tokyo' });
+  const day = householdDay();
+  const all = data ? plans(data.home, lang, t) : [];
+  const next = all.find(p => p.kind === 'visit' && p.date.slice(0, 10) >= day);
+  const todays = all.filter(p => p.date.slice(0, 10) === day);
+  return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hHome')} description={date}>
+    <AppText>{t('hHomeLead')}</AppText>
+    <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
+    <AppText variant="caption">{t('hSoon')}</AppText>
+    {next ? <UpcomingVisitCard title={t('hVisit')} description={formatDate(next.date, lang)} detail={next.detail}
+      action={{ label: t('hSeeDay'), kind: 'secondary', onPress: () => router.push('/her/my-day') }} /> : <View style={{ gap: 8 }}><AppText>{t('hNoVisit')}</AppText></View>}
+    <View style={{ gap: 12 }}><AppText variant="section">{t('hTodayPlans')}</AppText>
+      {todays.length ? todays.map(p => <AppText key={p.id}>{p.title} · {p.detail}</AppText>) : <AppText>{t('hNoToday')}</AppText>}
+      <Destination label="hDay" href="/her/my-day" icon="calendar" />
+    </View>
+    <View style={{ gap: 12 }}><Destination label="hMyHome" href="/her/my-home" icon="home" /><Destination label="hMemories" href="/her/memories" icon="book-open" /></View>
+    <View style={{ gap: 12 }}><AppText variant="section">{t('hDiscover')}</AppText><AppText>{t('hFriendsBody')}</AppText><Destination label="hFriends" href="/her/friends" icon="users" /></View>
+    <WeatherAdvice />
+  </HerPage>;
+}
+export function MyDayScreen() {
+  const { data } = useData(); const { t, lang } = useI18n();
+  const all = data ? plans(data.home, lang, t) : [];
+  const day = householdDay();
+  const current = all.filter(p => p.date.slice(0, 10) >= day), past = all.filter(p => p.date.slice(0, 10) < day);
+  const entries = (list: typeof all) => list.map(p => <View key={p.id} style={{ gap: 6, paddingVertical: 16, borderBottomWidth: 1, borderColor: '#D3DED5' }}>
+    <AppText variant="caption">{planDate(p.date, lang)}</AppText><AppText variant="section">{p.title}</AppText><AppText>{p.detail}</AppText>
+  </View>);
+  const live = data?.home.outings.find(o => outingIsLive(o, Date.now()));
+  const activity = data?.home.activities.find(a => a.id === live?.activityId);
+  return <HerPage back title={t('hDay')} description={t('hDayLead')}>
+    <WeatherAdvice always />
+    <View><AppText variant="section">{t('hPlans')}</AppText>{current.length ? entries(current) : <EmptyState title={t('hNothingPlanned')} message={t('hNothingBody')} />}</View>
+    <View style={{ gap: 12 }}><AppText variant="section">{t('hOuting')}</AppText>
+      <AppText>{live ? `${activity ? pick(lang, activity.title, activity.titleJa) : ''} · ${live.by}` : t('hNoOuting')}</AppText>
+      {live ? <><AppText variant="caption">{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</AppText><Destination label="viewMap" href="/her/digital-house?view=map" /></> : null}
+    </View>
+    <StatusBanner title={t('hReminders')} message={t('hReminderBody')} />
+    {past.length ? <View style={{ gap: 12 }}><AppText variant="section">{t('hPastPlans')}</AppText><AppText variant="caption">{t('hPastNote')}</AppText>{entries(past)}</View> : null}
+  </HerPage>;
+}
+export function FriendsScreen() {
+  const { data, refresh, showToast } = useData(); const { t, lang } = useI18n();
+  const [busy, setBusy] = useState<string | null>(null), [error, setError] = useState(false);
+  const choose = async (id: string, status: 'accepted' | 'not-now') => {
+    setBusy(id); setError(false);
+    try { await api.activity(data!.home.id, id, status); await refresh(); showToast(t('saved')); } catch { setError(true); } finally { setBusy(null); }
+  };
+  return <HerPage title={t('hFriends')} description={t('hFriendsBody')}>
+    <StatusBanner title={t('hSoon')} message={t('hMatchingBody')} />
+    <View style={{ gap: 16 }}><AppText variant="section">{t('hStudents')}</AppText>{data?.home.students.map(s => <View key={s.id} style={{ gap: 8 }}>
+      <AppText variant="bodyBold">{s.name}</AppText><AppText>{pick(lang, s.university, s.universityJa)}</AppText><AppText>{pick(lang, s.interests, s.interestsJa)}</AppText><StudentBadges student={s} />
+    </View>)}</View>
+    <AppText variant="section">{t('hCommunity')}</AppText>
+    {error ? <StatusBanner tone="error" title={t('hSaveError')} /> : null}
+    {data?.home.activities.length ? data.home.activities.map(a => <Card key={a.id}>
+      <AppText variant="section">{pick(lang, a.title, a.titleJa)}</AppText><AppText>{a.date} · {pick(lang, a.place, a.placeJa)}</AppText>
+      {a.companion ? <AppText>{t(a.status === 'attended' ? 'wentWith' : 'goesWith', { who: a.companion })}</AppText> : null}
+      <AppText variant="caption">{t(`act_${a.status}` as Key)}</AppText>
+      {a.status === 'proposed' ? <><Button label={t('hJoin')} disabled={busy !== null} busy={busy === a.id} onPress={() => choose(a.id, 'accepted')} /><Button label={t('act_not-now')} kind="secondary" disabled={busy !== null} onPress={() => choose(a.id, 'not-now')} /></> : null}
+    </Card>) : <EmptyState title={t('hNothingPlanned')} message={t('hNothingBody')} />}
+  </HerPage>;
+}
+export function MyHomeScreen() {
+  const { t } = useI18n();
+  return <HerPage title={t('hMyHome')} description={t('hMyHomeLead')}>
+    <Button label={t('hRequestHelp')} icon="tool" onPress={() => router.push('/her/help')} />
+    <Destination label="hHelpers" href="/her/helpers" icon="users" />
+    <Destination label="hSafety" href="/her/safety" icon="shield" />
+    <Destination label="hHouseInfo" href="/her/house-information" icon="info" />
+    <Destination label="hDigital" href="/her/digital-house" icon="home" />
+    <Destination label="hSmart" href="/her/smart-home" icon="power" />
+    <StatusBanner title={t('dsSafetyTitle')} message={t('doorRule')} tone="warning" />
+  </HerPage>;
+}
+const collections = [['hBelongings', 'all'], ['hPhotos', 'photos'], ['hAudio', 'audio'], ['hStories', 'stories'], ['hDecisions', 'decisions'], ['hWishes', 'wishes'], ['hSharing', 'sharing']] as const;
+export function MemoriesScreen() {
+  const { t } = useI18n();
+  return <HerPage title={t('hMemories')} description={t('hMemoryLead')}>
+    {collections.map(([label, filter]) => <Destination key={filter} label={label} href={`/her/memories/collection?filter=${filter}`} icon={filter === 'audio' ? 'mic' : filter === 'photos' ? 'image' : 'book-open'} />)}
+  </HerPage>;
+}
+export function CollectionScreen() {
+  const { filter = 'all' } = useLocalSearchParams<{ filter?: string }>();
+  const { data } = useData(); const { t, lang } = useI18n();
+  const items = data?.items.filter(i => filter === 'photos' ? itemPhotos(i).length : filter === 'audio' ? i.audioUrl : filter === 'stories' ? i.story || i.storyJa : filter === 'wishes' ? i.wish : true) ?? [];
+  return <HerPage back title={t(collections.find(c => c[1] === filter)?.[0] ?? 'hBelongings')}
+    description={t(filter === 'wishes' ? 'hWishesNote' : filter === 'sharing' ? 'hSharingBody' : 'hMemoryLead')}>
+    {filter === 'wishes' && data ? <><AppText variant="section">{t('herWishHouse')}</AppText><AppText>{t(`hwish_${data.home.future.wish}` as Key)}</AppText>
+      {data.home.future.words ? <AppText>{pick(lang, data.home.future.words, data.home.future.wordsJa)}</AppText> : null}
+      {data.home.future.familyNotes.map((n, index) => <AppText key={index}>{n.by}: {pick(lang, n.note, n.noteJa)}</AppText>)}</> : null}
+    {items.length ? items.map(i => <View key={i.id} style={{ gap: 12, paddingVertical: 12 }}>
+      <AppText variant="section">{pick(lang, i.name, i.nameJa)}</AppText><DecisionChip decision={i.decision} />
+      {i.wish ? <AppText>{t('wishFrom', { name: i.wish.from })}: {t(`wish_${i.wish.kind.replace(/-/g, '_')}` as Key)}{i.wish.note ? ` · ${i.wish.note}` : ''}</AppText> : null}
+      {filter === 'sharing' ? <AppText>{i.share ? t('sharedOn', { date: formatDate(i.share.at, lang) }) : t('notShared')}</AppText> : null}
+      <Button label={t('hOpenItem', { name: pick(lang, i.name, i.nameJa) })} kind="secondary" onPress={() => router.push(`/her/item/${i.id}`)} />
+    </View>) : <EmptyState title={t('hNoMemories')} message={t('hNoMemoriesBody')} action={{ label: t('hBelongings'), onPress: () => router.replace('/her/memories/collection?filter=all') }} />}
+  </HerPage>;
+}
+export function HouseInformationScreen() {
+  const { data } = useData(); const { t, lang } = useI18n(); const home = data?.home;
+  return <HerPage back title={t('hHouseInfo')}>
+    <AppText>{home ? pick(lang, home.town, home.townJa) : ''}</AppText>
+    <AppText variant="section">{t('conditionTitle')}</AppText>
+    {home ? CONDITION_PARTS.map(part => { const c = home.future.condition[part]; return <View key={part} style={{ gap: 8 }}>
+      <AppText variant="bodyBold">{t(`part_${part}` as Key)}</AppText><AppText>{c ? t(`level_${c.level}` as Key) : t('notChecked')}</AppText>{c?.note ? <AppText>{pick(lang, c.note, c.noteJa)}</AppText> : null}
+    </View>; }) : null}
+    <Destination label="hWishes" href="/her/memories/collection?filter=wishes" />
+    <Destination label="hDigital" href="/her/digital-house" />
+  </HerPage>;
+}
+export function SettingsScreen() {
+  const { data, refresh, showToast } = useData(); const { t } = useI18n();
+  const [reading, setReading] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(false);
+  const consent = async (value: boolean) => { setBusy(true); setError(false);
+    try { await api.consent(data!.home.id, value); await refresh(); showToast(t('saved')); } catch { setError(true); } finally { setBusy(false); }
+  };
+  return <HerPage back title={t('hSettings')}>
+    <AppText variant="section">{t('hPreferences')}</AppText><Button label={t('dsReadingSettings')} icon="type" kind="secondary" onPress={() => setReading(true)} /><LangToggle />
+    <ReadingSettings visible={reading} onClose={() => setReading(false)} />
+    <AppText variant="section">{t('hPrivacy')}</AppText>
+    <AccessibleSwitch label={t('hRecording')} description={t('hRecordingBody')} value={Boolean(data?.home.consent.recording)} disabled={busy} onValueChange={consent} />
+    {error ? <StatusBanner tone="error" title={t('hSaveError')} /> : null}
+    <Destination label="hSharing" href="/her/memories/collection?filter=sharing" icon="eye" />
+    <AppText variant="caption">{t('hPrivacyNote')}</AppText>
+    <Button label={t('switchRole')} kind="secondary" onPress={() => router.replace('/')} />
+  </HerPage>;
+}
+export function FutureScreen({ kind }: { kind: 'companion' | 'smart' }) {
+  const { t } = useI18n();
+  return <HerPage back title={t(kind === 'companion' ? 'hCompanion' : 'hSmart')}>
+    <EmptyState icon={kind === 'companion' ? 'message-circle' : 'power'} title={t('hSoon')} message={t(kind === 'companion' ? 'hCompanionBody' : 'hSmartBody')} />
+    <Destination label={kind === 'companion' ? 'hFriends' : 'hRequestHelp'} href={kind === 'companion' ? '/her/friends' : '/her/help'} />
+    <Destination label="hReturn" href="/her" />
+  </HerPage>;
+}

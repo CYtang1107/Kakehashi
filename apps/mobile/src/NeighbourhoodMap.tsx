@@ -1,5 +1,6 @@
+import { AppText as Text, Button } from './ui';
 import React, { useEffect, useRef, useState } from 'react';
-import { Linking, Platform, Pressable, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Feather } from '@expo/vector-icons';
 import { NEARBY_KINDS, NEARBY_SOURCE, metresBetween, pick, walkMinutes, type Place, type PlaceKind } from '@kakehashi/shared';
@@ -17,7 +18,7 @@ const directions = (p: Place) => Linking.openURL(`https://www.google.com/maps/di
 
 // The server's map page (MapLibre) in an iframe on web and a WebView on phones. `focus` flies to a place.
 export function NeighbourhoodMap({ homeId, focus, fill }: { homeId: string; focus?: { id: string; n: number }; fill?: boolean }) {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const url = `${API_BASE}/map/${homeId}?lang=${lang}`;
   const frame = useRef<HTMLIFrameElement | null>(null);
   const web = useRef<WebView>(null);
@@ -29,7 +30,7 @@ export function NeighbourhoodMap({ homeId, focus, fill }: { homeId: string; focu
   return (
     <View style={{ width: '100%', ...(fill ? { flex: 1 } : { height: 340 }), borderRadius: 14, overflow: 'hidden', backgroundColor: '#EEF0EA' }}>
       {Platform.OS === 'web'
-        ? React.createElement('iframe', { ref: frame, src: url, title: 'Neighbourhood map', style: { border: 0, width: '100%', height: '100%' } })
+        ? React.createElement('iframe', { ref: frame, src: url, title: t('viewMap'), style: { border: 0, width: '100%', height: '100%' } })
         : <WebView ref={web} source={{ uri: url }} style={{ flex: 1 }} originWhitelist={['*']} />}
     </View>
   );
@@ -51,34 +52,32 @@ export function NearbyList({ onFocus }: { onFocus: (id: string) => void }) {
   const row = (p: Place, badge: string) => {
     const acts = home.activities.filter((a) => a.placeId === p.id && a.status !== 'not-now');
     return (
-      <Card key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <Pressable accessibilityRole="button" onPress={() => onFocus(p.id)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <Card key={p.id} style={{ gap: 12 }}>
+        <Pressable accessibilityRole="button" onPress={() => onFocus(p.id)} style={{ minHeight: 56, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: placeColor[p.kind], alignItems: 'center', justifyContent: 'center' }}>
             {badge ? <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: colors.sheet }}>{badge}</Text>
               : <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: colors.sheet }} />}
           </View>
           <View style={{ flex: 1, gap: 2 }}>
-            <Text style={type.bodyBold} numberOfLines={1}>{p.nameJa}</Text>
-            <Text style={type.caption} numberOfLines={1}>{t(`kind_${p.kind}` as Key)} · {t('walkMin', { n: walkMinutes(me, p) })}{p.hours ? ` · ${p.hours}` : ''}</Text>
+            <Text style={type.bodyBold}>{pick(lang, p.name, p.nameJa)}</Text>
+            <Text style={type.caption}>{t(`kind_${p.kind}` as Key)} · {t('walkMin', { n: walkMinutes(me, p) })}{p.hours ? ` · ${p.hours}` : ''}</Text>
             {acts.map((a) => (
-              <Text key={a.id} style={[type.caption, { color: colors.ink }]} numberOfLines={1}>
+              <Text key={a.id} style={[type.caption, { color: colors.ink }]}>
                 {pick(lang, a.title, a.titleJa)} · {formatDate(a.date.slice(0, 10), lang)}{a.companion ? ` · ${a.companion}` : ''}
               </Text>
             ))}
           </View>
         </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel={t('directions')} onPress={() => directions(p)} style={{ padding: 8 }}>
-          <Feather name="navigation" size={20} color={colors.ai} />
-        </Pressable>
+        <Button label={t('directions')} icon="navigation" kind="secondary" onPress={() => directions(p)} />
       </Card>
     );
   };
 
   return (
     <View style={{ gap: 10 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between', alignItems: 'baseline' }}>
         <Text style={type.section}>{t('herPlacesTitle')}</Text>
-        <Pressable accessibilityRole="link" onPress={() => Linking.openURL(NEARBY_SOURCE.url)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <Pressable accessibilityRole="link" onPress={() => Linking.openURL(NEARBY_SOURCE.url)} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 48, gap: 4 }}>
           <Text style={[type.caption, { color: colors.ai }]}>OpenStreetMap</Text>
           <Feather name="external-link" size={13} color={colors.ai} />
         </Pressable>
@@ -93,9 +92,9 @@ export function NearbyList({ onFocus }: { onFocus: (id: string) => void }) {
           const on = kind === k;
           return (
             <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => setKind(k)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 99, borderWidth: 1, borderColor: on ? placeColor[k] : colors.line, backgroundColor: on ? colors.sheet : colors.paper }}>
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: on ? placeColor[k] : colors.line, backgroundColor: on ? colors.sheet : colors.paper }}>
               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: placeColor[k] }} />
-              <Text style={{ fontFamily: fonts.bold, fontSize: 12.5, color: colors.ink }}>{t(`kind_${k}` as Key)} · {n}</Text>
+              <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ink }}>{t(`kind_${k}` as Key)} · {n}</Text>
             </Pressable>
           );
         })}

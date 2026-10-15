@@ -50,7 +50,7 @@ export default function HelperBoard() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {workers.map((w) => (
             <Pressable key={w.id} accessibilityRole="radio" accessibilityState={{ checked: me === w.id }} onPress={() => setMe(w.id)}
-              style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: me === w.id ? colors.ai : colors.line, backgroundColor: me === w.id ? colors.aiTint : colors.sheet }}>
+              style={{ maxWidth: '100%', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: me === w.id ? colors.ai : colors.line, backgroundColor: me === w.id ? colors.aiTint : colors.sheet }}>
               <Text style={{ fontFamily: fonts.bold, fontSize: 13.5, color: me === w.id ? colors.ai : colors.ink }}>{workerName(w, lang)}</Text>
               <Text style={type.caption}>{pick(lang, w.from, w.fromJa)}</Text>
             </Pressable>

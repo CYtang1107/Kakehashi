@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import React, { useMemo, useRef } from 'react';
 import { PanResponder, Platform, View } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -85,12 +86,13 @@ function RoomBlock({ room, memory, evening }: { room: Room; memory: boolean; eve
 }
 
 function ItemSprite({ item, selected, memory, colorBy, evening, onSelect }: { item: Item; selected: boolean; memory: boolean; colorBy: ColorBy; evening: boolean; onSelect: (id: string) => void }) {
+  const { reducedMotion } = useAccessibilityPreferences();
   const ref = useRef<THREE.Group>(null);
   const story = hasStory(item);
   const tex = useMemo(() => makeTexture(spritePixels(spriteFor(item))), [item.id, item.name, item.icon?.fromId]);
   useFrame((state) => {
     if (!ref.current) return;
-    const t = state.clock.elapsedTime;
+    const t = reducedMotion ? 0 : state.clock.elapsedTime;
     const bob = selected ? Math.sin(t * 3) * 0.05 : memory && story ? Math.sin(t * 1.4 + item.x) * 0.025 : 0;
     ref.current.position.y = 0.48 + bob;
   });
@@ -119,10 +121,11 @@ function ItemSprite({ item, selected, memory, colorBy, evening, onSelect }: { it
 // A safer-home fix: a small spinning diamond over the floor, coloured by her decision.
 // In the evening, unfixed fall risks turn red and pulse.
 function FixMarker({ fix, risk }: { fix: SafetyFix; risk: boolean }) {
+  const { reducedMotion } = useAccessibilityPreferences();
   const ref = useRef<THREE.Mesh>(null);
   useFrame((state) => {
     if (!ref.current) return;
-    const t = state.clock.elapsedTime;
+    const t = reducedMotion ? 0 : state.clock.elapsedTime;
     ref.current.rotation.y = t * 1.5;
     ref.current.position.y = 0.42 + Math.sin(t * 2 + fix.x) * 0.04;
     if (risk) ref.current.scale.setScalar(1 + Math.sin(t * 5) * 0.15);
@@ -158,6 +161,7 @@ function House({ rooms, items, selected, onSelect, drag, memory, fixes = [], col
   rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; drag: React.MutableRefObject<Drag>; memory: boolean;
   fixes?: SafetyFix[]; colorBy?: ColorBy; evening?: Evening;
 }) {
+  const { reducedMotion } = useAccessibilityPreferences();
   const night = evening !== 'off' && !memory;
   const ev = useMemo(() => eveningState(fixes, evening), [fixes, evening]);
   const riskIds = new Set(ev.risks.map((f) => f.id));
@@ -166,7 +170,7 @@ function House({ rooms, items, selected, onSelect, drag, memory, fixes = [], col
   const grass = useMemo(() => makeTexture(grassTile(), 9, 7), []);
   useFrame((_, dt) => {
     if (!group.current) return;
-    if (!drag.current.active) drag.current.yaw += dt * (memory || night ? 0.06 : 0.12);
+    if (!reducedMotion && !drag.current.active) drag.current.yaw += dt * (memory || night ? 0.06 : 0.12);
     group.current.rotation.y = drag.current.yaw;
   });
   return (
