@@ -124,10 +124,10 @@ async function main() {
   }
   const bodyHas = async text => { for(let i=0;i<50;i++){if(await evaluate(`document.body.innerText.includes(${JSON.stringify(text)})`))return; await wait(100);}throw Error('Missing text: '+text); };
   await navigate('/her');
-  await click('Talk to Companion'); await bodyHas('AI conversation is not available yet.');
+  await click('Talk to Companion'); await bodyHas('A scripted demo. Chat stays in this session.');
   await click('Back'); await bodyHas('A little company.');
   for (const tab of ['Friends','My Home','Memories','Home']) { await click(tab); assert.equal(await evaluate(`document.querySelector('[role=tab][aria-selected=true]').getAttribute('aria-label')`),tab); }
-  results.interactions.push({name:'four primary destinations, companion placeholder and back',passed:true});
+  results.interactions.push({name:'four primary destinations, companion entry and back',passed:true});
   await navigate('/her/help');
   await fetch(base + '/__verification/fail-next-help'); await click('Garden'); await click('Soon'); await bodyHas('Check your connection and try again.');
   await click('Soon'); await wait(250);

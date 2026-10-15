@@ -40,7 +40,7 @@ export function HomeScreen() {
   return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hHome')} description={date}>
     <AppText>{t('hHomeLead')}</AppText>
     <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
-    <AppText variant="caption">{t('hSoon')}</AppText>
+    <AppText variant="caption">{t('cLead')}</AppText>
     {next ? <UpcomingVisitCard title={t('hVisit')} description={formatDate(next.date, lang)} detail={next.detail}
       action={{ label: t('hSeeDay'), kind: 'secondary', onPress: () => router.push('/her/my-day') }} /> : <View style={{ gap: 8 }}><AppText>{t('hNoVisit')}</AppText></View>}
     <View style={{ gap: 12 }}><AppText variant="section">{t('hTodayPlans')}</AppText>
@@ -82,6 +82,7 @@ export function FriendsScreen() {
   };
   return <HerPage title={t('hFriends')} description={t('hFriendsBody')}>
     <StatusBanner title={t('hSoon')} message={t('hMatchingBody')} />
+    <Destination label="cProfile" href="/her/profile" icon="user" />
     <View style={{ gap: 16 }}><AppText variant="section">{t('hStudents')}</AppText>{data?.home.students.map(s => <View key={s.id} style={{ gap: 8 }}>
       <AppText variant="bodyBold">{s.name}</AppText><AppText>{pick(lang, s.university, s.universityJa)}</AppText><AppText>{pick(lang, s.interests, s.interestsJa)}</AppText><StudentBadges student={s} />
     </View>)}</View>
@@ -153,6 +154,8 @@ export function SettingsScreen() {
     <AppText variant="section">{t('hPreferences')}</AppText><Button label={t('dsReadingSettings')} icon="type" kind="secondary" onPress={() => setReading(true)} /><LangToggle />
     <ReadingSettings visible={reading} onClose={() => setReading(false)} />
     <AppText variant="section">{t('hPrivacy')}</AppText>
+    <Destination label="cProfile" href="/her/profile" icon="user" />
+    <Destination label="cPrivacy" href="/her/privacy" icon="shield" />
     <AccessibleSwitch label={t('hRecording')} description={t('hRecordingBody')} value={Boolean(data?.home.consent.recording)} disabled={busy} onValueChange={consent} />
     {error ? <StatusBanner tone="error" title={t('hSaveError')} /> : null}
     <Destination label="hSharing" href="/her/memories/collection?filter=sharing" icon="eye" />

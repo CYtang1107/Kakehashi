@@ -1,6 +1,6 @@
 # EverCircle integration progress and executed baseline
 
-Date: 15 October 2026 (Asia/Kuala_Lumpur). **Stages 0–3 complete at their documented implementation/web-verification scope. Stages 4–5 not started.** Repository `D:\kakehashi\Kakehashi`; initial baseline HEAD `8c9692a40214d3fbdd4f8221fc062274fb178fda`; Stage 3 starts from `96647b8`. Earlier-stage records below are historical. Native-device accessibility certification remains outstanding.
+Date: 15 October 2026 (Asia/Kuala_Lumpur). **Stages 0-4 complete at their documented implementation/web-verification scope. Later stages not started.** Repository `D:\kakehashi\Kakehashi`; initial baseline HEAD `8c9692a40214d3fbdd4f8221fc062274fb178fda`; Stage 3 starts from `96647b8`. Earlier-stage records below are historical. Native-device accessibility certification remains outstanding.
 
 ## Stage 0 completed scope (historical)
 
@@ -464,3 +464,49 @@ Native devices/screen readers/OS font scaling/IME, safe-area gestures and hardwa
 Final handoff: the independent reviewer scored **both listed corrections resolved** and returned **ship** for that bounded verdict pass. Its initial 24-capture/source review and subsequent verdict are preserved in `stage3-review.md`; this is not a blanket native/live-integration approval. The documenter rechecked the final family/toolbar edits and preserved the canonical design files. Final `git diff --check` passed. Lockfile SHA-256 remains `F42FD20AA9D08324E340CC59DC84E3B8EF238E23D389A4A90869156559DF4315`, and no server/shared/API/data/config/manifest changes were found. The disposable fixture host and dedicated temporary Chrome were stopped; regular browser sessions were untouched.
 
 **Stage 3 is complete at this implementation and verification scope. Stop after Stage 3.** Stage 4 has not started.
+
+## Stage 4: companion, approved profile and privacy
+
+15 October 2026. Stage 4 baseline `2903735`; the working tree was clean at its start. The user's Stage 4 frontend simulation request takes precedence over the earlier speculative roadmap. Existing `/her/companion` is now a functional scripted companion, with new private `/her/profile` and `/her/privacy` routes inside the existing older-adult shell. Stage 4 is complete at the documented implementation/web-verification scope. No later-stage implementation was added.
+
+### Delivered and preserved
+
+- [x] Deterministic English/Japanese intent engine, accessible text conversation, optional starters, visible local reply delay/Stop, truthful unsupported states and existing-feature navigation.
+- [x] Nine normalized interests, including separate gardening/orchid candidates; explicit Remember / Not now; no automatic approved memory or matching consent.
+- [x] Editable/deletable approved interests and structured private profile preferences; clear save/delete feedback and Cancel preservation.
+- [x] Independent master/per-interest matching consent; edits/deletion/revocation immediately remove eligibility; no actual matching or sharing transport.
+- [x] Extend existing fictional Michiko Tanaka / household `tanaka`; no unrelated resident/profile merge or private household-record inference.
+- [x] Isolated older-adult feature context cooperates with DataProvider. Household bridge exposes name and next planned future visit date only.
+- [x] Approved profile and permission persistence through web localStorage/native Expo FileSystem source; transcripts and unapproved suggestions remain session-only.
+- [x] Failed writes show Retry and pause matching eligibility; corrupt or unrelated storage fails closed with a non-overwriting session fallback.
+- [x] Reuse Stage 1 shared UI and reading preferences; preserve all existing route/API contracts and role workflows.
+
+Full architecture, file inventory, persona mapping, persistence policy and verification scope: [stage4-implementation.md](stage4-implementation.md). Independent review: [stage4-review.md](stage4-review.md). Design-system comparison: [stage4-design-check.md](stage4-design-check.md).
+
+### File scope
+
+New `apps/mobile/src/evercircle/`: `FeaturePage.tsx`, `store.tsx`, `companion/{CompanionScreen.tsx,engine.ts,bridge.ts}`, `profile/{ProfileScreen.tsx,PendingInterests.tsx,model.ts}`, `privacy/{PrivacyScreen.tsx,permissions.ts}`, `demo/{persona.ts,storage.ts,storage.web.ts}`. New route wrappers `app/her/profile.tsx` and `privacy.tsx`; updated existing `companion.tsx` and older-adult `_layout.tsx`.
+
+Updated `src/her/Screens.tsx`, `src/her/HerPage.tsx`, `src/design-system/ScreenFrame.tsx`, `src/ui.tsx`, `src/i18n.tsx`; additions are navigation entries, localized feature vocabulary and optional compatible shared props. New verification scripts `scripts/verify-evercircle.cjs`, `scripts/verify-stage4.cjs`; Stage 2 companion smoke now expects the available scripted demo. Added `.impeccable/surfaces/companion.md` and the three Stage 4 documents above; updated this progress record.
+
+Mobile `package.json` and root lockfile each add one direct `expo-file-system ~57.0.7` declaration for an already installed module; no package download/install was executed. Final lockfile SHA-256: `2AD63B82603CBD481DAB17047B2641527A33F9867C96DBBD9636EF40F6B805D5`. Server/shared/API/DataProvider/root layout/Expo configuration and canonical PRODUCT/DESIGN/sidecar files remain unchanged. No real household mutation, AI request, commit or deployment occurred.
+
+### Verification and correction record
+
+Mobile typecheck and server typecheck exit 0. Pure feature verification initially passed 11 groups; the reviewer correction adds a focused serialization/hydration test, and the final command passes **12 groups**. The 30 shared contrast checks pass on an approved retry after the sandbox's tsx launch failed before checking. The final `build:hosted` export exits 0: 1,031 modules, approximately 3.2 MB JS, `entry-c5c043ee81bfab2c95a68e7899607872.js`, using command-scoped same-origin API configuration and restoring the previous environment. `npm.cmd ls expo-file-system -w apps/mobile` exits 0 with existing version 57.0.7 deduped. One Impeccable detector scan exits 0 with no findings on the changed feature/layout targets; this is limited web source analysis.
+
+Initial browser inspection exposed disappearing feedback when the final pending suggestion was dismissed, and excessive introductory content before the welcome. One correction batch retained feedback, moved the welcome ahead of secondary information and made chat auto-scroll target the latest reply. The original full script then completed 48 layouts but stopped on a hidden inactive Expo stack input selector; the harness was fixed to select visible accessibility-exposed inputs and assert typed values. The resumed run exited 0 with **60 layouts, eight scenario groups, zero measured overflow/undersized exposed controls and zero uncaught exceptions**. This was pre-review evidence, not the final corrected storage verdict.
+
+The independent reviewer opened all 24 EN/JA compact/wide captures and returned **fix** for one material issue, S4-1: pending normalized interest IDs were persisted before Remember despite privacy text promising approval before storage. The correction keeps pending candidates in memory only: both adapters call a shared serializer that writes an empty pending list, and hydration ignores legacy pending IDs. Approved interests still persist privately after Remember, independent of future matching consent. A browser reload scenario now asserts that visible unapproved suggestions are absent from storage and disappear on reload. This correction adds no new UI or matching behavior.
+
+Existing-role regression commands were executed against the Stage 4 integration: `verify-stage3.cjs --interactions-only` exit 0, all **15 groups**; `verify-stage2.cjs --interactions-only` exit 0, all **six groups**, four empty-state routes and six legacy route smokes, zero exceptions. These cover reports, notes/consent, decisions/Not now, story sharing, letters/calls, demonstration wallet/payments, readiness, service jobs/helper acceptance, public interactions/moderation, digital-house access, older-adult help/feedback, weather, activities and memory controls. Fixture evidence does not certify real server handlers or external providers.
+
+The final corrected `node apps/mobile/scripts/verify-stage4.cjs` completes with **exit 0: all 60 layout cases and nine scenario groups**, no measured overflow/undersized exposed controls and no uncaught exceptions. All 24 same-path screenshots were refreshed and opened. The independent reviewer scored **S4-1 resolved** and returned **ship** for that bounded fix-list verdict. It inspected the storage boundary, focused tests, final JSON and eight relevant refreshed privacy/conversation captures; its original full 24-capture review remains historical in the same document. This is not a renewed full-surface or native release approval.
+
+The required documenter inspected final source, recorded the existing-world extension and actual local differences in `stage4-design-check.md`, and preserved canonical design/product artifacts. Final `git diff --check` passes. The disposable fixture host was stopped and the dedicated temporary Chrome closed through its own debugging endpoint; ordinary browser sessions were untouched. The lockfile change remains precisely the direct dependency declaration described above. **Stop after Stage 4.**
+
+### Limits and deferred work
+
+Native storage/IME/safe areas/gestures, VoiceOver/TalkBack, physical recording and OS font scaling remain untested. Native reading preferences remain session-only as previously documented. The local fictional profile is neither encrypted storage nor authenticated identity. Conversation recognition is deliberately limited and can propose ambiguous candidates, which remain unapproved. Optional voice features, real AI, friend matching, device controls and reminder scheduling are not implemented. Existing provider/media limitations from earlier stages remain.
+
+Impeccable context also reported an unset build-path preference for future Persuade/Experience surfaces. This Operate extension is code-led; no configuration drift was repaired. Canonical design/product scope text remains historical, with the documenter's comparison recording the extension instead of silently rewriting it.

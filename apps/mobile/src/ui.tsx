@@ -203,9 +203,9 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
 }
 
 // "I read this": a person confirms they read what the app drafted or checked, before it goes out.
-export function ReadConfirm({ checked, onChange, label }: { checked: boolean; onChange: (value: boolean) => void; label: string }) {
+export function ReadConfirm({ checked, onChange, label, disabled }: { checked: boolean; onChange: (value: boolean) => void; label: string; disabled?: boolean }) {
   const { palette } = useAccessibilityPreferences();
-  return <Pressable accessibilityRole="checkbox" accessibilityLabel={label} accessibilityState={{ checked }} onPress={() => onChange(!checked)}
+  return <Pressable accessibilityRole="checkbox" accessibilityLabel={label} accessibilityState={{ checked, disabled: Boolean(disabled) }} disabled={disabled} onPress={() => onChange(!checked)}
     style={{ minHeight: control.secondary, flexDirection: 'row', gap: spacing.md, alignItems: 'center', padding: spacing.lg,
       borderWidth: 2, borderColor: palette.border, borderRadius: 12, backgroundColor: checked ? palette.secondary : palette.surface }}>
     <Feather name={checked ? 'check-square' : 'square'} size={24} color={palette.primary} accessible={false} />

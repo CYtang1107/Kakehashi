@@ -5,15 +5,15 @@ import { layout, spacing } from '../theme';
 import { AppText } from './AppText';
 import { useAccessibilityPreferences } from './preferences';
 
-export function ScreenFrame({ children, title, description, toolbar, wide, footer }: {
-  children: React.ReactNode; title?: string; description?: string; toolbar?: React.ReactNode; wide?: boolean; footer?: React.ReactNode;
+export function ScreenFrame({ children, title, description, toolbar, wide, footer, scrollRef }: {
+  children: React.ReactNode; title?: string; description?: string; toolbar?: React.ReactNode; wide?: boolean; footer?: React.ReactNode; scrollRef?: React.Ref<ScrollView>;
 }) {
   const { palette } = useAccessibilityPreferences();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   return <KeyboardAvoidingView style={{ flex: 1, backgroundColor: palette.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     {toolbar}
-    <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
+    <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       contentContainerStyle={{ paddingTop: toolbar ? spacing.lg : insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.section }}>
       <View style={{ width: '100%', maxWidth: wide ? layout.wideWidth : layout.compactWidth, alignSelf: 'center',
         paddingHorizontal: width < 360 ? spacing.lg : layout.margin, gap: spacing.xl }}>

@@ -7,12 +7,16 @@ import { AppText, Button, ToastFeedback } from '../../src/ui';
 import { useI18n, type Key } from '../../src/i18n';
 import { useData } from '../../src/data';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
+import { EverCircleProvider } from '../../src/evercircle/store';
 
 const tabs = [
   ['home', '/her', 'hHome', 'sun'], ['friends', '/her/friends', 'hFriends', 'users'],
   ['house', '/her/my-home', 'hMyHome', 'home'], ['memories', '/her/memories', 'hMemories', 'book-open'],
 ] as const;
 export default function HerLayout() {
+  return <EverCircleProvider><HerNavigation /></EverCircleProvider>;
+}
+function HerNavigation() {
   const path = usePathname();
   const { width, fontScale } = useWindowDimensions();
   const { scale, palette, reducedMotion } = useAccessibilityPreferences();
