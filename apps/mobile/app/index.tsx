@@ -24,13 +24,15 @@ export default function RolePicker() {
       <Text style={type.eyebrow}>{t(g === 'home' ? 'roleGroupHome' : 'roleGroupBeyond')}</Text>
       {ROLES.filter((r) => r.group === g).map((r) => (
         <Pressable key={r.path} accessibilityRole="button" onPress={() => router.push(r.path)}
-          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet, opacity: pressed ? 0.85 : 1 })}>
-          <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.aiTint, alignItems: 'center', justifyContent: 'center' }}>
-            <Feather name={r.icon} size={22} color={colors.ai} />
+          style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, paddingHorizontal: 14, borderRadius: 16, borderWidth: 1,
+            borderColor: pressed ? colors.kakiInk : colors.line, backgroundColor: pressed ? colors.kakiTint : colors.sheet })}>
+          {/* Night tiles with persimmon icons, matching the band above. */}
+          <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: colors.night, alignItems: 'center', justifyContent: 'center' }}>
+            <Feather name={r.icon} size={21} color={colors.kakiNight} />
           </View>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, gap: 2 }}>
             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ink }}>{t(r.title)}</Text>
-            <Text style={type.caption}>{t(r.hint)}</Text>
+            <Text numberOfLines={2} style={[type.caption, { fontSize: 13.5, lineHeight: 19 }]}>{t(r.hint)}</Text>
           </View>
           <Feather name="chevron-right" size={20} color={colors.inkSoft} />
         </Pressable>
@@ -40,10 +42,9 @@ export default function RolePicker() {
 
   const body = (
     <>
-      <Text style={type.section}>{t('chooseRole')}</Text>
       {/* On a laptop the two groups sit side by side, so the whole page fits the window. */}
       <Columns left={group('home')} right={group('beyond')} />
-      <Text style={type.caption}>{t('exampleData')}</Text>
+      <Text style={[type.caption, { paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.line }]}>{t('exampleData')}</Text>
     </>
   );
 
@@ -51,7 +52,7 @@ export default function RolePicker() {
     <View style={{ flex: 1, backgroundColor: colors.paper }}>
       <TopBar />
       <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
-        <NightBand header={{ title: '実家じまい, started early and done together' }} maxWidth={maxWidth} />
+        <NightBand header={{ title: '実家じまい, started early and done together', sub: t('chooseRole') }} maxWidth={maxWidth} />
         <View style={{ padding: 16, gap: 16, maxWidth, width: '100%', alignSelf: 'center' }}>
           {body}
         </View>
