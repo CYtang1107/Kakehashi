@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Feather } from '@expo/vector-icons';
@@ -22,6 +23,7 @@ export const workerName = (w: Worker | undefined, lang: 'en' | 'ja') => (w ? pic
 // Help at home: she asks (or the students ask with her OK); students book a checked worker at a fixed price;
 // the family sees what was booked, what it costs and what the worker receives.
 export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
@@ -100,7 +102,7 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
                     <Field label={t('dateLabel')} value={date} onChangeText={setDate} placeholder="2026-10-20" />
                     <Field label={t('hoursLabel')} value={hours} onChangeText={setHours} keyboardType="decimal-pad" />
                     <Text style={type.caption}>{t('postSplit', { worker: yen((Number(price) || 0) * WORKER_SHARE), fee: yen((Number(price) || 0) * (1 - WORKER_SHARE)) })}</Text>
-                    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} onPress={() => setAgreed(!agreed)} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} aria-checked={agreed} onPress={() => setAgreed(!agreed)} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
                       <Feather name={agreed ? 'check-square' : 'square'} size={20} color={agreed ? colors.moss : colors.inkSoft} />
                       <Text style={[type.body, { flex: 1 }]}>{t('priceAgreed')}</Text>
                     </Pressable>
@@ -116,7 +118,7 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
                         const ok = isCleared(x);
                         const on = workerId === x.id;
                         return (
-                          <Pressable key={x.id} accessibilityRole="radio" accessibilityState={{ checked: on, disabled: !ok }} disabled={!ok} onPress={() => setWorkerId(x.id)}
+                          <Pressable key={x.id} accessibilityRole="radio" accessibilityState={{ checked: on, disabled: !ok }} aria-checked={on} aria-disabled={!ok} disabled={!ok} onPress={() => setWorkerId(x.id)}
                             style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: on ? colors.ai : colors.line, backgroundColor: on ? colors.aiTint : colors.sheet, opacity: ok ? 1 : 0.55 }}>
                             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.ai : colors.ink }}>{workerName(x, lang)}</Text>
                             <Text style={type.caption}>{ok ? `${pick(lang, x.from, x.fromJa)} · ${t('jobsDone', { n: x.jobs })}` : t('notCleared')}</Text>
@@ -157,7 +159,7 @@ export function ServicesCard({ mode }: { mode: 'student' | 'family' }) {
         <View style={{ gap: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.line }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {HELP_KINDS.map((k) => (
-              <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: askKind === k }} onPress={() => setAskKind(k)}
+              <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: askKind === k }} aria-checked={askKind === k} onPress={() => setAskKind(k)}
                 style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: askKind === k ? colors.ai : colors.line, backgroundColor: askKind === k ? colors.aiTint : colors.sheet }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: askKind === k ? colors.ai : colors.ink }}>{t(`svc_${k}` as Key)}</Text>
               </Pressable>

@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -20,6 +21,7 @@ const LEVELS: ConditionLevel[] = ['ok', 'watch', 'repair'];
 // Students write down her wish in her words; the family adds notes (not votes), sees what an empty house
 // would cost, and does the paperwork early. Nothing here lists or sells the house.
 export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [wish, setWish] = useState<HouseWish | null>(null);
@@ -120,7 +122,7 @@ export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
             {HOUSE_STEPS.map((s) => {
               const done = f.steps[s];
               return (
-                <Pressable key={s} accessibilityRole="checkbox" accessibilityState={{ checked: Boolean(done) }} disabled={busy === s}
+                <Pressable key={s} accessibilityRole="checkbox" accessibilityState={{ checked: Boolean(done) }} aria-checked={Boolean(done)} disabled={busy === s}
                   onPress={() => run(s, () => api.houseStep(home.id, s, !done))} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start' }}>
                   <Feather name={done ? 'check-square' : 'square'} size={20} color={done ? colors.moss : colors.inkSoft} />
                   <View style={{ flex: 1 }}>
@@ -139,16 +141,18 @@ export function HouseFutureCard({ mode }: { mode: 'family' | 'student' }) {
 }
 
 function Chip({ label, on, onPress, small, tone }: { label: string; on: boolean; onPress: () => void; small?: boolean; tone?: { fg: string; bg: string } }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const fg = tone?.fg ?? colors.ai, bg = tone?.bg ?? colors.aiTint;
   return (
-    <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={onPress}
+    <Pressable accessibilityRole="radio" accessibilityState={{ checked: on }} aria-checked={on} onPress={onPress}
       style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: small ? 10 : 12, paddingVertical: small ? 5 : 8, borderRadius: 99, borderWidth: 1, borderColor: on ? fg : colors.line, backgroundColor: on ? bg : colors.sheet }}>
-      <Text style={{ fontFamily: fonts.bold, fontSize: small ? 12 : 13, color: on ? fg : colors.ink }}>{label}</Text>
+      <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? fg : colors.ink }}>{label}</Text>
     </Pressable>
   );
 }
 
 function Row({ label, value, strong, color }: { label: string; value: string; strong?: boolean; color?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
       <Text style={[strong ? type.bodyBold : type.body, { flex: 1 }]}>{label}</Text>

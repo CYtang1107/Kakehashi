@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -29,6 +30,7 @@ function alertLine(w: WeatherStatus, lang: 'en' | 'ja') {
 
 // Student: call her on a warning day and log how she is.
 export function WeatherCheckCard() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, showToast } = useData();
   const { t, lang } = useI18n();
   const { w, setW, load } = useWeather();
@@ -102,6 +104,7 @@ export function WeatherCheckCard() {
 
 // Family: shown only on a warning day: who called, and what to do if she needs help or did not answer.
 export function WeatherBanner() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const { w } = useWeather();
@@ -127,6 +130,7 @@ export function WeatherBanner() {
 
 // Her screen: one calm line of advice on a warning day.
 export function WeatherNote() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const { w } = useWeather();

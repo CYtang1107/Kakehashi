@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -22,6 +23,7 @@ const monthLabel = (month: string, lang: 'en' | 'ja') => {
 };
 
 function LetterStatus({ letter }: { letter: Letter }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
   const label = letter.status === 'mailed' ? t('letter_mailed', { date: formatDate(letter.mailedAt ?? '', lang) }) : t(`letter_${letter.status}`);
   return letter.status === 'mailed' ? <Pill label={label} color={colors.moss} bg={colors.mossTint} /> : <Pill label={label} />;
@@ -92,6 +94,7 @@ export function LetterCard({ mode }: { mode: 'family' | 'student' }) {
 
 // A short phone call from her student between visits.
 export function CallsCard({ mode }: { mode: 'family' | 'student' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [note, setNote] = useState('');
@@ -128,13 +131,13 @@ export function CallsCard({ mode }: { mode: 'family' | 'student' }) {
             {MOODS.map((m) => {
               const on = mood === m;
               return (
-                <Pressable key={m} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => setMood(m)}
+                <Pressable key={m} accessibilityRole="radio" accessibilityState={{ checked: on }} aria-checked={on} onPress={() => setMood(m)}
                   style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: on ? moodTone[m].fg : colors.line, backgroundColor: on ? moodTone[m].bg : colors.sheet }}>
                   <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? moodTone[m].fg : colors.ink }}>{t(`mood_${m}`)}</Text>
                 </Pressable>
               );
             })}
-            <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: followUp }} onPress={() => setFollowUp((f) => !f)}
+            <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: followUp }} aria-checked={followUp} onPress={() => setFollowUp((f) => !f)}
               style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: followUp ? colors.kaki : colors.line, backgroundColor: followUp ? colors.kakiTint : colors.sheet }}>
               <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: followUp ? colors.kaki : colors.ink }}>{t('followUp')}</Text>
             </Pressable>

@@ -21,12 +21,14 @@ import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
-import { colors, decisionColor, fonts, roomColor, type } from '../../src/theme';
+import { colors, getDecisionColors, fonts, getRoomColors, type } from '../../src/theme';
 
 type View3 = '3d' | '2d' | 'memory' | 'map';
 const TOUR_MS = 7000;
 
 export default function House({ olderAdult = false }: { olderAdult?: boolean }) {
+  const { palette: colors } = useAccessibilityPreferences();
+  const roomColor = getRoomColors(colors);
   const Frame = olderAdult ? HerPage : Screen;
   const { reducedMotion } = useAccessibilityPreferences();
   const { data } = useData();
@@ -109,7 +111,7 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
           left={<>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
             {(['3d', '2d', 'memory', 'map'] as const).map((v) => (
-              <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: view === v }} onPress={() => pickView(v)}
+              <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: view === v }} aria-pressed={view === v} onPress={() => pickView(v)}
                 style={{ flexGrow: 1, flexBasis: '42%', minHeight: 56, padding: 12, borderRadius: 9, alignItems: 'center', backgroundColor: view === v ? (v === 'memory' ? memoryColors.sky : colors.aiTint) : 'transparent' }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: view === v ? (v === 'memory' ? memoryColors.lantern : colors.ai) : colors.inkSoft }}>{labels[v]}</Text>
               </Pressable>
@@ -222,12 +224,13 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
 }
 
 function Segment<V extends string>({ label, value, options, onChange }: { label: string; value: V; options: (readonly [V, string])[]; onChange: (v: V) => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   return (
     <View style={{ gap: 6 }}>
       {label ? <Text style={type.eyebrow}>{label}</Text> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {options.map(([v, l]) => (
-          <Pressable key={v} accessibilityRole="radio" accessibilityState={{ checked: value === v }} onPress={() => onChange(v)}
+          <Pressable key={v} accessibilityRole="radio" accessibilityState={{ checked: value === v }} aria-checked={value === v} onPress={() => onChange(v)}
             style={{ paddingHorizontal: 16, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: value === v ? colors.ai : colors.line, backgroundColor: value === v ? colors.aiTint : colors.sheet }}>
             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: value === v ? colors.ai : colors.ink }}>{l}</Text>
           </Pressable>
@@ -239,6 +242,8 @@ function Segment<V extends string>({ label, value, options, onChange }: { label:
 
 // Legend for the chosen 3D view, with counts (like a unit-type legend on a building model).
 function ViewLegend({ colorBy, evening }: { colorBy: ColorBy; evening: Evening }) {
+  const { palette: colors } = useAccessibilityPreferences();
+  const decisionColor = getDecisionColors(colors);
   const { data } = useData();
   const { t, lang } = useI18n();
   if (!data) return null;

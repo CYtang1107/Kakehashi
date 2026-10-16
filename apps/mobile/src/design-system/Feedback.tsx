@@ -57,10 +57,10 @@ export function ToastFeedback({ message, onDismiss }: { message: string | null; 
   return <View pointerEvents="box-none" style={{ position: 'absolute', left: spacing.lg, right: spacing.lg, bottom: bottom + spacing.lg, alignItems: 'center' }}>
     <View accessibilityLiveRegion="polite" style={{ width: '100%', maxWidth: 680, padding: spacing.lg,
       borderRadius: radii.card, backgroundColor: palette.primary, flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-      <AppText style={{ color: palette.onNight, flex: 1 }}>{visible}</AppText>
+      <AppText style={{ color: palette.onPrimary, flex: 1 }}>{visible}</AppText>
       <Pressable accessibilityRole="button" accessibilityLabel={t('close')} onPress={() => { setVisible(null); onDismiss?.(); }}
         style={{ minWidth: control.minimum, minHeight: control.minimum, alignItems: 'center', justifyContent: 'center' }}>
-        <Feather name="x" size={24} color={palette.onNight} accessible={false} />
+        <Feather name="x" size={24} color={palette.onPrimary} accessible={false} />
       </Pressable>
     </View>
   </View>;

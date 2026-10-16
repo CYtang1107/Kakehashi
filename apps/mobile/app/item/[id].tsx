@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import { Worth } from '../../src/ItemWorth';
 import React, { useEffect, useState } from 'react';
@@ -18,7 +19,7 @@ import { TrackMap, isTrackable } from '../../src/TrackMap';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api, fileUrl } from '../../src/api';
-import { colors, decisionColor, fonts, type, yen } from '../../src/theme';
+import { colors, getDecisionColors, fonts, type, yen } from '../../src/theme';
 
 const wishKey = (k: WishKind) => `wish_${k.replace(/-/g, '_')}` as Key;
 const today = () => new Date().toISOString().slice(0, 10);
@@ -27,6 +28,7 @@ export default function ItemScreen({ olderAdult = false }: { olderAdult?: boolea
   return olderAdult ? <ItemDetail /> : <LegacyItemScreen />;
 }
 function LegacyItemScreen() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { id, as } = useLocalSearchParams<{ id: string; as?: string }>();
   const student = as === 'student';
   const { data, replaceItem, showToast } = useData();
@@ -149,7 +151,7 @@ function LegacyItemScreen() {
               {WISHES.map((w) => {
                 const on = item.wish?.kind === w;
                 return (
-                  <Pressable key={w} accessibilityRole="radio" accessibilityState={{ checked: on }}
+                  <Pressable key={w} accessibilityRole="radio" accessibilityState={{ checked: on }} aria-checked={on}
                     onPress={() => run('wish', () => api.wish(item.id, w), t('wishSent'))}
                     style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingVertical: 9, paddingHorizontal: 13, borderRadius: 99, borderWidth: on ? 2 : 1, borderColor: on ? colors.plum : colors.line, backgroundColor: on ? colors.plumTint : colors.sheet }}>
                     <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.plum : colors.ink }}>{t(wishKey(w))}</Text>
@@ -188,6 +190,8 @@ function LegacyItemScreen() {
 }
 
 function ChoiceGrid({ value, onPick, disabled }: { value?: Decision; onPick: (d: Decision) => void; disabled?: boolean }) {
+  const { palette: colors } = useAccessibilityPreferences();
+  const decisionColor = getDecisionColors(colors);
   const { t } = useI18n();
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -196,7 +200,7 @@ function ChoiceGrid({ value, onPick, disabled }: { value?: Decision; onPick: (d:
         const c = decisionColor[d];
         const first = d === 'open';
         return (
-          <Pressable key={d} accessibilityRole="radio" accessibilityState={{ checked: on, disabled }} disabled={disabled} onPress={() => onPick(d)}
+          <Pressable key={d} accessibilityRole="radio" accessibilityState={{ checked: on, disabled }} aria-checked={on} aria-disabled={disabled} disabled={disabled} onPress={() => onPick(d)}
             style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center', flexBasis: first ? '100%' : 180, flexGrow: 1, padding: 16, borderRadius: 12, alignItems: 'center', borderWidth: 2, borderColor: on ? (first ? colors.ink : c.fg) : colors.line, backgroundColor: on ? c.bg : colors.sheet }}>
             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? (first ? colors.ink : c.fg) : colors.ink }}>{t(`decision_${d}`)}</Text>
           </Pressable>

@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Image, ScrollView, View } from 'react-native';
@@ -20,6 +21,7 @@ const actTone: Record<ActivityStatus, { fg: string; bg: string }> = {
 
 // Badges that show the family the students are trained and checked.
 export function StudentBadges({ student }: { student: Student }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   const done = READINESS.filter((r) => student.passed[r]).length;
   return (
@@ -56,6 +58,7 @@ export function StudentsCard() {
 
 // From home to community: activities matched to her interests. Students propose; she decides.
 export function ActivitiesCard({ mode }: { mode: 'family' | 'student' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
@@ -104,6 +107,7 @@ export function ActivitiesCard({ mode }: { mode: 'family' | 'student' }) {
 }
 
 function Thumbs({ photos }: { photos: string[] }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   if (photos.length === 0) return <Text style={type.caption}>{t('noPhotos')}</Text>;
   return (
@@ -159,6 +163,7 @@ export function RoomCapture({ roomId }: { roomId: string }) {
 
 // The family sees each room's real photos under the digital 実家.
 export function RoomGallery() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   if (!data) return null;

@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -8,6 +9,7 @@ import { api } from './api';
 import { colors, fonts, type, yen } from './theme';
 // Value is shown only when someone asks. It is never the reason to let something go.
 export function Worth({ item }: { item: Item }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   const [shown, setShown] = useState<Estimate | null>(null);
   const [error, setError] = useState(false);

@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState, useRef } from 'react';
 import { Image, Pressable, ScrollView, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
@@ -20,6 +21,7 @@ export function itemPhotos(item: Pick<Item, 'photos' | 'photoUrl'>): ItemPhoto[]
 
 // Swipe through an item's pictures, like a post. Illustrations always carry a label saying they are not real photos.
 export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'name' | 'photos' | 'photoUrl' | 'icon'>; dark?: boolean; onMakePixel?: (photoId: string) => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
   const photos = itemPhotos(item);
   const scroll = useRef<ScrollView>(null);
@@ -73,6 +75,7 @@ export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'n
 
 // Students: add a picture to the item's album, saying what kind of picture it is.
 export function AddPhotoCard({ item, author }: { item: Item; author?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, replaceItem, showToast } = useData();
   const { t } = useI18n();
   const [kind, setKind] = useState<PhotoKind>('photo');
@@ -105,7 +108,7 @@ export function AddPhotoCard({ item, author }: { item: Item; author?: string }) 
       <Text style={type.caption}>{t('photoAddLead')}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {(['photo', 'old-photo', 'illustration'] as const).map((k) => (
-          <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} onPress={() => setKind(k)}
+          <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} aria-checked={kind === k} onPress={() => setKind(k)}
             style={{ paddingHorizontal: 12, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
             <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: kind === k ? colors.ai : colors.ink }}>{t(`photoKind_${k}` as Key)}</Text>
           </Pressable>

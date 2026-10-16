@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text, Button } from './ui';
 import React, { useEffect, useRef, useState } from 'react';
 import { Linking, Platform, Pressable, View } from 'react-native';
@@ -38,6 +39,7 @@ export function NeighbourhoodMap({ homeId, focus, fill }: { homeId: string; focu
 
 // EVE-style list under the map: her places (A, B, C…) with what she does there, then the nearest of each kind.
 export function NearbyList({ onFocus }: { onFocus: (id: string) => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const [kind, setKind] = useState<Exclude<PlaceKind, 'home'>>('clinic');
@@ -91,7 +93,7 @@ export function NearbyList({ onFocus }: { onFocus: (id: string) => void }) {
           if (!n) return null;
           const on = kind === k;
           return (
-            <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => setKind(k)}
+            <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: on }} aria-checked={on} onPress={() => setKind(k)}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 11, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: on ? placeColor[k] : colors.line, backgroundColor: on ? colors.sheet : colors.paper }}>
               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: placeColor[k] }} />
               <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ink }}>{t(`kind_${k}` as Key)} · {n}</Text>

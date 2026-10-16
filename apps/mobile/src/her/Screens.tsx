@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CONDITION_PARTS, outingIsLive, pick } from '@kakehashi/shared';
 import { AppText, Button, Card, EmptyState, StatusBanner, UpcomingVisitCard, AccessibleSwitch, LangToggle, formatDate } from '../ui';
@@ -14,10 +15,22 @@ import { DecisionChip } from '../ui';
 import { householdDay, planDate, plans } from './plans';
 import { StudentBadges } from '../Community';
 import { DailyAssistance, VisitReminder } from '../evercircle/assistance/DailyAssistance';
+import { useAccessibilityPreferences } from '../design-system/preferences';
+import { radii, spacing } from '../theme';
 
 export function Destination({ label, href, icon }: { label: Key; href: string; icon?: React.ComponentProps<typeof Button>['icon'] }) {
   const { t } = useI18n();
-  return <Button label={t(label)} kind="secondary" icon={icon ?? 'chevron-right'} onPress={() => router.push(href as never)} />;
+  const { palette, preferences } = useAccessibilityPreferences();
+  return <Pressable accessibilityRole="button" accessibilityLabel={t(label)} onPress={() => router.push(href as never)}
+    style={({ pressed }) => ({ minHeight: 80, padding: spacing.lg, gap: spacing.lg, flexDirection: 'row', alignItems: 'center',
+      borderRadius: radii.control, borderWidth: preferences.highContrast ? 2 : 1,
+      borderColor: preferences.highContrast ? palette.border : palette.separator, backgroundColor: pressed ? palette.secondary : palette.surface })}>
+    <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: palette.secondary, alignItems: 'center', justifyContent: 'center' }}>
+      <Feather name={icon ?? 'arrow-right'} size={24} color={palette.primary} accessible={false} />
+    </View>
+    <AppText variant="bodyBold" style={{ flex: 1 }}>{t(label)}</AppText>
+    <Feather name="chevron-right" size={22} color={palette.inkSoft} accessible={false} />
+  </Pressable>;
 }
 export function WeatherAdvice({ always = false }: { always?: boolean }) {
   const { data } = useData();
@@ -40,16 +53,18 @@ export function HomeScreen() {
   const todays = all.filter(p => p.date.slice(0, 10) === day);
   return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hHome')} description={date}>
     <AppText>{t('hHomeLead')}</AppText>
-    <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
-    <AppText variant="caption">{t('cLead')}</AppText>
+    <Card tint>
+      <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
+      <AppText variant="caption">{t('cLead')}</AppText>
+    </Card>
     {next ? <UpcomingVisitCard title={t('hVisit')} description={formatDate(next.date, lang)} detail={next.detail}
       action={{ label: t('hSeeDay'), kind: 'secondary', onPress: () => router.push('/her/my-day') }} /> : <View style={{ gap: 8 }}><AppText>{t('hNoVisit')}</AppText></View>}
-    <View style={{ gap: 12 }}><AppText variant="section">{t('hTodayPlans')}</AppText>
+    <Card><AppText variant="section">{t('hTodayPlans')}</AppText>
       {todays.length ? todays.map(p => <AppText key={p.id}>{p.title} · {p.detail}</AppText>) : <AppText>{t('hNoToday')}</AppText>}
       <Destination label="hDay" href="/her/my-day" icon="calendar" />
-    </View>
+    </Card>
     <View style={{ gap: 12 }}><Destination label="hMyHome" href="/her/my-home" icon="home" /><Destination label="hMemories" href="/her/memories" icon="book-open" /></View>
-    <View style={{ gap: 12 }}><AppText variant="section">{t('hDiscover')}</AppText><AppText>{t('hFriendsBody')}</AppText><Destination label="hFriends" href="/her/friends" icon="users" /></View>
+    <Card><AppText variant="section">{t('hDiscover')}</AppText><AppText>{t('hFriendsBody')}</AppText><Destination label="hFriends" href="/her/friends" icon="users" /></Card>
     <WeatherAdvice />
   </HerPage>;
 }

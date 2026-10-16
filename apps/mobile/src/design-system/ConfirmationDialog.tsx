@@ -1,19 +1,20 @@
 import React, { useEffect, useId, useRef } from 'react';
-import { AccessibilityInfo, Modal, Platform, ScrollView, View, findNodeHandle } from 'react-native';
+import { AccessibilityInfo, Modal, Platform, Pressable, ScrollView, View, findNodeHandle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { radii, spacing } from '../theme';
 import { useI18n } from '../i18n';
 import { AppText } from './AppText';
-import { Button } from './Controls';
+import { Button, IconButton } from './Controls';
 import { useAccessibilityPreferences } from './preferences';
 
 export type ConfirmationDialogProps = {
   visible: boolean; title: string; message?: string; confirmLabel?: string; cancelLabel?: string;
   onConfirm?: () => void; onCancel: () => void; destructive?: boolean; busy?: boolean; children?: React.ReactNode;
+  dismissOnBackdrop?: boolean;
 };
 
 export function ConfirmationDialog({ visible, title, message, confirmLabel, cancelLabel, onConfirm,
-  onCancel, destructive, busy, children }: ConfirmationDialogProps) {
+  onCancel, destructive, busy, children, dismissOnBackdrop }: ConfirmationDialogProps) {
   const { palette, reducedMotion } = useAccessibilityPreferences();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
@@ -63,11 +64,18 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
     onShow={focusFirst} onRequestClose={() => { if (!busy) onCancel(); }}>
     <View style={{ flex: 1, backgroundColor: 'rgba(32,41,35,0.48)', justifyContent: 'center', alignItems: 'center',
       paddingHorizontal: spacing.lg, paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }}>
+      {dismissOnBackdrop ? <Pressable accessible={false} focusable={false} tabIndex={-1}
+        onPress={() => { if (!busy) onCancel(); }} style={{ position: 'absolute', inset: 0 }} /> : null}
       <View ref={panel} role={onConfirm ? 'alertdialog' : 'dialog'} aria-modal accessibilityViewIsModal
+        testID="dialog-panel"
         aria-labelledby={`${id}-title`} aria-describedby={message ? `${id}-message` : undefined}
-        style={{ width: '100%', maxWidth: 560, maxHeight: '100%', backgroundColor: palette.surface, borderRadius: radii.dialog }}>
+        style={{ width: '100%', maxWidth: 560, maxHeight: '100%', backgroundColor: palette.surface, borderRadius: radii.dialog,
+          borderWidth: 1, borderColor: palette.separator }}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl }}>
-          <AppText variant="section" nativeID={`${id}-title`}>{title}</AppText>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
+            <AppText variant="section" nativeID={`${id}-title`} style={{ flex: 1 }}>{title}</AppText>
+            <IconButton icon="x" label={t('close')} disabled={busy} onPress={onCancel} />
+          </View>
           {message ? <AppText nativeID={`${id}-message`}>{message}</AppText> : null}
           {children}
           <View style={{ gap: spacing.md }}>

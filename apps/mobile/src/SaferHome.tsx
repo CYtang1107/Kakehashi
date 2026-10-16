@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -27,6 +28,7 @@ function amountLabel(f: Pick<SafetyFix, 'kind' | 'amount'>, lang: 'en' | 'ja') {
 // Safer home plan (安心リフォーム): students note small fixes with her; she decides; the family sees the cost
 // and an estimate of the care-insurance home-modification subsidy.
 export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | 'her'; roomId?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [kind, setKind] = useState<FixKind>('handrail');
@@ -97,7 +99,7 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | '
         <View style={{ gap: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.line }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {FIX_KINDS.map((k) => (
-              <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} onPress={() => setKind(k)}
+              <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} aria-checked={kind === k} onPress={() => setKind(k)}
                 style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: kind === k ? colors.ai : colors.ink }}>{t(`fix_${k}`)}</Text>
               </Pressable>
@@ -115,6 +117,7 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | '
 }
 
 function Row({ label, value, strong, quiet, color }: { label: string; value: string; strong?: boolean; quiet?: boolean; color?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
       <Text style={[strong ? type.bodyBold : type.body, { flex: 1, color: quiet ? colors.inkSoft : colors.ink }]}>{label}</Text>

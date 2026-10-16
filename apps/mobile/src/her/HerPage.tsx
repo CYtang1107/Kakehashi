@@ -21,12 +21,12 @@ export function HerPage({ children, title, description, header, back, wide, requ
     return () => clearTimeout(timer);
   }, []));
   return <ScreenFrame wide={wide} footer={footer} scrollRef={scrollRef}>
-    <View ref={heading} tabIndex={-1} accessible accessibilityRole="header" accessibilityLabel={title ?? header?.title} style={{ gap: 8 }}>
+    {back ? <Button label={t('back')} icon="chevron-left" kind="tertiary" style={{ alignSelf: 'flex-start', paddingHorizontal: 12 }}
+      onPress={() => router.canGoBack() ? router.back() : router.replace('/her')} /> : null}
+    <View ref={heading} tabIndex={-1} accessibilityLabel={title ?? header?.title} style={{ gap: 8 }}>
       <AppText variant="title">{title ?? header?.title}</AppText>
       {description || header?.sub ? <AppText variant="caption">{description ?? header?.sub}</AppText> : null}
     </View>
-    {back ? <Button label={t('back')} icon="chevron-left" kind="secondary"
-      onPress={() => router.canGoBack() ? router.back() : router.replace('/her')} /> : null}
     {requiresHome && error ? <StatusBanner tone="error" title={t('dsConnectionTitle')} message={t('dsConnectionBody')}
       action={{ label: t('retry'), onPress: refresh }} /> : requiresHome && !data ? <View style={{ gap: 16 }}>
       <ActivityIndicator /><AppText>{t('dsLoading')}</AppText>

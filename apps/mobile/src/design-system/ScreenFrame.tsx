@@ -14,7 +14,7 @@ export function ScreenFrame({ children, title, description, toolbar, wide, foote
   return <KeyboardAvoidingView style={{ flex: 1, backgroundColor: palette.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     {toolbar}
     <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
-      contentContainerStyle={{ paddingTop: toolbar ? spacing.lg : insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.section }}>
+      contentContainerStyle={{ paddingTop: toolbar ? spacing.xxl : insets.top + spacing.xxl, paddingBottom: insets.bottom + spacing.section }}>
       <View style={{ width: '100%', maxWidth: wide ? layout.wideWidth : layout.compactWidth, alignSelf: 'center',
         paddingHorizontal: width < 360 ? spacing.lg : layout.margin, gap: spacing.xl }}>
         {title || description ? <View style={{ gap: spacing.sm }}>

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { View } from 'react-native';
-import { AppText, Button, Screen, StatusBanner, AccessibleTextInput } from './ui';
+import { AppText, Button, Card, Screen, StatusBanner, AccessibleTextInput } from './ui';
 import { useI18n, type Key } from './i18n';
 
 export type Role = 'her' | 'family' | 'student' | 'worker';
@@ -38,7 +37,7 @@ export function LoginScreen({ role }: { role: Role }) {
     setError(!ok);
   };
   return <Screen requiresHome={false} back header={{ title: t(signup ? 'authSignup' : 'authLogin') }}>
-    <View style={{ gap: 16 }}>
+    <Card style={{ width: '100%', maxWidth: 560, alignSelf: 'center', gap: 20 }}>
       <AppText>{t('authRoleLead', { role: t(`role${role[0].toUpperCase()}${role.slice(1)}` as Key) })}</AppText>
       <AccessibleTextInput label={t('authEmail')} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
       <AccessibleTextInput label={t('authPassword')} value={password} onChangeText={setPassword} secureTextEntry />
@@ -47,7 +46,7 @@ export function LoginScreen({ role }: { role: Role }) {
       <Button label={t(signup ? 'authSignup' : 'authLogin')} icon="log-in" onPress={submit} />
       <Button label={t('authGoogle')} icon="globe" kind="secondary" onPress={() => googleSignIn(role)} />
       <Button label={t(signup ? 'authHaveAccount' : 'authNeedAccount')} kind="secondary" onPress={() => { setSignup(value => !value); setError(false); }} />
-    </View>
+    </Card>
   </Screen>;
 }
 

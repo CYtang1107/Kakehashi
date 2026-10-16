@@ -4,10 +4,20 @@ import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from './AppText';
-import { useI18n, type Key } from '../i18n';
+import { useI18n } from '../i18n';
 import { useAccessibilityPreferences } from './preferences';
+import { floatingElevation, radii } from '../theme';
 
 type NavItem = { id: string; label: string; icon: keyof typeof Feather.glyphMap; active?: boolean; onPress: () => void };
+
+export function NavigationSurface({ children, style }: { children: React.ReactNode; style?: React.ComponentProps<typeof View>['style'] }) {
+  const { palette, preferences } = useAccessibilityPreferences();
+  return <View testID="navigation-surface" style={[{
+    padding: 8, borderRadius: radii.card, backgroundColor: palette.surface,
+    borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : palette.separator,
+    ...floatingElevation,
+  }, style]}>{children}</View>;
+}
 
 export function BottomBarActions() {
   const { t } = useI18n();
@@ -23,7 +33,7 @@ function UtilityAction({ icon, label, onPress, palette }: { icon: keyof typeof F
   return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}
     style={({ pressed }) => ({ flex: 1, minHeight: 52, borderRadius: 12, gap: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? palette.secondary : 'transparent' })}>
     <Feather name={icon} size={22} color={palette.primary} accessible={false} />
-    <AppText variant="caption" numberOfLines={1} style={{ fontSize: 14, lineHeight: 19, textAlign: 'center' }}>{label}</AppText>
+    <AppText variant="caption" style={{ maxWidth: '100%', fontSize: 15, lineHeight: 21, textAlign: 'center' }}>{label}</AppText>
   </Pressable>;
 }
 
@@ -32,19 +42,16 @@ export function AppBottomBar({ items }: { items: NavItem[] }) {
   const { width } = useWindowDimensions();
   const { scale, palette } = useAccessibilityPreferences();
   if (width >= 1000 * scale) return null;
-  return <View style={{ marginHorizontal: 12, marginTop: 8, marginBottom: bottom + 12, padding: 8, borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.82)', borderWidth: 1, borderColor: palette.separator,
-    shadowColor: '#202923', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.14, shadowRadius: 18, elevation: 5,
-    ...(typeof document !== 'undefined' ? { backdropFilter: 'blur(18px)' } : {}) }}>
+  return <NavigationSurface style={{ marginHorizontal: 12, marginTop: 8, marginBottom: bottom + 12 }}>
     <View accessibilityRole="tablist" style={{ flexDirection: 'row', gap: 6 }}>
-      {items.map((item) => <Pressable key={item.id} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: item.active }}
-        onPress={item.onPress} style={({ pressed }) => ({ flex: 1, minHeight: 58, borderRadius: 14, gap: 4, alignItems: 'center', justifyContent: 'center',
-          backgroundColor: item.active || pressed ? palette.secondary : 'transparent', borderWidth: 2, borderColor: item.active ? palette.primary : 'transparent' })}>
+      {items.map((item) => <Pressable key={item.id} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: item.active }} aria-selected={Boolean(item.active)}
+        onPress={item.onPress} style={({ pressed }) => ({ flex: 1, minWidth: 0, padding: 6, minHeight: 64, borderRadius: radii.control, gap: 5, alignItems: 'center', justifyContent: 'center',
+          backgroundColor: item.active || pressed ? palette.secondary : 'transparent', borderWidth: 1, borderColor: item.active ? palette.primary : 'transparent' })}>
         <Feather name={item.icon} size={23} color={item.active ? palette.primary : palette.textSecondary} accessible={false} />
-        <AppText variant="caption" numberOfLines={1} style={{ fontSize: 14, lineHeight: 19, textAlign: 'center', color: item.active ? palette.primary : palette.textSecondary }}>{item.label}</AppText>
+        <AppText variant="caption" style={{ maxWidth: '100%', fontSize: 15, lineHeight: 21, fontWeight: item.active ? '600' : '400', textAlign: 'center', color: item.active ? palette.primary : palette.textSecondary }}>{item.label}</AppText>
       </Pressable>)}
     </View>
-  </View>;
+  </NavigationSurface>;
 }
 
 export function GlobalBottomBar({ active }: { active: 'home' | 'stories' | 'roles' | 'settings' }) {

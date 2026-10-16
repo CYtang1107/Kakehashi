@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
@@ -15,6 +16,7 @@ const ICON: Record<PayKind, keyof typeof Feather.glyphMap> = { visit: 'home', ca
 // Student wallet: what each visit, call and outing earned, paid to the student's own bank account.
 // The savings goal only tracks a plan; KAKEHASHI never holds or invests the money.
 export default function WalletScreen() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, showToast } = useData();
   const { t, lang } = useI18n();
   const pair = data?.home.students.filter((s) => s.role === 'pair') ?? [];
@@ -58,7 +60,7 @@ export default function WalletScreen() {
       <StatusBanner title={t('rDemo')} message={t('rWalletDemo')} />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {pair.map((s) => (
-          <Pressable key={s.id} accessibilityRole="radio" accessibilityState={{ checked: me === s.id, disabled: busy !== null }} disabled={busy !== null} onPress={() => setSid(s.id)}
+          <Pressable key={s.id} accessibilityRole="radio" accessibilityState={{ checked: me === s.id, disabled: busy !== null }} aria-checked={me === s.id} aria-disabled={busy !== null} disabled={busy !== null} onPress={() => setSid(s.id)}
             style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 14, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: me === s.id ? colors.ai : colors.line, backgroundColor: me === s.id ? colors.aiTint : colors.sheet }}>
             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: me === s.id ? colors.ai : colors.ink }}>{s.name}</Text>
           </Pressable>

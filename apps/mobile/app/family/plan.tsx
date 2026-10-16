@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -12,6 +13,7 @@ import { colors, fonts, type, yen } from '../../src/theme';
 const PROCEEDS: Home['proceedsChoice'][] = ['keep', 'grandchild', 'donate'];
 
 export default function PlanScreen() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [chosen, setChosen] = useState<string | undefined>();
@@ -49,7 +51,7 @@ export default function PlanScreen() {
       {data.plans.map((p) => {
         const active = p.id === planId;
         return (
-          <Pressable key={p.id} accessibilityRole="radio" accessibilityState={{ checked: active }} onPress={() => setChosen(p.id)}
+          <Pressable key={p.id} accessibilityRole="radio" accessibilityState={{ checked: active }} aria-checked={active} onPress={() => setChosen(p.id)}
             style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  padding: 14, borderRadius: 16, borderWidth: active ? 2 : 1, borderColor: active ? colors.ai : colors.line, backgroundColor: colors.sheet, gap: 6 }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 6 }}>
               <Text style={[type.section, { flex: 1 }]}>{lang === 'ja' ? p.nameJa : p.name}</Text>
@@ -81,7 +83,7 @@ export default function PlanScreen() {
           {PROCEEDS.map((c) => {
             const on = data.home.proceedsChoice === c;
             return (
-              <Pressable key={c} accessibilityRole="radio" accessibilityState={{ checked: on }} onPress={() => setProceeds(c)}
+              <Pressable key={c} accessibilityRole="radio" accessibilityState={{ checked: on }} aria-checked={on} onPress={() => setProceeds(c)}
                 style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: on ? colors.moss : colors.line, backgroundColor: on ? colors.sheet : 'transparent' }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.moss : colors.inkSoft }}>{t(`proceeds_${c}`)}</Text>
               </Pressable>

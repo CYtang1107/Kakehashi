@@ -1,34 +1,36 @@
 import React, { forwardRef, useId, useState } from 'react';
-import { ActivityIndicator, Pressable, Switch, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, Switch, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { control, radii, spacing } from '../theme';
+import { control, radii, spacing, systemFont } from '../theme';
 import { useI18n } from '../i18n';
 import { AppText } from './AppText';
 import { useAccessibilityPreferences } from './preferences';
 
 export type ButtonProps = {
-  label: string; onPress: () => void; kind?: 'primary' | 'secondary' | 'danger';
+  label: string; onPress: () => void; kind?: 'primary' | 'secondary' | 'tertiary' | 'danger';
   icon?: keyof typeof Feather.glyphMap; disabled?: boolean; busy?: boolean;
   selected?: boolean; accessibilityLabel?: string; accessibilityHint?: string; style?: ViewStyle;
 };
 
 export function Button({ label, onPress, kind = 'primary', icon, disabled, busy, selected,
   accessibilityLabel, accessibilityHint, style }: ButtonProps) {
-  const { palette } = useAccessibilityPreferences();
+  const { palette, preferences, reducedMotion } = useAccessibilityPreferences();
   const [focused, setFocused] = useState(false);
   const inactive = Boolean(disabled || busy);
   const primary = kind === 'primary';
-  const foreground = primary ? palette.onNight : kind === 'danger' ? palette.danger : palette.ink;
-  return <Pressable accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
-    accessibilityHint={accessibilityHint} accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }}
+  const foreground = primary ? palette.onPrimary : kind === 'danger' ? palette.danger : kind === 'tertiary' ? palette.primary : palette.ink;
+  return <Pressable testID="premium-button" accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
+    accessibilityHint={accessibilityHint} accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }} aria-disabled={inactive} aria-busy={Boolean(busy)} aria-pressed={selected}
     disabled={inactive} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
     style={({ pressed }) => [{ minHeight: primary ? control.primary : control.secondary, minWidth: control.minimum, maxWidth: '100%', flexShrink: 1,
       paddingHorizontal: spacing.xl, paddingVertical: spacing.md, borderRadius: radii.control,
       flexDirection: 'row', gap: spacing.md, alignItems: 'center', justifyContent: 'center',
-      borderWidth: 2, borderColor: focused ? palette.focus : primary ? palette.primary : selected ? palette.primary : palette.border,
+      borderWidth: preferences.highContrast ? 2 : 1,
+      borderColor: focused ? palette.focus : primary ? palette.primary : selected ? palette.primary : kind === 'tertiary' ? 'transparent' : palette.border,
       backgroundColor: primary ? (pressed ? palette.primaryPressed : palette.primary)
-        : pressed || selected ? palette.secondary : kind === 'danger' ? palette.dangerSurface : palette.surface,
-      opacity: inactive ? 0.6 : 1 }, style]}>
+        : pressed || selected ? palette.secondary : kind === 'danger' ? palette.dangerSurface : kind === 'tertiary' ? 'transparent' : palette.surface,
+      ...(Platform.OS !== 'web' && !reducedMotion ? { transform: [{ scale: pressed ? 0.98 : 1 }] } : {}),
+      opacity: inactive ? 0.5 : 1 }, style]}>
     {busy ? <ActivityIndicator color={foreground} accessibilityElementsHidden importantForAccessibility="no" />
       : icon ? <Feather name={icon} size={control.icon} color={foreground} accessible={false} /> : null}
     <AppText variant="button" style={{ color: foreground, textAlign: 'center', flexShrink: 1 }}>{label}</AppText>
@@ -36,20 +38,32 @@ export function Button({ label, onPress, kind = 'primary', icon, disabled, busy,
 }
 export const PrimaryButton = (props: Omit<ButtonProps, 'kind'>) => <Button {...props} kind="primary" />;
 export const SecondaryButton = (props: Omit<ButtonProps, 'kind'>) => <Button {...props} kind="secondary" />;
+export const TertiaryButton = (props: Omit<ButtonProps, 'kind'>) => <Button {...props} kind="tertiary" />;
 export const DestructiveButton = (props: Omit<ButtonProps, 'kind'>) => <Button {...props} kind="danger" />;
 export const IconLabelButton = (props: ButtonProps & { icon: NonNullable<ButtonProps['icon']> }) => <Button {...props} />;
+
+export function IconButton({ icon, label, onPress, disabled }: Pick<ButtonProps, 'label' | 'onPress' | 'disabled'> & { icon: NonNullable<ButtonProps['icon']> }) {
+  const { palette } = useAccessibilityPreferences();
+  return <Pressable testID="icon-button" accessibilityRole="button" accessibilityLabel={label}
+    accessibilityState={{ disabled: Boolean(disabled) }} aria-disabled={Boolean(disabled)} disabled={disabled} onPress={onPress}
+    style={({ pressed }) => ({ minWidth: control.minimum, minHeight: control.minimum, borderRadius: radii.control,
+      alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? palette.secondary : palette.surface,
+      borderWidth: 1, borderColor: palette.separator, opacity: disabled ? 0.5 : 1 })}>
+    <Feather name={icon} size={22} color={palette.primary} accessible={false} />
+  </Pressable>;
+}
 
 export function AccessibleSwitch({ label, description, value, onValueChange, disabled }: {
   label: string; description?: string; value: boolean; onValueChange: (value: boolean) => void; disabled?: boolean;
 }) {
-  const { palette } = useAccessibilityPreferences();
+  const { palette, preferences } = useAccessibilityPreferences();
   const [focused, setFocused] = useState(false);
   return <Pressable accessibilityRole="switch" accessibilityLabel={label} accessibilityHint={description}
-    accessibilityState={{ checked: value, disabled: Boolean(disabled) }} disabled={disabled}
+    accessibilityState={{ checked: value, disabled: Boolean(disabled) }} aria-checked={value} aria-disabled={Boolean(disabled)} disabled={disabled}
     onPress={() => onValueChange(!value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-    style={{ minHeight: control.secondary, padding: spacing.md, borderWidth: 2,
-      borderColor: focused ? palette.focus : palette.border, borderRadius: radii.control,
-      backgroundColor: palette.surface, flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
+    style={({ pressed }) => ({ minHeight: control.secondary, padding: spacing.lg, borderWidth: preferences.highContrast ? 2 : 1,
+      borderColor: focused ? palette.focus : preferences.highContrast ? palette.border : palette.separator, borderRadius: radii.control,
+      opacity: disabled ? 0.5 : 1, backgroundColor: pressed ? palette.secondary : palette.surface, flexDirection: 'row', alignItems: 'center', gap: spacing.lg })}>
     <View style={{ flex: 1, gap: spacing.xs }}>
       <AppText variant="bodyBold">{label}</AppText>
       {description ? <AppText variant="caption">{description}</AppText> : null}
@@ -64,7 +78,7 @@ export function AccessibleSwitch({ label, description, value, onValueChange, dis
 export type AccessibleTextInputProps = TextInputProps & { label: string; hint?: string; error?: string; required?: boolean };
 export const AccessibleTextInput = forwardRef<TextInput, AccessibleTextInputProps>(function AccessibleTextInput(
   { label, hint, error, required, style, onFocus, onBlur, ...rest }, ref) {
-  const { palette, scale } = useAccessibilityPreferences();
+  const { palette, scale, preferences } = useAccessibilityPreferences();
   const { t } = useI18n();
   const [focused, setFocused] = useState(false);
   const id = useId();
@@ -72,14 +86,16 @@ export const AccessibleTextInput = forwardRef<TextInput, AccessibleTextInputProp
     <AppText variant="bodyBold" nativeID={`${id}-label`}>{label}{required ? ` · ${t('dsRequired')}` : ''}</AppText>
     <TextInput ref={ref} {...rest} allowFontScaling accessibilityLabel={rest.accessibilityLabel ?? label}
       accessibilityHint={rest.accessibilityHint ?? [hint, error].filter(Boolean).join('. ')}
+      aria-labelledby={`${id}-label`} aria-describedby={hint || error ? `${id}-hint` : undefined}
       aria-required={required} aria-invalid={Boolean(error)}
       placeholderTextColor={palette.inkSoft}
       onFocus={event => { setFocused(true); onFocus?.(event); }} onBlur={event => { setFocused(false); onBlur?.(event); }}
-      style={[{ borderWidth: 2, borderColor: error ? palette.danger : focused ? palette.focus : palette.border,
-        borderRadius: radii.control, padding: spacing.lg, fontFamily: 'ZenKakuGothicNew_400Regular',
+      style={[{ borderWidth: preferences.highContrast ? 2 : 1, borderColor: error ? palette.danger : focused ? palette.focus : palette.border,
+        borderRadius: radii.control, padding: spacing.lg, fontFamily: systemFont,
         fontSize: 19 * scale, lineHeight: 30 * scale, color: palette.ink, backgroundColor: palette.surface,
+        opacity: rest.editable === false ? 0.6 : 1,
         textAlignVertical: rest.multiline ? 'top' : 'center', minHeight: rest.multiline ? 140 : control.secondary }, style]} />
-    {error ? <AppText variant="caption" accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color: palette.danger }}>{error}</AppText>
-      : hint ? <AppText variant="caption">{hint}</AppText> : null}
+    {error ? <AppText nativeID={`${id}-hint`} variant="caption" accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color: palette.danger }}>{error}</AppText>
+      : hint ? <AppText nativeID={`${id}-hint`} variant="caption">{hint}</AppText> : null}
   </View>;
 });

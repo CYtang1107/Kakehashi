@@ -117,7 +117,7 @@ const en = {
   hPublish: 'I agree to share this story publicly',
   hHome: "Home",
   hFriends: "Friends",
-  hMyHome: "Home",
+  hMyHome: "My home",
   hMemories: "Stories",
   hSettings: "Settings",
   authLogin: 'Log in', authSignup: 'Sign up', authEmail: 'Email', authPassword: 'Password',

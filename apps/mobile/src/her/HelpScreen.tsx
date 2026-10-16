@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../design-system/preferences';
 import { HerPage } from './HerPage';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -17,6 +18,7 @@ const ICON: Record<ServiceKind, keyof typeof Feather.glyphMap> = { garden: 'sun'
 const FACE: Record<ServiceFeedback, keyof typeof Feather.glyphMap> = { good: 'smile', okay: 'meh', 'not-good': 'frown' };
 
 export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: boolean }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [kind, setKind] = useState<ServiceKind | null>(null);
@@ -87,7 +89,7 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {HELP_KINDS.map((k) => (
           <Pressable key={k} accessibilityRole="button" accessibilityLabel={t(`svc_${k}` as Key)}
-            accessibilityState={{ selected: kind === k, disabled: busy }} disabled={busy} onPress={() => setKind(kind === k ? null : k)}
+            accessibilityState={{ selected: kind === k, disabled: busy }} aria-pressed={kind === k} aria-disabled={busy} disabled={busy} onPress={() => setKind(kind === k ? null : k)}
             style={{ flexBasis: '46%', flexGrow: 1, minHeight: 120, borderRadius: 16, borderWidth: 2, borderColor: kind === k ? colors.ai : colors.line,
               backgroundColor: kind === k ? colors.aiTint : colors.sheet, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 }}>
             <Feather name={ICON[k]} size={34} color={colors.ai} />
@@ -122,7 +124,7 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
           <Text style={body}>{t(`svc_${s.kind}` as Key)} · {workerName(home.workers.find((x) => x.id === s.workerId), lang)}</Text>
           <View style={{ gap: 10 }}>
             {(['good', 'okay', 'not-good'] as const).map((f) => (
-              <Pressable key={f} accessibilityRole="button" accessibilityLabel={t(`fb_${f}` as Key)} disabled={rating !== null} accessibilityState={{ disabled: rating !== null, busy: rating === s.id }} onPress={() => rate(s.id, f)}
+              <Pressable key={f} accessibilityRole="button" accessibilityLabel={t(`fb_${f}` as Key)} disabled={rating !== null} accessibilityState={{ disabled: rating !== null, busy: rating === s.id }} aria-disabled={rating !== null} aria-busy={rating === s.id} onPress={() => rate(s.id, f)}
                 style={{ flex: 1, minHeight: 80, borderRadius: 16, borderWidth: 2, borderColor: colors.line, backgroundColor: colors.sheet, alignItems: 'center', justifyContent: 'center', gap: 4, padding: 12 }}>
                 <Feather name={FACE[f]} size={30} color={f === 'not-good' ? colors.danger : f === 'good' ? colors.moss : colors.inkSoft} accessible={false} />
                 <Text style={[body, { fontSize: 18, maxWidth: '100%', textAlign: 'center' }]}>{t(`fb_${f}` as Key)}</Text>

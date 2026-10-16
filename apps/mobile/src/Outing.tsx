@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -15,6 +16,7 @@ const SEND_EVERY_MS = 15000;
 // Student: share the walk to an activity with the family, only after she agrees for this outing.
 // Uses this phone's location while the screen is open; ending the outing deletes the route.
 export function OutingCard() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [agreed, setAgreed] = useState(false);
@@ -80,7 +82,7 @@ export function OutingCard() {
         </>
       ) : going.length ? (
         <>
-          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} onPress={() => setAgreed(!agreed)} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start' }}>
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: agreed }} aria-checked={agreed} onPress={() => setAgreed(!agreed)} style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start' }}>
             <Feather name={agreed ? 'check-square' : 'square'} size={20} color={agreed ? colors.moss : colors.inkSoft} />
             <Text style={[type.body, { flex: 1 }]}>{t('outingConsent')}</Text>
           </Pressable>
@@ -98,6 +100,7 @@ export function OutingCard() {
 
 // Family: a banner while an outing is live, pointing to the neighbourhood map.
 export function LiveOutingBanner({ onOpenMap }: { onOpenMap?: () => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   if (!data) return null;

@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -13,6 +14,7 @@ import { colors, fonts, type } from './theme';
 // Sharing one story on the public feed: only with her consent, named as she chooses, and she can withdraw.
 // Students approve messages from visitors before they show (and read them to her on visits).
 export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'family' | 'her' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { replaceItem, showToast } = useData();
   const { t, lang } = useI18n();
   const [name, setName] = useState<'first' | 'anonymous'>(item.share?.name ?? 'anonymous');
@@ -89,8 +91,9 @@ export function ShareCard({ item, mode }: { item: Item; mode: 'student' | 'famil
 }
 
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   return (
-    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} onPress={onPress}
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: on }} aria-checked={on} onPress={onPress}
       style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: on ? colors.ai : colors.line, backgroundColor: on ? colors.aiTint : colors.sheet }}>
       {on ? <Feather name="check" size={14} color={colors.ai} /> : null}
       <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: on ? colors.ai : colors.ink }}>{label}</Text>

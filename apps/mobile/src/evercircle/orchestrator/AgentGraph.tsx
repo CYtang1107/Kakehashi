@@ -28,7 +28,7 @@ export function AgentGraph({ events, current, selected, onSelect, ja }: {
     const blocked = current?.kind === 'blocked' && current.to === id;
     return <Animated.View key={id} onLayout={event=>{const box=event.nativeEvent.layout;setBoxes(previous=>JSON.stringify(previous[id])===JSON.stringify(box)?previous:{...previous,[id]:box});}}
       style={{ flexBasis: narrow || id==='orchestrator'?'100%':'44%', flexGrow:1, opacity: active ? opacity : 1 }}>
-      <Pressable accessibilityRole="button" accessibilityState={{ selected: selected === id }} accessibilityLabel={moduleName(id, ja)} onPress={() => onSelect(id)}
+      <Pressable accessibilityRole="button" accessibilityState={{ selected: selected === id }} aria-pressed={selected === id} accessibilityLabel={moduleName(id, ja)} onPress={() => onSelect(id)}
         style={({ pressed }) => ({ minHeight: 66, justifyContent: 'center', padding: 12, borderRadius: 12, borderWidth: selected === id || active ? 3 : 1,
           borderColor: blocked ? palette.danger : active ? palette.primary : palette.border,
           backgroundColor: blocked ? palette.dangerSurface : active || pressed ? palette.secondary : palette.surface })}>

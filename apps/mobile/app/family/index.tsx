@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import React from 'react';
 import { Pressable, View } from 'react-native';
@@ -14,6 +15,7 @@ import { useI18n } from '../../src/i18n';
 import { colors, fonts, type } from '../../src/theme';
 
 export default function FamilyHome() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const wide = useWide();

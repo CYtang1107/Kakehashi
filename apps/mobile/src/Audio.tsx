@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
@@ -11,6 +12,7 @@ import type { Item } from '@kakehashi/shared';
 
 // Plays a saved story recording.
 export function StoryPlayer({ path }: { path?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   const url = fileUrl(path);
   const player = useAudioPlayer(url ? { uri: url } : null);
@@ -42,6 +44,7 @@ export function StoryPlayer({ path }: { path?: string }) {
 
 // Records a story on the visit and uploads it. The server refuses uploads without consent.
 export function StoryRecorder({ item, consent, onSaved }: { item: Item; consent: boolean; onSaved: (item: Item) => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const [state, setState] = useState<'idle' | 'recording' | 'saving'>('idle');

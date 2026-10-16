@@ -12,7 +12,7 @@ import { spriteFor } from '../../src/pixelArt';
 import { StoryGlobe } from '../../src/StoryGlobe';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
-import { colors, fonts, type } from '../../src/theme';
+import { colors, elevation, fonts, radii, spacing, type } from '../../src/theme';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
@@ -25,6 +25,7 @@ export default function StoriesFeed() {
 }
 
 export function StoriesFeedContent() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
   // On a laptop the page fits the window: the globe fills the left, the posts scroll on the right.
   const fit = useWide();
@@ -87,6 +88,7 @@ function rememberHeart(id: string, on: boolean) {
 }
 
 function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: boolean }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
   const [hearts, setHearts] = useState(story.hearts);
   const [heartBusy, setHeartBusy] = useState(false);
@@ -128,9 +130,10 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
   };
 
   return (
-    <View nativeID={`story-${story.id}`} style={{ backgroundColor: colors.sheet, borderRadius: 16, borderWidth: 1, borderColor: colors.line, paddingVertical: 12, gap: 10 }}>
+    <View nativeID={`story-${story.id}`} style={{ backgroundColor: colors.sheet, borderRadius: radii.card, borderWidth: 1,
+      borderColor: colors.separator, paddingVertical: spacing.xl, gap: spacing.lg, ...elevation }}>
       {/* Header: the item's icon as the avatar, who told it, when */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingHorizontal: 14 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: spacing.xl }}>
         <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', backgroundColor: colors.paper, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line }}>
           <PixelIcon sprite={spriteFor({ id: story.id, name: story.name, nameJa: story.nameJa, icon: story.icon })} size={30} />
         </View>
@@ -146,11 +149,11 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
       </View>
 
       {/* Media: her photos (with her OK), or the story itself as the post */}
-      <View style={{ paddingHorizontal: 14 }}>
+      <View style={{ paddingHorizontal: spacing.xl }}>
         {story.photos.length ? (
           <PhotoCarousel item={{ name: story.name, photos: story.photos, icon: story.icon }} />
         ) : (
-          <View style={{ backgroundColor: colors.aiTint, borderRadius: 14, paddingHorizontal: 22, paddingVertical: 28, minHeight: 200, justifyContent: 'center', gap: 12 }}>
+          <View style={{ backgroundColor: colors.aiTint, borderRadius: radii.control, paddingHorizontal: 22, paddingVertical: 28, minHeight: 200, justifyContent: 'center', gap: 12 }}>
             <Text style={[type.story, { fontSize: 20, lineHeight: 32 }]}>“{text}”</Text>
             <Text style={[type.caption, { color: colors.ai }]}>{teller}</Text>
           </View>
@@ -158,13 +161,13 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
       </View>
 
       {/* Actions: heart, message, share */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: 14 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, paddingHorizontal: spacing.xl }}>
         <Action icon="heart" label={t('feedHeart')} count={hearts} on={hearted} disabled={heartBusy} onPress={heart} />
         <Action icon="message-circle" label={t('feedComment')} count={story.comments.length} onPress={openWriting} />
         <Action icon="send" label={t('feedShare')} onPress={share} />
       </View>
 
-      <View style={{ paddingHorizontal: 14, gap: 6 }}>
+      <View style={{ paddingHorizontal: spacing.xl, gap: spacing.sm }}>
         {story.photos.length ? (
           <Text style={type.body}><Text style={type.bodyBold}>{teller} </Text>{text}</Text>
         ) : null}
@@ -199,11 +202,13 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
 }
 
 function Action({ icon, label, count, on, onPress, disabled }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; count?: number; on?: boolean; onPress: () => void; disabled?: boolean }) {
-  return <Button label={count === undefined ? label : label + ' (' + count + ')'} kind="secondary" icon={icon} selected={on} disabled={disabled} onPress={onPress} />;
+  return <Button label={count === undefined ? label : label + ' (' + count + ')'} kind="tertiary" icon={icon} selected={on} disabled={disabled} onPress={onPress}
+    style={{ paddingHorizontal: 12 }} />;
 }
 
 // Where it went: the stages and dates only, never names or places.
 function Journey({ story }: { story: PublicStory }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
   return (
     <View style={{ gap: 0, paddingVertical: 6 }}>

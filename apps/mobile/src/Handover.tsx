@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
 import React, { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -17,6 +18,7 @@ const kindTone: Record<FieldNoteKind, { fg: string; bg: string }> = {
 
 // Field notes: what earlier pairs learned, so a new student (or a trainee taking over) starts where they left off.
 export function FieldNotesCard() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [kind, setKind] = useState<FieldNoteKind>('likes');
@@ -47,7 +49,7 @@ export function FieldNotesCard() {
       ))}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingTop: 8 }}>
         {KINDS.map((k) => (
-          <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} onPress={() => setKind(k)}
+          <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} aria-checked={kind === k} onPress={() => setKind(k)}
             style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: kind === k ? kindTone[k].fg : colors.line, backgroundColor: kind === k ? kindTone[k].bg : colors.sheet }}>
             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: kind === k ? kindTone[k].fg : colors.ink }}>{t(`note_${k}`)}</Text>
           </Pressable>
@@ -62,6 +64,7 @@ export function FieldNotesCard() {
 
 // Today's report: it reaches the family only after the fresh-eyes check finds no pushy wording.
 export function ReportCard() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t } = useI18n();
   const [text, setText] = useState('');

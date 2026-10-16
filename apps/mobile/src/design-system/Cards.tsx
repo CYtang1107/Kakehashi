@@ -10,7 +10,8 @@ export function Card({ children, style, tint, flat }: { children: React.ReactNod
   const { palette, preferences } = useAccessibilityPreferences();
   return <View style={[flat ? { gap: spacing.md, paddingVertical: spacing.sm }
     : { backgroundColor: tint ? palette.secondary : palette.surface, borderRadius: radii.card, padding: spacing.xl, gap: spacing.lg,
-      ...(preferences.highContrast ? { borderWidth: 2, borderColor: palette.border } : tint ? {} : elevation) }, style]}>{children}</View>;
+      borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : tint ? 'transparent' : palette.separator,
+      ...(tint || preferences.highContrast ? {} : elevation) }, style]}>{children}</View>;
 }
 
 type ContentCardProps = { title: string; description?: string; detail?: string; icon?: ButtonProps['icon']; action?: ButtonProps; children?: React.ReactNode };
@@ -18,7 +19,9 @@ function ContentCard({ title, description, detail, icon, action, children }: Con
   const { palette } = useAccessibilityPreferences();
   return <Card>
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
-      {icon ? <Feather name={icon} size={28} color={palette.primary} accessible={false} /> : null}
+      {icon ? <View style={{ width: 48, height: 48, borderRadius: radii.control, backgroundColor: palette.secondary, alignItems: 'center', justifyContent: 'center' }}>
+        <Feather name={icon} size={24} color={palette.primary} accessible={false} />
+      </View> : null}
       <View style={{ flex: 1, gap: spacing.sm }}>
         <AppText variant="section">{title}</AppText>
         {detail ? <AppText variant="caption">{detail}</AppText> : null}

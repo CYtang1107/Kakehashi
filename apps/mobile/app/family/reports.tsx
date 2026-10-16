@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import React from 'react';
 import { View } from 'react-native';
@@ -9,6 +10,7 @@ import { colors, type } from '../../src/theme';
 import { CallsCard, LetterCard } from '../../src/Touchpoints';
 
 export default function Reports() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   return (

@@ -1,5 +1,5 @@
 // WCAG contrast check for the colour pairs the app uses. Run: npm run contrast -w apps/mobile
-import { colors, decisionColor, highContrastColors } from '../src/theme';
+import { colors, darkColors, decisionColor, getDecisionColors, highContrastColors } from '../src/theme';
 
 const lum = (hex: string) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -40,6 +40,16 @@ const pairs: [string, string, string, number][] = [
   ['high contrast outline', highContrastColors.border, c.surface, 3],
   ['high contrast primary', c.onNight, highContrastColors.primary, 4.5],
   ...Object.entries(decisionColor).map(([k, d]) => [`decision ${k}`, d.fg, d.bg, 4.5] as [string, string, string, number]),
+  ['dark body', darkColors.ink, darkColors.paper, 4.5],
+  ['dark supporting text', darkColors.inkSoft, darkColors.sheet, 4.5],
+  ['dark primary', darkColors.onPrimary, darkColors.primary, 4.5],
+  ['dark primary pressed', darkColors.onPrimary, darkColors.primaryPressed, 4.5],
+  ['dark night text', darkColors.onNight, darkColors.night, 4.5],
+  ['dark input outline', darkColors.border, darkColors.surface, 3],
+  ['dark focus', darkColors.focus, darkColors.paper, 3],
+  ['dark warning', darkColors.warningText, darkColors.warningSurface, 4.5],
+  ['dark error', darkColors.danger, darkColors.dangerSurface, 4.5],
+  ...Object.entries(getDecisionColors(darkColors)).map(([k, d]) => [`dark decision ${k}`, d.fg, d.bg, 4.5] as [string, string, string, number]),
 ];
 
 let failed = 0;

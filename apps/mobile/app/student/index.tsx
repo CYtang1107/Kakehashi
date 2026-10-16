@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -22,6 +23,7 @@ import { colors, fonts, type } from '../../src/theme';
 type Step = 'before' | 'with' | 'after';
 
 export default function Visit() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh } = useData();
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState(false);
@@ -122,6 +124,7 @@ export default function Visit() {
 
 // A visit is a sequence: before you go in, with her, and after you leave.
 function VisitSteps({ step, onChange }: { step: Step; onChange: (s: Step) => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   const steps: [Step, string][] = [['before', t('stepBefore')], ['with', t('stepWith')], ['after', t('stepAfter')]];
   return (

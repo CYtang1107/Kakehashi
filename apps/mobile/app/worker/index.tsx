@@ -1,3 +1,4 @@
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -16,6 +17,7 @@ type Board = { open: JobListing[]; mine: (JobListing & { status: string; feedbac
 // Helpers (repairers, gardeners, cleaners, gig workers) find jobs she or a student posted, at a price set beforehand.
 // Only checked helpers see the board; her name and address are never shown, only the area.
 export default function HelperBoard() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [me, setMe] = useState<string | null>(null);
@@ -58,7 +60,7 @@ export default function HelperBoard() {
         <Text style={type.eyebrow}>{t('helperWho')}</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {workers.map((w) => (
-            <Pressable key={w.id} accessibilityRole="radio" disabled={busy !== null} accessibilityState={{ checked: me === w.id, disabled: busy !== null }} onPress={() => setMe(w.id)}
+            <Pressable key={w.id} accessibilityRole="radio" disabled={busy !== null} accessibilityState={{ checked: me === w.id, disabled: busy !== null }} aria-checked={me === w.id} aria-disabled={busy !== null} onPress={() => setMe(w.id)}
               style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: me === w.id ? colors.ai : colors.line, backgroundColor: me === w.id ? colors.aiTint : colors.sheet }}>
               <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: me === w.id ? colors.ai : colors.ink }}>{workerName(w, lang)}</Text>
               <Text style={type.caption}>{pick(lang, w.from, w.fromJa)}</Text>
@@ -132,6 +134,7 @@ export default function HelperBoard() {
 }
 
 function Checks({ worker }: { worker: Worker }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   const ok = isCleared(worker);
   return (

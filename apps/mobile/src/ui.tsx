@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import type { Decision } from '@kakehashi/shared';
-import { colors, decisionColor, fonts, type, control, layout, spacing } from './theme';
+import { colors, getDecisionColors, fonts, type, control, layout, radii, spacing } from './theme';
 import { useI18n } from './i18n';
 import { useData } from './data';
 import { AppText } from './design-system/AppText';
@@ -14,8 +14,9 @@ import { StatusBanner, ToastFeedback } from './design-system/Feedback';
 import { ConfirmationDialog } from './design-system/ConfirmationDialog';
 import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppBottomBar, GlobalBottomBar } from './design-system/AppBottomBar';
+import { Brand } from './design-system/Brand';
 export { AppText } from './design-system/AppText';
-export { Button, PrimaryButton, SecondaryButton, DestructiveButton, IconLabelButton, AccessibleSwitch, AccessibleTextInput } from './design-system/Controls';
+export { Button, PrimaryButton, SecondaryButton, TertiaryButton, DestructiveButton, IconButton, IconLabelButton, AccessibleSwitch, AccessibleTextInput } from './design-system/Controls';
 export { Card, UpcomingVisitCard, MemoryCard, FriendRecommendationCard, HomeAssistanceCard, DeviceControlCard, ReminderCard, SafetyCard } from './design-system/Cards';
 export { StatusBanner, ToastFeedback, EmptyState } from './design-system/Feedback';
 export { ConfirmationDialog } from './design-system/ConfirmationDialog';
@@ -23,21 +24,33 @@ export { ScreenFrame } from './design-system/ScreenFrame';
 
 export function LangToggle() {
   const { lang, setLang, t } = useI18n();
-  return <Button label={lang === 'en' ? '日本語' : 'English'} kind="secondary"
+  return <Button label={lang === 'en' ? '日本語' : 'English'} kind="secondary" icon="globe"
     accessibilityLabel={t('dsChangeLanguage')} onPress={() => setLang(lang === 'en' ? 'ja' : 'en')} />;
 }
 
 export function TopBar({ back, roleSwitch }: { back?: boolean; roleSwitch?: boolean }) {
   const { top } = useSafeAreaInsets();
   const { t } = useI18n();
-  const { palette } = useAccessibilityPreferences();
-  void roleSwitch;
-  return <View style={{ paddingTop: top + spacing.sm, paddingHorizontal: layout.margin, paddingBottom: spacing.lg,
-    gap: spacing.md, backgroundColor: palette.paper, borderBottomWidth: 1, borderBottomColor: palette.separator }}>
-    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.md }}>
-      <AppText variant="bodyBold" style={{ color: palette.primary }}>KAKEHASHI 架け橋</AppText>
+  const { palette, scale } = useAccessibilityPreferences();
+  const { width } = useWindowDimensions();
+  const path = usePathname();
+  const desktop = width >= 1000 * scale;
+  return <View testID="app-toolbar" style={{ paddingTop: top + spacing.md, paddingHorizontal: layout.margin, paddingBottom: spacing.md,
+    backgroundColor: palette.surface, borderBottomWidth: 1, borderBottomColor: palette.separator }}>
+    <View style={{ width: '100%', maxWidth: layout.wideWidth - layout.margin * 2, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.md }}>
+      <Brand />
       <View style={{ flex: 1 }} />
+      {desktop && roleSwitch !== false ? <View role="navigation" accessibilityLabel={t('hNavigation')} style={{ flexDirection: 'row', gap: spacing.sm }}>
+        {([
+          ['/', t('hHome'), 'home'], ['/roles', t('chooseRole'), 'users'], ['/settings', t('hSettings'), 'settings'],
+        ] as const).map(([href, label, icon]) => {
+          const active = href === '/' ? path === '/' || path === '/stories' : path === href;
+          return <Button key={href} label={label} icon={icon} kind="tertiary" selected={active}
+            style={{ minHeight: 48, paddingHorizontal: spacing.lg }} onPress={() => router.navigate(href)} />;
+        })}
+      </View> : null}
       {back ? <IconLabelButton label={t('back')} kind="secondary" icon="chevron-left"
+        style={{ minHeight: 48, paddingHorizontal: spacing.lg }}
         onPress={() => router.canGoBack() ? router.back() : router.replace('/')} /> : null}
     </View>
   </View>;
@@ -88,13 +101,14 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
 
 // The page heading on night indigo, directly under the top bar so the two read as one band.
 export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth: number }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { eyebrow, title, sub, leading } = header;
-  return <View style={{ paddingHorizontal: layout.margin, paddingTop: spacing.xl, paddingBottom: spacing.sm }}>
-    <View style={{ maxWidth, width: '100%', alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.lg }}>
+  return <View style={{ paddingTop: spacing.xxl, paddingBottom: spacing.sm }}>
+    <View style={{ maxWidth, paddingHorizontal: layout.margin, width: '100%', alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.lg }}>
       {leading}
       <View style={{ flex: 1, minWidth: 180, gap: spacing.sm }}>
+        {eyebrow ? <AppText variant="eyebrow" style={{ color: colors.ai }}>{eyebrow}</AppText> : null}
         <AppText variant="title">{title}</AppText>
-        {eyebrow ? <AppText variant="caption">{eyebrow}</AppText> : null}
         {sub ? <AppText variant="caption">{sub}</AppText> : null}
       </View>
     </View>
@@ -130,6 +144,7 @@ export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: R
 // so cut-off text reads as "there is more" rather than a broken page.
 const FADE_STEPS = [0.15, 0.35, 0.55, 0.75, 0.9];
 function ScrollPanel({ children, flex }: { children: React.ReactNode; flex: number }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const [box, setBox] = useState(0);
   const [content, setContent] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -164,13 +179,13 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
 }) {
   const [open, setOpen] = useState(initiallyOpen);
   const [focused, setFocused] = useState(false);
-  const { palette } = useAccessibilityPreferences();
+  const { palette, preferences } = useAccessibilityPreferences();
   return <View style={{ gap: spacing.lg }}>
-    <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ expanded: open }}
+    <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ expanded: open }} aria-expanded={open}
       onPress={() => setOpen(value => !value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
       style={({ pressed }) => ({ minHeight: control.secondary, flexDirection: 'row', alignItems: 'center', gap: spacing.md,
-        padding: spacing.lg, borderRadius: 12, backgroundColor: pressed ? palette.secondary : palette.surface,
-        borderWidth: 2, borderColor: focused ? palette.focus : palette.border })}>
+        padding: spacing.lg, borderRadius: radii.control, backgroundColor: pressed || open ? palette.secondary : palette.surface,
+        borderWidth: preferences.highContrast ? 2 : 1, borderColor: focused ? palette.focus : preferences.highContrast ? palette.border : palette.separator })}>
       {icon ? <Feather name={icon} size={24} color={palette.primary} accessible={false} /> : null}
       <View style={{ flex: 1, gap: spacing.xs }}>
         <AppText variant="bodyBold">{title}</AppText>
@@ -185,33 +200,36 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
 // "I read this": a person confirms they read what the app drafted or checked, before it goes out.
 export function ReadConfirm({ checked, onChange, label, disabled }: { checked: boolean; onChange: (value: boolean) => void; label: string; disabled?: boolean }) {
   const { palette } = useAccessibilityPreferences();
-  return <Pressable accessibilityRole="checkbox" accessibilityLabel={label} accessibilityState={{ checked, disabled: Boolean(disabled) }} disabled={disabled} onPress={() => onChange(!checked)}
+  return <Pressable accessibilityRole="checkbox" accessibilityLabel={label} accessibilityState={{ checked, disabled: Boolean(disabled) }} aria-checked={checked} aria-disabled={Boolean(disabled)} disabled={disabled} onPress={() => onChange(!checked)}
     style={{ minHeight: control.secondary, flexDirection: 'row', gap: spacing.md, alignItems: 'center', padding: spacing.lg,
-      borderWidth: 2, borderColor: palette.border, borderRadius: 12, backgroundColor: checked ? palette.secondary : palette.surface }}>
+      borderWidth: 1, borderColor: checked ? palette.primary : palette.border, borderRadius: radii.control, backgroundColor: checked ? palette.secondary : palette.surface }}>
     <Feather name={checked ? 'check-square' : 'square'} size={24} color={palette.primary} accessible={false} />
     <AppText style={{ flex: 1 }}>{label}</AppText>
   </Pressable>;
 }
 
 export function DecisionChip({ decision }: { decision: Decision }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
-  const c = decisionColor[decision];
+  const c = getDecisionColors(colors)[decision];
   return (
-    <View style={{ backgroundColor: c.bg, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 99, alignSelf: 'flex-start', borderWidth: decision === 'open' ? 1 : 0, borderColor: colors.line, borderStyle: 'dashed' }}>
+    <View style={{ backgroundColor: c.bg, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 99, alignSelf: 'flex-start', borderWidth: decision === 'open' ? 1 : 0, borderColor: colors.line, borderStyle: 'dashed' }}>
       <AppText variant="caption" style={{ color: c.fg, fontFamily: fonts.bold }}>{t(`decision_${decision}`)}</AppText>
     </View>
   );
 }
 
-export function Pill({ label, color = colors.ai, bg = colors.aiTint }: { label: string; color?: string; bg?: string }) {
+export function Pill({ label, color, bg }: { label: string; color?: string; bg?: string }) {
+  const { palette } = useAccessibilityPreferences();
   return (
-    <View style={{ backgroundColor: bg, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 99, alignSelf: 'flex-start' }}>
-      <AppText variant="caption" style={{ color, fontFamily: fonts.bold }}>{label}</AppText>
+    <View style={{ backgroundColor: bg ?? palette.aiTint, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 99, alignSelf: 'flex-start' }}>
+      <AppText variant="caption" style={{ color: color ?? palette.ai, fontFamily: fonts.bold }}>{label}</AppText>
     </View>
   );
 }
 
 export function Glyph({ ch, size = 40 }: { ch: string; size?: number }) {
+  const { palette: colors } = useAccessibilityPreferences();
   return (
     <View style={{ width: size, height: size, borderRadius: 10, backgroundColor: colors.paper, alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ fontFamily: fonts.display, fontSize: size * 0.48, color: colors.ink }}>{ch}</Text>
@@ -222,6 +240,7 @@ export function Glyph({ ch, size = 40 }: { ch: string; size?: number }) {
 export const Field = AccessibleTextInput;
 
 export function Avatar({ initial, tone }: { initial: string; tone: 'plum' | 'moss' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const fg = tone === 'plum' ? colors.plum : colors.moss;
   const bg = tone === 'plum' ? colors.plumTint : colors.mossTint;
   return (
