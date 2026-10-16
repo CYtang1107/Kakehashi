@@ -1,9 +1,16 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import Svg, { G, Line, Rect, Circle, Polygon, Text as SvgText } from 'react-native-svg';
 import type { Item, Room, SafetyFix } from '@kakehashi/shared';
 import { fixTone } from './SaferHome';
 import { colors, decisionColor, roomColor } from './theme';
 import { useI18n } from './i18n';
+
+// On the web, react-native-svg hands onPress's responder props to the DOM <g> (console warnings);
+// a plain click does the same job there. onPress must be null, not missing: the library copies
+// onPress over onClick unless it is null.
+const pressProps = (fn: () => void) =>
+  (Platform.OS === 'web' ? { onPress: null, onClick: fn, style: { cursor: 'pointer' } } : { onPress: fn }) as { onPress?: () => void };
 
 // 2D floor plan on the shared 320 x 240 grid, with a tappable pin per item.
 export function FloorPlan({ rooms, items, selected, onSelect, fixes = [], fill }: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; fixes?: SafetyFix[]; fill?: boolean }) {
@@ -30,7 +37,7 @@ export function FloorPlan({ rooms, items, selected, onSelect, fixes = [], fill }
       {items.map((it) => {
         const c = decisionColor[it.decision].fg;
         return (
-          <G key={it.id} onPress={() => onSelect(it.id)}>
+          <G key={it.id} {...pressProps(() => onSelect(it.id))}>
             {selected === it.id ? <Circle cx={it.x} cy={it.y} r={15} fill="none" stroke={c} strokeWidth={2} /> : null}
             <Circle cx={it.x} cy={it.y} r={10.5} fill={c} />
             <SvgText x={it.x} y={it.y + 4} fontSize={10.5} fill={colors.sheet} textAnchor="middle">{it.glyph}</SvgText>

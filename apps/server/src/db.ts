@@ -15,10 +15,12 @@ interface Db {
 }
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-// The team's own demo photos (apps/server/demo, committed) are copied in, so the hosted demo has them too.
+// The team's own demo photos (apps/server/demo, committed) are copied in, so the hosted demo has them too;
+// a demo file that was remade (newer) replaces the old copy.
 const DEMO_DIR = path.resolve(__dirname, '..', 'demo');
 for (const f of fs.existsSync(DEMO_DIR) ? fs.readdirSync(DEMO_DIR) : []) {
-  if (!fs.existsSync(path.join(UPLOAD_DIR, f))) fs.copyFileSync(path.join(DEMO_DIR, f), path.join(UPLOAD_DIR, f));
+  const from = path.join(DEMO_DIR, f), to = path.join(UPLOAD_DIR, f);
+  if (!fs.existsSync(to) || fs.statSync(from).mtimeMs > fs.statSync(to).mtimeMs) fs.copyFileSync(from, to);
 }
 
 function fresh(): Db {
