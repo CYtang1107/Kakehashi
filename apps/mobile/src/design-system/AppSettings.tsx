@@ -13,16 +13,22 @@ export function AppSettings({ visible, onClose }: { visible: boolean; onClose: (
   const { t } = useI18n();
   const { preferences, update, palette } = useAccessibilityPreferences();
   const [draft, setDraft] = useState<ReadingPreferences>(preferences);
+  const [initialPreferences, setInitialPreferences] = useState<ReadingPreferences>(preferences);
   const [open, setOpen] = useState<Section | null>('accessibility');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (visible) { setDraft(preferences); setSaved(false); }
+    if (visible) { setInitialPreferences(preferences); setDraft(preferences); setSaved(false); }
   }, [visible]);
 
-  const change = (next: Partial<ReadingPreferences>) => { setDraft(current => ({ ...current, ...next })); setSaved(false); };
-  const save = () => { update(draft); setSaved(true); };
-  const cancel = () => { setDraft(preferences); setSaved(false); onClose(); };
+  const change = (next: Partial<ReadingPreferences>) => {
+    const updated = { ...draft, ...next };
+    setDraft(updated);
+    update(next);
+    setSaved(false);
+  };
+  const save = () => setSaved(true);
+  const cancel = () => { update(initialPreferences); setDraft(initialPreferences); setSaved(false); onClose(); };
   const section = (id: Section, title: string, children: React.ReactNode) => <View style={{ gap: spacing.md }}>
     <Pressable accessibilityRole="button" accessibilityState={{ expanded: open === id }} onPress={() => setOpen(open === id ? null : id)}
       style={{ minHeight: 52, paddingVertical: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
