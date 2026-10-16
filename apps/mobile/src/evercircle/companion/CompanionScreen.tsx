@@ -12,12 +12,16 @@ import { PendingInterests, interestKey } from '../profile/PendingInterests';
 import { companionContext } from './bridge';
 import { ACTIONS } from './engine';
 import { useDailyCompanion } from '../assistance/companion';
+import { useSocial } from '../social/store';
+import { useHomeDemo } from '../homeDemo/store';
+import { runOrchestrator } from '../orchestrator/journal';
 
 const starters = ['cStartHello', 'cStartMemory', 'cStartHelp', 'cStartFriends', 'cStartDay'] as const;
 export function CompanionScreen() {
   const { t, lang } = useI18n(); const { data } = useData();
   const store = useEverCircle(); const { palette, reducedMotion, scale } = useAccessibilityPreferences();
   const dailyReply = useDailyCompanion();
+  const social = useSocial(), home = useHomeDemo();
   const [text, setText] = useState(''); const scroll = useRef<ScrollView>(null);
   const chatTop = useRef(0), latestTop = useRef(0);
   const context = companionContext(data, householdDay());
@@ -25,7 +29,14 @@ export function CompanionScreen() {
   useEffect(() => { if (store.messages.length <= 1) return;
     const timer = setTimeout(() => scroll.current?.scrollTo({ y: chatTop.current + latestTop.current, animated: !reducedMotion }), 80); return () => clearTimeout(timer);
   }, [store.messages.length, reducedMotion]);
-  const send = (value: string) => { if (store.send(value, context.nextVisitDate, () => dailyReply(value))) setText(''); };
+  const current = useRef({ store, social, home, dailyReply, context });
+  current.current = { store, social, home, dailyReply, context };
+  const send = (value: string) => { if (store.send(value, context.nextVisitDate, () => {
+    const now = current.current;
+    return runOrchestrator({ type: 'companion', text: value, saved: now.store.saved, household: now.home.state.householdId,
+      healthy: now.social.healthy, deviceHealthy: now.home.enabled, person: now.social.people.find(p => p.id === 'tanaka')!, people: now.social.people,
+      nextVisitDate: now.context.nextVisitDate, daily: () => now.dailyReply(value) }).reply;
+  })) setText(''); };
   const suggestions = starters.map(key => <Button key={key} label={t(key)} kind="secondary" disabled={store.replying} onPress={() => send(t(key))} />);
   return <FeaturePage title="cTitle" description="cLead" scrollRef={scroll}
     footer={<View style={{ backgroundColor: palette.surface, borderTopWidth: 1, borderColor: palette.border, padding: 12 }}>

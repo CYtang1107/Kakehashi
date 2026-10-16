@@ -2,6 +2,7 @@ import { INTERESTS, type InterestId, type SavedState } from '../profile/model';
 import { persona } from '../demo/persona';
 import { COMMUNITIES, FICTIONAL_PEOPLE, type CommunityId } from './fixtures';
 import { eligibility, SHARE_FIELDS, type AgentEvent, type ShareField, type SocialPerson } from './matching';
+import { canSendInvitation, canSendMessage } from '../privacy/permissions';
 
 export const PERSON_IDS = ['tanaka', ...FICTIONAL_PEOPLE.map(p=>p.id)];
 export type SocialSettings = { matching: boolean; eligible: boolean; grants: Record<ShareField,string|null>; blocked: string[]; hiddenHobbies:InterestId[] };
@@ -43,14 +44,14 @@ export function relationship(state:SocialState,a:SocialPerson,b:SocialPerson):'n
   const relation=state.relations.find(r=>r.key===pairKey(a.id,b.id));
   return !relation?'none':relation.status==='pending'?(relation.from===a.id?'sent':'received'):relation.status;
 }
-export const canMessage=(state:SocialState,a:SocialPerson,b:SocialPerson,healthy=true)=>healthy&&relationship(state,a,b)==='accepted';
+export const canMessage = canSendMessage;
 export type SocialAction =
   | {type:'switch';id:string}
   | {type:'grant';actor:string;field:ShareField;enabled:boolean;revision:number}
   | {type:'hobby';actor:string;id:InterestId;enabled:boolean}
   | {type:'matching';actor:string;enabled:boolean}
   | {type:'eligible';actor:string;enabled:boolean}
-  | {type:'invite'|'accept'|'decline'|'block'|'unblock'|'reply';actor:string;target:string}
+  | {type:'invite'|'accept'|'decline'|'block'|'unblock'|'reply';actor:string;target:string;confirmed?:boolean}
   | {type:'message';actor:string;target:string;text:string}
   | {type:'report';actor:string;target:string;reason:ReportReason}
   | {type:'community';actor:string;community:CommunityId;join:boolean};
@@ -81,11 +82,11 @@ export function reduceSocial(state:SocialState,action:SocialAction,people:Social
   if(action.type==='report')return state.reports.length>=100?reject():done({...state,reports:[...state.reports,{by:actor.id,target:target.id,reason:action.reason}]});
   const status=relationship(state,actor,target);
   if(action.type==='invite') {
-    if(eligibility(actor,target)||status==='sent'||status==='received'||status==='accepted')return reject();
+    if(!canSendInvitation(state,actor,target,action.confirmed,healthy))return reject();
     return done({...state,relations:[...state.relations.filter(r=>r.key!==key),{key,from:actor.id,to:target.id,status:'pending'}],events:decision('invite'),sequence:state.sequence+1});
   }
   if(action.type==='accept'||action.type==='decline') {
-    if(!existing||status!=='received'||(action.type==='accept'&&eligibility(actor,target)))return reject();
+    if(!existing||status!=='received'||(action.type==='accept'&&(!action.confirmed||eligibility(actor,target))))return reject();
     return done({...state,relations:state.relations.map(r=>r.key===key?{...r,status:action.type==='accept'?'accepted':'declined'}:r),events:decision(action.type),sequence:state.sequence+1});
   }
   if(!canMessage(state,actor,target,healthy)||state.messages.filter(m=>m.key===key).length>=100)return reject();

@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useData } from '../../data';
 import { persona } from '../demo/persona';
-import { initialDemo, parseDemo, reduceDemo, type DemoAction, type DemoState } from './model';
+import { initialDemo, parseDemo, type DemoAction, type DemoState } from './model';
 import { readDemo, writeDemo } from './storage';
 import { interpretCommand, type Command, type DeviceChange } from '../smartHome/model';
+import { runOrchestrator } from '../orchestrator/journal';
+import { canPerformDeviceAction } from '../privacy/permissions';
 type Status = 'loading' | 'loadError' | 'ready' | 'saving' | 'error' | 'session';
 function useDemoStore(id: string) {
   const [state, setState] = useState(() => initialDemo(id)), current = useRef(state);
@@ -27,12 +29,13 @@ function useDemoStore(id: string) {
   };
   const change = (action: DemoAction) => {
     if (!['ready', 'saving', 'session'].includes(statusRef.current)) return false;
-    const next = reduceDemo(current.current, action);
+    const next = runOrchestrator({type:'home',state:current.current,action,household:id,healthy:['ready','saving','session'].includes(statusRef.current)}).home!;
     if (next === current.current) return false;
     current.current = next; setState(next); persist(next); return true;
   };
   const apply = (changes: readonly DeviceChange[]) => {
     if (!['ready', 'saving', 'session'].includes(statusRef.current)) return false;
+    if (!canPerformDeviceAction(current.current.householdId,id,changes,current.current.devices)) return false;
     const unchanged = changes.every(c => current.current.devices[c.id] === c.on);
     if (!unchanged && !change({ type: 'devices', changes, at: new Date().toISOString(), id: `${Date.now()}-${++serial.current}` })) return false;
     setCommand(null); setFeedback({ changes, unchanged }); return true;

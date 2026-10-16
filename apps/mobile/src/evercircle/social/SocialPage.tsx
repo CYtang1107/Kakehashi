@@ -39,5 +39,5 @@ export function useSocialConfirmation(){
   const labels:Record<Decision,Key>={invite:'sConfirmInvite',accept:'sAccept',decline:'sDecline',block:'sBlock'};
   return {request:(type:Decision,target:string)=>setPending({type,target,actor:social.active.id}),dialog:<ConfirmationDialog visible={Boolean(pending)}
     title={t(titles[type],{name})} message={t(bodies[type],{name:displayPerson(social.active,lang)})} destructive={type==='block'} busy={social.status==='saving'}
-    confirmLabel={t(labels[type])} onCancel={()=>setPending(null)} onConfirm={()=>{if(pending)void social.act(pending).then(()=>setPending(null));}}/>};
+    confirmLabel={t(labels[type])} onCancel={()=>setPending(null)} onConfirm={()=>{if(pending)void social.act({...pending,confirmed:true}).then(()=>setPending(null));}}/>};
 }

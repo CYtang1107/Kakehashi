@@ -26,13 +26,17 @@ export const ACTIONS = {
   memories: { label: 'cOpenMemories', route: '/her/memories' }, help: { label: 'hRequestHelp', route: '/her/help' },
   day: { label: 'hDay', route: '/her/my-day' }, friends: { label: 'hFriends', route: '/her/friends' },
   profile: { label: 'cProfile', route: '/her/profile' }, smart: { label: 'hSmart', route: '/her/smart-home' },
+  privacy: { label: 'sPermissions', route: '/her/friends/permissions' },
+  safety: { label: 'hMyHome', route: '/her/my-home' },
 } as const satisfies Record<string, { label: Key; route: string }>;
 export type ActionId = keyof typeof ACTIONS;
-export type Intent = 'greeting' | 'interests' | 'memory' | 'help' | 'visits' | 'friends' | 'devices' | 'reminders' | 'activities' | 'unsupported';
+export type Intent = 'greeting' | 'interests' | 'memory' | 'help' | 'visits' | 'friends' | 'devices' | 'reminders' | 'activities' | 'safety' | 'unsupported';
 export type Reply = { intent: Intent; key: Key; actions: ActionId[]; candidates: InterestId[]; date?: string; interest?: InterestId; text?: string };
 export function respond(text: string, context: { approved: InterestId[]; nextVisitDate?: string }): Reply {
   const input = normalized(text), candidates = recognizeInterests(input);
   const reply = (intent: Intent, key: Key, actions: ActionId[]): Reply => ({ intent, key, actions, candidates });
+  if (/\b(safety|safe home|home safety)\b|安全/i.test(input)) return reply('safety', 'cHelpReply', ['safety']);
+  if (/\bmeet (someone|somebody)\b|誰かと出会|園芸.*友/i.test(input)) return reply('friends', 'cFriendReply', ['profile', 'friends']);
   if (/^\s*(hello|hi|hey|how are you(?: today)?|good morning|good evening|こんにちは|おはよう(?:ございます)?|こんばんは|今日は元気ですか)[\s?.!。！]*$/.test(input)) {
     return { ...reply('greeting',context.approved.length?'cPersonalGreeting':'cGreeting',[]), interest: context.approved[0] };
   }

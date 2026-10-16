@@ -40,22 +40,22 @@ test('Stage 4 approval and independent sharing are required',()=>{
 });
 test('invitations require fresh eligibility; sender cannot accept; receiver explicitly accepts',()=>{
  act({type:'message',actor:'tanaka',target:'aiko',text:'hello'},false);
- act({type:'invite',actor:'tanaka',target:'aiko'});assert.equal(S.relationship(state,person('tanaka'),person('aiko')),'sent');
- act({type:'accept',actor:'tanaka',target:'aiko'},false);act({type:'invite',actor:'tanaka',target:'aiko'},false);
- switchTo('aiko');act({type:'accept',actor:'tanaka',target:'aiko'},false);act({type:'accept',actor:'aiko',target:'tanaka'});assert.equal(S.relationship(state,person('tanaka'),person('aiko')),'accepted');
+ act({type:'invite',confirmed:true,actor:'tanaka',target:'aiko'});assert.equal(S.relationship(state,person('tanaka'),person('aiko')),'sent');
+ act({type:'accept',confirmed:true,actor:'tanaka',target:'aiko'},false);act({type:'invite',confirmed:true,actor:'tanaka',target:'aiko'},false);
+ switchTo('aiko');act({type:'accept',confirmed:true,actor:'tanaka',target:'aiko'},false);act({type:'accept',confirmed:true,actor:'aiko',target:'tanaka'});assert.equal(S.relationship(state,person('tanaka'),person('aiko')),'accepted');
  act({type:'message',actor:'aiko',target:'tanaka',text:'  Hello  '});act({type:'reply',actor:'aiko',target:'tanaka'});assert.equal(state.messages[0].text,'Hello');assert.equal(state.messages[1].kind,'scripted');
 });
 test('opt-out stops invitations but retains approved memory and accepted messaging',()=>{
  switchTo('tanaka');saved=P.reduceSaved(saved,{type:'matching',enabled:false});assert.equal(saved.approved.length,2);assert.equal(M.simulateAgents(person('tanaka'),person('aiko')).eligible,false);
- act({type:'invite',actor:'tanaka',target:'haru'},false);act({type:'message',actor:'tanaka',target:'aiko',text:'Existing friendship'});
+ act({type:'invite',confirmed:true,actor:'tanaka',target:'haru'},false);act({type:'message',actor:'tanaka',target:'aiko',text:'Existing friendship'});
 });
 test('blocking is bilateral and closes friendship; unblocking does not reopen history',()=>{
  act({type:'block',actor:'tanaka',target:'aiko'});assert.equal(S.canMessage(state,person('aiko'),person('tanaka')),false);assert.equal(state.messages.length,3);
- switchTo('aiko');act({type:'message',actor:'aiko',target:'tanaka',text:'Blocked'},false);act({type:'invite',actor:'aiko',target:'tanaka'},false);
+ switchTo('aiko');act({type:'message',actor:'aiko',target:'tanaka',text:'Blocked'},false);act({type:'invite',confirmed:true,actor:'aiko',target:'tanaka'},false);
  switchTo('tanaka');act({type:'unblock',actor:'tanaka',target:'aiko'});assert.equal(S.relationship(state,person('aiko'),person('tanaka')),'none');assert.equal(S.canMessage(state,person('aiko'),person('tanaka')),false);
 });
 test('recipient decline never authorizes messages',()=>{
- switchTo('aiko');act({type:'invite',actor:'aiko',target:'haru'});switchTo('haru');act({type:'decline',actor:'haru',target:'aiko'});assert.equal(S.relationship(state,person('aiko'),person('haru')),'declined');act({type:'message',actor:'haru',target:'aiko',text:'No'},false);
+ switchTo('aiko');act({type:'invite',confirmed:true,actor:'aiko',target:'haru'});switchTo('haru');act({type:'decline',actor:'haru',target:'aiko'});assert.equal(S.relationship(state,person('aiko'),person('haru')),'declined');act({type:'message',actor:'haru',target:'aiko',text:'No'},false);
 });
 test('profile edit/revert/reset invalidates field grants; removed hobbies disappear immediately',()=>{
  saved=P.reduceSaved(saved,{type:'matching',enabled:true});saved=P.reduceSaved(saved,{type:'share',id:'gardening',enabled:true});assert.equal(person('tanaka').shared.identity,true);
@@ -68,7 +68,7 @@ test('communities are explicit, independent of matching and scoped to current ac
  act({type:'community',actor:'tanaka',community:'gardening',join:true});switchTo('aiko');assert.equal(state.memberships.filter(m=>m.personId==='aiko').length,0);act({type:'community',actor:'tanaka',community:'music',join:true},false);switchTo('tanaka');act({type:'community',actor:'tanaka',community:'gardening',join:false});assert.equal(state.memberships.length,0);
 });
 test('write failures pause actions while withdrawal and blocking remain possible',()=>{
- switchTo('aiko');act({type:'invite',actor:'aiko',target:'mei'},false,false);act({type:'message',actor:'aiko',target:'tanaka',text:'No'},false,false);act({type:'block',actor:'aiko',target:'mei'},true,false);act({type:'matching',actor:'aiko',enabled:false},true,false);
+ switchTo('aiko');act({type:'invite',confirmed:true,actor:'aiko',target:'mei'},false,false);act({type:'message',actor:'aiko',target:'tanaka',text:'No'},false,false);act({type:'block',actor:'aiko',target:'mei'},true,false);act({type:'matching',actor:'aiko',enabled:false},true,false);
  act({type:'matching',actor:'aiko',enabled:true});assert.ok(person('aiko').hobbies.every(h=>!h.shareForMatching));
 });
 test('persistence roundtrip retains relationships/blocks/messages, strips traces and rejects invalid scope',()=>{

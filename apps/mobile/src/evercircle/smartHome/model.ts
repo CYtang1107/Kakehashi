@@ -14,7 +14,7 @@ export type Command = { kind: 'recognized'; change: DeviceChange } | { kind: 'am
 // Whole-input grammar: no substring execution, compound actions, inferred rooms or unrestricted language.
 export function interpretCommand(input: string): Command {
   const text = input.normalize('NFKC').toLowerCase().trim().replace(/[.!。！]+$/, '').trim();
-  const en = /^(?:please )?(turn on|switch on|turn off|switch off|open|close) (?:the )?(?:(living room|bedroom|kitchen) )?(light|lights|fan|fans|curtain|curtains|television|tv)(?: please)?$/.exec(text);
+  const en = /^(?:please )?(turn on|switch on|turn off|switch off|open|close) (?:(?:the|my) )?(?:(living room|bedroom|kitchen) )?(light|lights|fan|fans|curtain|curtains|television|tv)(?: please)?$/.exec(text);
   const ja = /^(?:(リビング|寝室|台所|キッチン)の)?(照明|電気|扇風機|カーテン|テレビ)を(つけて|消して|開けて|閉めて)$/.exec(text);
   if (!en && !ja) return { kind: 'unsupported' };
   const roomNames: Record<string, Room> = { 'living room': 'living', bedroom: 'bedroom', kitchen: 'kitchen', リビング: 'living', 寝室: 'bedroom', 台所: 'kitchen', キッチン: 'kitchen' };

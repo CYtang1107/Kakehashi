@@ -1,5 +1,6 @@
 import { DEVICES, applyChanges, type DeviceChange } from '../smartHome/model';
 import { makeReminder, type Reminder } from '../assistance/model';
+import { canPerformDeviceAction } from '../privacy/permissions';
 export type Activity = { id: string; at: string; changes: DeviceChange[] };
 export type DemoState = { version: 1; householdId: string; devices: Record<string, boolean>; reminders: Reminder[]; activity: Activity[] };
 export function initialDemo(householdId: string): DemoState {
@@ -9,6 +10,7 @@ export type DemoAction = { type: 'devices'; changes: readonly DeviceChange[]; at
   | { type: 'add'; reminder: Reminder } | { type: 'complete'; id: string; completed: boolean };
 export function reduceDemo(state: DemoState, action: DemoAction): DemoState {
   if (action.type === 'devices') {
+    if (!canPerformDeviceAction(state.householdId,state.householdId,action.changes,state.devices)) return state;
     const changes = action.changes.filter(c => DEVICES.some(d => d.id === c.id) && typeof c.on === 'boolean' && state.devices[c.id] !== c.on);
     if (!changes.length) return state;
     return { ...state, devices: applyChanges(state.devices, changes), activity: [{ id: action.id, at: action.at, changes }, ...state.activity].slice(0, 20) };

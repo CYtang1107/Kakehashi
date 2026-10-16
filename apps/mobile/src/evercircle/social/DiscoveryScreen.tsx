@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { router } from 'expo-router';
 import { AppText, Button, Card, EmptyState, Fold, StatusBanner } from '../../ui';
@@ -8,6 +8,8 @@ import { eligibility, personEligibility, simulateAgents, WEIGHTS, type Component
 import { relationship } from './model';
 import { SocialPage, displayPerson, useSocialConfirmation } from './SocialPage';
 import { useSocial } from './store';
+import { orchestrate } from '../orchestrator/model';
+import { recordResult } from '../orchestrator/journal';
 
 export const componentLabels:Record<Component,Key>={hobbies:'cHobbies',languages:'cLanguages',times:'cTimes',communication:'cCommunication',activities:'cActivities',locations:'cLocations'};
 export function DiscoveryScreen({children}:{children?:React.ReactNode}){
@@ -15,7 +17,10 @@ export function DiscoveryScreen({children}:{children?:React.ReactNode}){
   const own=social.active,reason=personEligibility(own),busy=social.status==='saving';
   const others=social.people.filter(p=>p.id!==own.id);
   const connections=others.filter(p=>!['none','blocked'].includes(relationship(social.state,own,p)));
-  const recommendations=social.healthy?others.map(p=>({person:p,result:simulateAgents(own,p)}))
+  const matching=useMemo(()=>orchestrate({type:'matching',person:own,people:social.people,healthy:social.healthy}),[social.people,social.healthy,own]);
+  useEffect(()=>{recordResult(matching);},[matching]);
+  const recommendations=social.healthy?others.map((p,index)=>({person:p,result:matching.matches?.[index]}))
+    .filter((entry): entry is {person:typeof own;result:ReturnType<typeof simulateAgents>}=>Boolean(entry.result))
     .filter(entry=>entry.result.eligible&&['none','declined'].includes(relationship(social.state,own,entry.person)))
     .sort((a,b)=>(b.result.eligible?b.result.score:0)-(a.result.eligible?a.result.score:0)||a.person.id.localeCompare(b.person.id)):[];
   const list=(values:string[],hobbies=false)=>values.map(id=>t(hobbies?interestKey(id):`cOption_${id}` as Key)).join(' / ');

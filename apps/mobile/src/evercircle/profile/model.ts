@@ -1,3 +1,4 @@
+import { canShareInterest } from '../privacy/permissions';
 export const INTERESTS = ['gardening', 'orchids', 'cooking', 'music', 'reading', 'walking', 'chess', 'photography', 'handicrafts'] as const;
 export type InterestId = typeof INTERESTS[number];
 export const LANGUAGES = ['en', 'ja'] as const;
@@ -69,7 +70,7 @@ export function reduceSaved(state: SavedState, action: SavedAction): SavedState 
     case 'profile': return { ...state, profile: cleanProfile(action.profile), profileRevision: (state.profileRevision ?? 0) + 1 };
     case 'matching': return { ...state, matchingEnabled: action.enabled,
       approved: action.enabled ? state.approved : state.approved.map(i => ({ ...i, shareForMatching: false })) };
-    case 'share': return { ...state, approved: state.approved.map(i => i.id === action.id ? { ...i, shareForMatching: action.enabled && state.matchingEnabled } : i) };
+    case 'share': return { ...state, approved: state.approved.map(i => i.id === action.id ? { ...i, shareForMatching: action.enabled && canShareInterest(state, i.id) } : i) };
     case 'clearPending': return { ...state, pending: [] };
     case 'reset': return { ...initialState(state.householdId), profileRevision: (state.profileRevision ?? 0) + 1 };
   }

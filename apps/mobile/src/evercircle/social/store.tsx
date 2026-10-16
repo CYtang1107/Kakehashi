@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useEverCircle } from '../store';
-import { initialSocial, parseSocial, reduceSocial, socialPeople, type SocialAction, type SocialState } from './model';
+import { initialSocial, parseSocial, socialPeople, type SocialAction, type SocialState } from './model';
 import { readSocial, writeSocial } from './storage';
+import { runOrchestrator } from '../orchestrator/journal';
 
 type Status='loading'|'loadError'|'ready'|'saving'|'error'|'session';
 function useSocialStore(){
@@ -26,9 +27,9 @@ function useSocialStore(){
     setFeedback(null);
     if(['loading','loadError','saving'].includes(statusRef.current))return false;
     const c=companionRef.current, currentProfileHealthy=['ready','session'].includes(c.storageStatus);
-    const result=reduceSocial(current.current,action,socialPeople(current.current,c.saved,currentProfileHealthy),['ready','session'].includes(statusRef.current)&&currentProfileHealthy);
-    if(!result.ok){setFeedback('sActionUnavailable');return false;}
-    current.current=result.state;setState(result.state);const session=statusRef.current==='session';const ok=await persist(result.state);if(alive.current&&ok&&!session)setFeedback('sSaved');return ok;
+    const result=runOrchestrator({type:'social',state:current.current,action,people:socialPeople(current.current,c.saved,currentProfileHealthy),healthy:['ready','session'].includes(statusRef.current)&&currentProfileHealthy});
+    if(result.permission!=='allowed'){setFeedback('sActionUnavailable');return false;}
+    current.current=result.social!;setState(result.social!);const session=statusRef.current==='session';const ok=await persist(result.social!);if(alive.current&&ok&&!session)setFeedback('sSaved');return ok;
   };
   return {state,people,active:people.find(p=>p.id===state.activeId)!,status,healthy,feedback,act,clearFeedback:()=>setFeedback(null),
     retryLoad:hydrate,retrySave:()=>persist(current.current),

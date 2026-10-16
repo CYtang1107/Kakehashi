@@ -9,13 +9,13 @@ import type { Reply } from '../companion/engine';
 // The chat delegates here; device interpretation and mutations live in the shared home modules.
 export function useDailyCompanion() {
   const store = useHomeDemo(), { data, error } = useData(), { lang, t } = useI18n();
-  return (input: string): Reply | undefined => {
+  return (input: string): (Reply & { performed?: boolean }) | undefined => {
     const reply = (intent: Reply['intent'], text: string, actions: Reply['actions']): Reply => ({ intent, key: 'cDeviceReply', text, actions, candidates: [] });
     const c = (key: Parameters<typeof homeCopy>[1]) => homeCopy(lang, key);
     if (isDeviceRequest(input)) {
       if (!store.enabled) return reply('devices', c(store.status === 'error' ? 'saveError' : store.status === 'loading' ? 'loading' : 'loadError'), ['smart']);
       const { result, applied } = store.execute(input);
-      return reply('devices', result.kind === 'recognized' && applied ? `${c('simulated')} ${changeLabel(result.change, lang)}` : result.kind === 'ambiguous' ? c('ambiguous') : `${t('cDeviceReply')} ${c('unsupported')}`, ['smart']);
+      return { ...reply('devices', result.kind === 'recognized' && applied ? `${c('simulated')} ${changeLabel(result.change, lang)}` : result.kind === 'ambiguous' ? c('ambiguous') : `${t('cDeviceReply')} ${c('unsupported')}`, ['smart']), performed: applied };
     }
     if (/\b(today|schedule|planned|visits?|students?)\b|今日|予定|訪問|学生/i.test(input) && !/how are you|元気/i.test(input)) {
       const day = householdDay(), local = dailySummary(store.state.reminders, day);

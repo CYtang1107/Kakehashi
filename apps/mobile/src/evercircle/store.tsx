@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { initialState, parseSaved, reduceSaved, type SavedAction, type SavedState } from './profile/model';
+import { initialState, parseSaved, type SavedAction, type SavedState } from './profile/model';
 import { respond, type Reply } from './companion/engine';
 import { readSaved, writeSaved } from './demo/storage';
 import { persona } from './demo/persona';
+import { runOrchestrator } from './orchestrator/journal';
 
 type StorageStatus = 'loading' | 'loadError' | 'ready' | 'saving' | 'error' | 'session';
 export type Message = { id: number; role: 'user'; text: string } | { id: number; role: 'companion'; reply: Reply };
@@ -39,7 +40,9 @@ function useFeatureStore() {
   };
   const change = (action: SavedAction): Promise<boolean> => {
     if (status.current === 'loading' || status.current === 'loadError') return Promise.resolve(false);
-    const next = reduceSaved(current.current, action); current.current = next; setSaved(next); return persist(next);
+    const result = runOrchestrator({ type: 'profile', state: current.current, action, healthy: ['ready', 'saving', 'session'].includes(status.current) });
+    if (result.permission !== 'allowed') return Promise.resolve(false);
+    const next = result.saved!; current.current = next; setSaved(next); return persist(next);
   };
   const stop = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; setReplying(false); };
   const clearChat = () => { stop(); setChatEpoch(value => value + 1); setMessages(welcome()); setChatError(null); return change({ type: 'clearPending' }); };

@@ -1,4 +1,5 @@
 import type { ApprovedInterest, Profile, InterestId } from '../profile/model';
+import { matchingDenial, pairDenial } from '../privacy/permissions';
 
 export const SHARE_FIELDS = ['identity', 'age', 'languages', 'times', 'communication', 'activities', 'locations'] as const;
 export type ShareField = typeof SHARE_FIELDS[number];
@@ -15,16 +16,10 @@ export const WEIGHTS = { hobbies: .40, languages: .20, times: .15, communication
 export type Component = keyof typeof WEIGHTS;
 export type Exclusion = 'self' | 'blocked' | 'optedOut' | 'unavailable' | 'identityPrivate' | 'hobbiesPrivate';
 export function personEligibility(person: SocialPerson): Exclusion | null {
-  if (!person.matching) return 'optedOut';
-  if (!person.eligible) return 'unavailable';
-  if (!person.shared.identity) return 'identityPrivate';
-  if (!person.hobbies.some(h => h.shareForMatching)) return 'hobbiesPrivate';
-  return null;
+  return matchingDenial(person);
 }
 export function eligibility(a: SocialPerson, b: SocialPerson): Exclusion | null {
-  if (a.id === b.id) return 'self';
-  if (a.blocked.includes(b.id) || b.blocked.includes(a.id)) return 'blocked';
-  return personEligibility(a) ?? personEligibility(b);
+  return pairDenial(a, b);
 }
 // Construct an allowlist. Never spread the input person, profile or any household bundle.
 export function approvedSummary(person: SocialPerson): ApprovedSummary | null {
