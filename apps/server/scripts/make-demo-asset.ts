@@ -1,13 +1,14 @@
 // Turns a team photo into a demo asset: a resized WebP with no metadata (phone photos can carry GPS)
-// and the item's 32x32 pixel icon. Usage: npx tsx scripts/make-demo-asset.ts <photo> <item id>
+// and the item's 32x32 pixel icon. Usage: npx tsx scripts/make-demo-asset.ts <photo> <item id> [cut-out.png]
+// For a busy background, pass a cut-out of the item (a PNG with a transparent background) for the icon.
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 import { pixelIcon } from '../src/pixelize';
 
-const [src, itemId] = process.argv.slice(2);
+const [src, itemId, cutout] = process.argv.slice(2);
 if (!src || !itemId) {
-  console.error('Usage: npx tsx scripts/make-demo-asset.ts <photo> <item id>');
+  console.error('Usage: npx tsx scripts/make-demo-asset.ts <photo> <item id> [cut-out.png]');
   process.exit(1);
 }
 const out = path.resolve(__dirname, '..', 'demo');
@@ -17,7 +18,7 @@ fs.mkdirSync(out, { recursive: true });
   // rotate() applies the camera orientation; sharp drops EXIF and GPS unless asked to keep them.
   const photo = await sharp(fs.readFileSync(src)).rotate().resize({ width: 1200, withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();
   fs.writeFileSync(path.join(out, `demo-${itemId}-photo.webp`), photo);
-  const icon = await pixelIcon(photo, `ph-${itemId}-0`);
+  const icon = await pixelIcon(cutout ? fs.readFileSync(cutout) : photo, `ph-${itemId}-0`);
   fs.writeFileSync(path.join(out, `demo-${itemId}-icon.json`), JSON.stringify(icon));
   const meta = await sharp(photo).metadata();
   console.log(`demo-${itemId}-photo.webp ${meta.width}x${meta.height}, ${Math.round(photo.length / 1024)} KB, exif: ${meta.exif ? 'yes' : 'none'}`);

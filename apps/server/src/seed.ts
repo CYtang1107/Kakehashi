@@ -207,6 +207,22 @@ const DEMO_PHOTOS: Record<string, { file: string; kind: ItemPhoto['kind']; capti
   sunglasses: [
     { file: 'demo-sunglasses-photo.webp', kind: 'photo', caption: 'His sunglasses today, from the drawer by the door', captionJa: '今のサングラス（玄関横の引き出しから）' },
   ],
+  // AI-made pictures, so they are 'illustration': labelled in the app and never shown on the public feed.
+  sewing: [
+    { file: 'demo-sewing-photo.webp', kind: 'illustration', caption: 'Her sewing machine by the window (illustration)', captionJa: '窓辺のミシン（イラスト）' },
+  ],
+  tv: [
+    { file: 'demo-tv-photo.webp', kind: 'illustration', caption: 'The old television in the living room (illustration)', captionJa: '居間の古いテレビ（イラスト）' },
+  ],
+  camera: [
+    { file: 'demo-camera-photo.webp', kind: 'illustration', caption: 'His film camera and its bag (illustration)', captionJa: '夫のフィルムカメラとかばん（イラスト）' },
+  ],
+  desk: [
+    { file: 'demo-desk-photo.webp', kind: 'illustration', caption: 'The writing desk where the Sunday letters were written (illustration)', captionJa: '日曜の手紙を書いた文机（イラスト）' },
+  ],
+  kimono: [
+    { file: 'demo-kimono-photo.webp', kind: 'illustration', caption: 'The wedding kimono with the obi her mother made (illustration)', captionJa: '母が作った帯と婚礼の着物（イラスト）' },
+  ],
 };
 function demoPhotos(itemId: string): ItemPhoto[] {
   return (DEMO_PHOTOS[itemId] ?? []).filter((p) => fs.existsSync(path.join(UPLOAD_DIR, p.file)))
