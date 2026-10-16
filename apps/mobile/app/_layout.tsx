@@ -12,6 +12,7 @@ import { I18nProvider } from '../src/i18n';
 import { DataProvider } from '../src/data';
 import { colors } from '../src/theme';
 import { AccessibilityProvider, useAccessibilityPreferences } from '../src/design-system/preferences';
+import { AuthProvider } from '../src/auth';
 
 // Thin scrollbars in the app's colours, instead of the browser's heavy grey ones (web only).
 if (typeof document !== 'undefined' && !document.getElementById('kk-scrollbars')) {
@@ -32,9 +33,11 @@ export default function RootLayout() {
   return (
     <I18nProvider>
       <AccessibilityProvider>
+      <AuthProvider>
       <DataProvider>
         <AppStack />
       </DataProvider>
+      </AuthProvider>
       </AccessibilityProvider>
     </I18nProvider>
   );

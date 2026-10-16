@@ -22,6 +22,18 @@ export const highContrastColors = {
   border: '#263E30', line: '#263E30', primary: '#173F31', focus: '#101B14',
 } as const;
 
+export const darkColors = {
+  ...colors, background: '#17231D', surface: '#223229', secondary: '#30483A', accent: '#6D4B3D',
+  primary: '#9BC7A9', primaryPressed: '#B6DDBF', text: '#F3F7F1', textSecondary: '#C1D0C4',
+  border: '#789180', separator: '#40574A', focus: '#B6DDBF', dangerSurface: '#4A2927',
+  warningText: '#F3D48E', warningSurface: '#4A3C24', paper: '#17231D', sheet: '#223229',
+  ink: '#F3F7F1', inkSoft: '#C1D0C4', line: '#789180', night: '#0E1712', nightRaised: '#1B2A20',
+  onNight: '#102016', onNightSoft: '#D7E8DA', kakiNight: '#F1B99F', kakiInk: '#F1B99F',
+  ai: '#9BC7A9', aiTint: '#30483A', moss: '#A8C98A', mossTint: '#30452D', plum: '#D2A9C8',
+  plumTint: '#453342', indigo: '#ABC2EA', indigoTint: '#2F3D56', kaki: '#F1B99F', kakiTint: '#4A342D',
+  danger: '#FF9D91',
+} as const;
+
 export const fonts = {
   regular: 'ZenKakuGothicNew_400Regular',
   medium: 'ZenKakuGothicNew_500Medium',

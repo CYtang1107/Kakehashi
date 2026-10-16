@@ -8,7 +8,7 @@ import { useData } from '../data';
 import { useI18n, type Key } from '../i18n';
 import { useWeather } from '../Weather';
 import { api } from '../api';
-import { ReadingSettings } from '../design-system/ReadingSettings';
+import { AppSettings } from '../design-system/AppSettings';
 import { itemPhotos } from '../PhotoCarousel';
 import { DecisionChip } from '../ui';
 import { householdDay, planDate, plans } from './plans';
@@ -148,13 +148,13 @@ export function HouseInformationScreen() {
 }
 export function SettingsScreen() {
   const { data, refresh, showToast } = useData(); const { t } = useI18n();
-  const [reading, setReading] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(false);
+  const [settings, setSettings] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState(false);
   const consent = async (value: boolean) => { setBusy(true); setError(false);
     try { await api.consent(data!.home.id, value); await refresh(); showToast(t('saved')); } catch { setError(true); } finally { setBusy(false); }
   };
   return <HerPage back title={t('hSettings')}>
-    <AppText variant="section">{t('hPreferences')}</AppText><Button label={t('dsReadingSettings')} icon="type" kind="secondary" onPress={() => setReading(true)} /><LangToggle />
-    <ReadingSettings visible={reading} onClose={() => setReading(false)} />
+    <AppText variant="section">{t('hPreferences')}</AppText><Button label={t('appSettingsTitle')} icon="settings" kind="secondary" onPress={() => setSettings(true)} /><LangToggle />
+    <AppSettings visible={settings} onClose={() => setSettings(false)} />
     <AppText variant="section">{t('hPrivacy')}</AppText>
     <Destination label="cProfile" href="/her/profile" icon="user" />
     <Destination label="cPrivacy" href="/her/privacy" icon="shield" />

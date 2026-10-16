@@ -1,17 +1,23 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AccessibilityInfo, Platform } from 'react-native';
-import { colors, highContrastColors, textScale } from '../theme';
+import { colors, darkColors, highContrastColors, textScale } from '../theme';
 
 export type TextMode = keyof typeof textScale;
-export type ReadingPreferences = { textMode: TextMode; highContrast: boolean; reduceMotion: boolean };
-const defaults: ReadingPreferences = { textMode: 'normal', highContrast: false, reduceMotion: false };
+export type ReadingPreferences = {
+  textMode: TextMode; highContrast: boolean; reduceMotion: boolean; darkMode: boolean;
+  notifications: boolean; shareUsage: boolean; saveHistory: boolean;
+};
+const defaults: ReadingPreferences = { textMode: 'normal', highContrast: false, reduceMotion: false,
+  darkMode: false, notifications: true, shareUsage: false, saveHistory: true };
 const storageKey = 'kakehashi-reading-preferences-v1';
 function loadPreferences(): ReadingPreferences {
   if (Platform.OS !== 'web') return defaults;
   try {
     const saved = JSON.parse(globalThis.localStorage?.getItem(storageKey) ?? '{}');
-    return { textMode: ['normal', 'large', 'extraLarge'].includes(saved.textMode) ? saved.textMode : 'normal',
-      highContrast: saved.highContrast === true, reduceMotion: saved.reduceMotion === true };
+    return { ...defaults, textMode: ['normal', 'large', 'extraLarge'].includes(saved.textMode) ? saved.textMode : 'normal',
+      highContrast: saved.highContrast === true, reduceMotion: saved.reduceMotion === true,
+      darkMode: saved.darkMode === true, notifications: saved.notifications !== false,
+      shareUsage: saved.shareUsage === true, saveHistory: saved.saveHistory !== false };
   } catch { return defaults; }
 }
 const Preferences = createContext({ preferences: defaults, systemReducedMotion: false,
@@ -40,5 +46,5 @@ export function useAccessibilityPreferences() {
   const value = useContext(Preferences);
   return { ...value, scale: textScale[value.preferences.textMode],
     reducedMotion: value.systemReducedMotion || value.preferences.reduceMotion,
-    palette: value.preferences.highContrast ? highContrastColors : colors };
+    palette: value.preferences.highContrast ? highContrastColors : value.preferences.darkMode ? darkColors : colors };
 }
