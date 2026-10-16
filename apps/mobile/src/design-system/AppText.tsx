@@ -13,7 +13,8 @@ export function AppText({ variant = 'body', style, ...props }: AppTextProps) {
   const legacyUI = merged.fontFamily === fonts.regular || merged.fontFamily === fonts.medium || merged.fontFamily === fonts.bold;
   const fontWeight = legacyUI ? merged.fontFamily === fonts.bold ? '700' : merged.fontFamily === fonts.medium ? '500' : '400' : merged.fontWeight;
   const color = merged.color === typography.caption.color ? palette.inkSoft
-    : merged.color === typography.body.color ? palette.ink : merged.color;
+    : merged.color === typography.body.color ? palette.ink
+    : merged.color === typography.eyebrow.color ? palette.kakiInk : merged.color;
   return <Text accessibilityLanguage={lang === 'ja' ? 'ja-JP' : 'en-GB'}
     accessibilityRole={variant === 'title' || variant === 'section' ? 'header' : undefined}
     {...(Platform.OS === 'web' && (variant === 'title' || variant === 'section') ? { 'aria-level': variant === 'title' ? 1 : 2 } : {})}

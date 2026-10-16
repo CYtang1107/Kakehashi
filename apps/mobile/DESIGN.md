@@ -45,6 +45,14 @@ A welcoming home: warm neutral surroundings, white surfaces, quiet sage accents 
 | Separate settings modal | Shared accessible dialog | Consistent focus trapping, Escape dismissal and focus return |
 | Fixed light colours in legacy views | Active theme palette and semantic decision colours | Keep light, dark and high-contrast experiences coherent |
 
+## Older-adult colour scheme
+
+Every `/her` and `/her/*` route selects an Elderly Care palette through `useAccessibilityPreferences`, including shared controls, dialogs, browser chrome and the digital-house interface. Other roles retain their own palette. The light palette uses Lavender `#7F6890` for primary actions, Avocado `#C5D4AB` for friendship and completed-status surfaces, Astra `#FCE8B8` for visits and calendar accents, Umami `#F4BF90` for home accents, and Mocha `#A17A74` for control outlines. Warm neutral backgrounds and white cards keep these accents selective. Dark and stronger-contrast variants preserve the same visual identity.
+
+Pastels carry dark text rather than white labels. Selected navigation uses darker lavender text, a visible outline and increased weight. Existing large targets, system typography, text-size preferences, focus indicators and reduced-motion behaviour remain available. Warning, error and emergency-action tokens keep their existing safety colours; photographs, maps and scene artwork retain their content colours.
+
+`npm run contrast -w apps/mobile` includes all three older-adult palettes, checks text on pastel surfaces, and requires at least 7:1 for stronger-contrast body and supporting text. Physical-device and screen-reader validation remain separate from browser checks.
+
 ## Typography
 
 The system font uses the platform's native face through React Native's `System` family. `AppText` also maps legacy Zen Kaku UI styles to the system face, preserving their weight. Mincho remains the story/display accent; raw native text and the retained scene artwork may still use their existing faces.

@@ -1,5 +1,5 @@
 // WCAG contrast check for the colour pairs the app uses. Run: npm run contrast -w apps/mobile
-import { colors, darkColors, decisionColor, getDecisionColors, highContrastColors } from '../src/theme';
+import { colors, darkColors, decisionColor, getDecisionColors, highContrastColors, herColors, herDarkColors, herHighContrastColors } from '../src/theme';
 
 const lum = (hex: string) => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -51,6 +51,27 @@ const pairs: [string, string, string, number][] = [
   ['dark error', darkColors.danger, darkColors.dangerSurface, 4.5],
   ...Object.entries(getDecisionColors(darkColors)).map(([k, d]) => [`dark decision ${k}`, d.fg, d.bg, 4.5] as [string, string, string, number]),
 ];
+
+for (const [mode, palette] of Object.entries({ her: herColors, 'her dark': herDarkColors, 'her high contrast': herHighContrastColors })) {
+  const bodyMinimum = mode === 'her high contrast' ? 7 : 4.5;
+  for (const bg of ['paper', 'surface', 'secondary', 'accent', 'plumTint', 'kakiTint', 'mossTint'] as const) {
+    pairs.push([`${mode} body on ${bg}`, palette.ink, palette[bg], bodyMinimum],
+      [`${mode} caption on ${bg}`, palette.inkSoft, palette[bg], bodyMinimum]);
+  }
+  pairs.push(
+    [`${mode} primary`, palette.onPrimary, palette.primary, 4.5],
+    [`${mode} pressed primary`, palette.onPrimary, palette.primaryPressed, 4.5],
+    [`${mode} tertiary / selected button`, palette.primary, palette.secondary, 4.5],
+    [`${mode} active navigation`, palette.ai, palette.plumTint, 4.5],
+    [`${mode} input border`, palette.border, palette.surface, 3],
+    [`${mode} focus on paper`, palette.focus, palette.paper, 3],
+    [`${mode} focus on lavender`, palette.focus, palette.plumTint, 3],
+    [`${mode} visit icon`, palette.ai, palette.accent, 3],
+    [`${mode} warning`, palette.warningText, palette.warningSurface, 4.5],
+    [`${mode} error`, palette.danger, palette.dangerSurface, 4.5],
+    ...Object.entries(getDecisionColors(palette)).map(([key, tone]) => [`${mode} decision ${key}`, tone.fg, tone.bg, 4.5] as [string, string, string, number]),
+  );
+}
 
 let failed = 0;
 for (const [label, fg, bg, min] of pairs) {

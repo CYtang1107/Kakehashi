@@ -21,12 +21,14 @@ import { radii, spacing } from '../theme';
 export function Destination({ label, href, icon }: { label: Key; href: string; icon?: React.ComponentProps<typeof Button>['icon'] }) {
   const { t } = useI18n();
   const { palette, preferences } = useAccessibilityPreferences();
+  const tint = icon === 'users' ? palette.mossTint : icon === 'home' ? palette.kakiTint
+    : icon === 'calendar' || icon === 'sun' ? palette.accent : palette.plumTint;
   return <Pressable accessibilityRole="button" accessibilityLabel={t(label)} onPress={() => router.push(href as never)}
     style={({ pressed }) => ({ minHeight: 80, padding: spacing.lg, gap: spacing.lg, flexDirection: 'row', alignItems: 'center',
       borderRadius: radii.control, borderWidth: preferences.highContrast ? 2 : 1,
       borderColor: preferences.highContrast ? palette.border : palette.separator, backgroundColor: pressed ? palette.secondary : palette.surface })}>
-    <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: palette.secondary, alignItems: 'center', justifyContent: 'center' }}>
-      <Feather name={icon ?? 'arrow-right'} size={24} color={palette.primary} accessible={false} />
+    <View style={{ width: 52, height: 52, borderRadius: 18, backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }}>
+      <Feather name={icon ?? 'arrow-right'} size={24} color={icon === 'users' ? palette.moss : icon === 'home' ? palette.kaki : palette.ai} accessible={false} />
     </View>
     <AppText variant="bodyBold" style={{ flex: 1 }}>{t(label)}</AppText>
     <Feather name="chevron-right" size={22} color={palette.inkSoft} accessible={false} />
@@ -46,6 +48,7 @@ export function WeatherAdvice({ always = false }: { always?: boolean }) {
 }
 export function HomeScreen() {
   const { data } = useData(); const { t, lang } = useI18n();
+  const { palette } = useAccessibilityPreferences();
   const date = new Date().toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Tokyo' });
   const day = householdDay();
   const all = data ? plans(data.home, lang, t) : [];
@@ -53,7 +56,7 @@ export function HomeScreen() {
   const todays = all.filter(p => p.date.slice(0, 10) === day);
   return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hHome')} description={date}>
     <AppText>{t('hHomeLead')}</AppText>
-    <Card tint>
+    <Card tint style={{ backgroundColor: palette.plumTint, padding: 28, gap: 20 }}>
       <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
       <AppText variant="caption">{t('cLead')}</AppText>
     </Card>
@@ -70,10 +73,11 @@ export function HomeScreen() {
 }
 export function MyDayScreen() {
   const { data } = useData(); const { t, lang } = useI18n();
+  const { palette } = useAccessibilityPreferences();
   const all = data ? plans(data.home, lang, t) : [];
   const day = householdDay();
   const current = all.filter(p => p.date.slice(0, 10) >= day), past = all.filter(p => p.date.slice(0, 10) < day);
-  const entries = (list: typeof all) => list.map(p => <View key={p.id} style={{ gap: 6, paddingVertical: 16, borderBottomWidth: 1, borderColor: '#D3DED5' }}>
+  const entries = (list: typeof all) => list.map(p => <View key={p.id} style={{ gap: 6, paddingVertical: 16, borderBottomWidth: 1, borderColor: palette.separator }}>
     <AppText variant="caption">{planDate(p.date, lang)}</AppText><AppText variant="section">{p.title}</AppText><AppText>{p.detail}</AppText>
   </View>);
   const live = data?.home.outings.find(o => outingIsLive(o, Date.now()));

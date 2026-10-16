@@ -34,6 +34,45 @@ export const darkColors = {
   danger: '#FF9D91',
 } as const;
 
+export const elderlyCareColors = {
+  lavender: '#7F6890', avocado: '#C5D4AB', astra: '#FCE8B8', umami: '#F4BF90', mocha: '#A17A74',
+} as const;
+
+// Pastels are surfaces, paired with darker ink; alerts keep their safety colours.
+export const herColors = {
+  ...colors,
+  background: '#F8F6F3', paper: '#F8F6F3', surface: '#FFFFFF', sheet: '#FFFFFF',
+  primary: elderlyCareColors.lavender, primaryPressed: '#665176', focus: '#665176',
+  secondary: '#F8F5FA', accent: elderlyCareColors.astra,
+  text: '#2E2933', ink: '#2E2933', textSecondary: '#5B515F', inkSoft: '#5B515F',
+  border: elderlyCareColors.mocha, line: elderlyCareColors.mocha, separator: '#E6DFE5',
+  night: '#584362', nightRaised: '#493650', onNightSoft: '#F0E9F4',
+  kakiNight: elderlyCareColors.astra, kakiInk: '#76452A',
+  ai: '#665176', aiTint: '#F0EAF4',
+  moss: '#3D512F', mossTint: elderlyCareColors.avocado,
+  plum: '#665176', plumTint: '#EEE7F2',
+  indigo: '#5C4A70', indigoTint: '#F0EAF4',
+  kaki: '#76452A', kakiTint: elderlyCareColors.umami,
+} as const;
+
+export const herHighContrastColors = {
+  ...herColors, text: '#211A27', ink: '#211A27', textSecondary: '#403348', inkSoft: '#403348',
+  border: '#584362', line: '#584362', primary: '#584362', primaryPressed: '#493650', focus: '#211A27',
+} as const;
+
+export const herDarkColors = {
+  ...darkColors,
+  background: '#211C25', paper: '#211C25', surface: '#2E2733', sheet: '#2E2733',
+  primary: '#D7C1E5', primaryPressed: '#E8D7F2', onPrimary: '#302039', focus: '#E8D7F2',
+  secondary: '#3E3247', accent: '#55462D', text: '#FAF5FC', ink: '#FAF5FC',
+  textSecondary: '#D5C9DA', inkSoft: '#D5C9DA', border: '#B99D99', line: '#B99D99', separator: '#524557',
+  night: '#19141E', nightRaised: '#302537', onNight: '#FAF5FC', onNightSoft: '#E8DDED',
+  kakiNight: elderlyCareColors.astra, kakiInk: elderlyCareColors.umami,
+  ai: '#D7C1E5', aiTint: '#3E3247', moss: elderlyCareColors.avocado, mossTint: '#34402C',
+  plum: '#D7C1E5', plumTint: '#43324D', indigo: '#D7C1E5', indigoTint: '#3E3247',
+  kaki: elderlyCareColors.umami, kakiTint: '#4C352A',
+} as const;
+
 export const fonts = {
   regular: 'ZenKakuGothicNew_400Regular',
   medium: 'ZenKakuGothicNew_500Medium',
@@ -65,7 +104,7 @@ export const motion = { feedbackMs: 140, toastMs: 6000 } as const;
 export const elevation = { shadowColor: '#202923', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.06, shadowRadius: 12, elevation: 2 } as const;
 export const floatingElevation = { shadowColor: '#14291F', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 6 } as const;
 
-type Palette = { [Key in keyof typeof colors]: string };
+export type Palette = { [Key in keyof typeof colors]: string };
 export const getDecisionColors = (palette: Palette): Record<Decision, { fg: string; bg: string }> => ({
   keep: { fg: palette.moss, bg: palette.mossTint },
   family: { fg: palette.plum, bg: palette.plumTint },

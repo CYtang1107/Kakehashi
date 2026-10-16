@@ -7,14 +7,15 @@ import { StatusBanner, Button, Card, Field, Pill } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api } from './api';
-import { colors, fonts, type, yen } from './theme';
+import { colors, fonts, type, yen, type Palette } from './theme';
 
-export const fixTone: Record<FixStatus, { fg: string; bg: string }> = {
-  suggested: { fg: colors.kaki, bg: colors.kakiTint },
-  agreed: { fg: colors.ai, bg: colors.aiTint },
-  'not-now': { fg: colors.inkSoft, bg: colors.paper },
-  done: { fg: colors.moss, bg: colors.mossTint },
-};
+export const getFixColors = (palette: Palette): Record<FixStatus, { fg: string; bg: string }> => ({
+  suggested: { fg: palette.kaki, bg: palette.kakiTint },
+  agreed: { fg: palette.ai, bg: palette.aiTint },
+  'not-now': { fg: palette.inkSoft, bg: palette.paper },
+  done: { fg: palette.moss, bg: palette.mossTint },
+});
+export const fixTone = getFixColors(colors);
 
 const statusKey = (s: FixStatus) => `fixstatus_${s}` as Key;
 
@@ -29,6 +30,7 @@ function amountLabel(f: Pick<SafetyFix, 'kind' | 'amount'>, lang: 'en' | 'ja') {
 // and an estimate of the care-insurance home-modification subsidy.
 export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | 'her'; roomId?: string }) {
   const { palette: colors } = useAccessibilityPreferences();
+  const fixTone = getFixColors(colors);
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [kind, setKind] = useState<FixKind>('handrail');

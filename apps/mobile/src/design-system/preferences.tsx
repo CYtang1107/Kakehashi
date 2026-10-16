@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AccessibilityInfo, Platform } from 'react-native';
-import { colors, darkColors, highContrastColors, textScale } from '../theme';
+import { usePathname } from 'expo-router';
+import { colors, darkColors, highContrastColors, herColors, herDarkColors, herHighContrastColors, textScale } from '../theme';
 
 export type TextMode = keyof typeof textScale;
 export type ReadingPreferences = {
@@ -44,7 +45,12 @@ export function AccessibilityProvider({ children }: { children: React.ReactNode 
 
 export function useAccessibilityPreferences() {
   const value = useContext(Preferences);
-  return { ...value, scale: textScale[value.preferences.textMode],
+  const path = usePathname();
+  const olderAdult = path === '/her' || path.startsWith('/her/');
+  const palette = olderAdult
+    ? value.preferences.highContrast ? herHighContrastColors : value.preferences.darkMode ? herDarkColors : herColors
+    : value.preferences.highContrast ? highContrastColors : value.preferences.darkMode ? darkColors : colors;
+  return { ...value, olderAdult, scale: textScale[value.preferences.textMode],
     reducedMotion: value.systemReducedMotion || value.preferences.reduceMotion,
-    palette: value.preferences.highContrast ? highContrastColors : value.preferences.darkMode ? darkColors : colors };
+    palette };
 }

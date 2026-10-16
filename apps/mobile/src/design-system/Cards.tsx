@@ -16,11 +16,14 @@ export function Card({ children, style, tint, flat }: { children: React.ReactNod
 
 type ContentCardProps = { title: string; description?: string; detail?: string; icon?: ButtonProps['icon']; action?: ButtonProps; children?: React.ReactNode };
 function ContentCard({ title, description, detail, icon, action, children }: ContentCardProps) {
-  const { palette } = useAccessibilityPreferences();
+  const { palette, olderAdult } = useAccessibilityPreferences();
+  const tint = !olderAdult ? palette.secondary : icon === 'users' || icon === 'bell' ? palette.accent
+    : icon === 'user-plus' ? palette.mossTint : icon === 'home' ? palette.kakiTint : palette.plumTint;
+  const iconColor = !olderAdult ? palette.primary : icon === 'user-plus' ? palette.moss : icon === 'home' ? palette.kaki : palette.ai;
   return <Card>
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
-      {icon ? <View style={{ width: 48, height: 48, borderRadius: radii.control, backgroundColor: palette.secondary, alignItems: 'center', justifyContent: 'center' }}>
-        <Feather name={icon} size={24} color={palette.primary} accessible={false} />
+      {icon ? <View style={{ width: 48, height: 48, borderRadius: radii.control, backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }}>
+        <Feather name={icon} size={24} color={iconColor} accessible={false} />
       </View> : null}
       <View style={{ flex: 1, gap: spacing.sm }}>
         <AppText variant="section">{title}</AppText>

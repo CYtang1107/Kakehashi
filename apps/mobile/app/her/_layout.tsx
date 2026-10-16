@@ -38,19 +38,19 @@ function HerNavigation() {
       style={({ pressed }) => ({ flex: desktop || compactNav ? undefined : 1, flexBasis: compactNav ? '28%' : undefined, flexGrow: compactNav ? 1 : undefined,
         minHeight: desktop ? 64 : 76, padding: desktop ? 14 : 4, gap: desktop ? 12 : 5, borderRadius: radii.control, borderWidth: 1,
         borderColor: active === id ? palette.primary : 'transparent',
-        backgroundColor: active === id || pressed ? palette.secondary : 'transparent',
+        backgroundColor: active === id || pressed ? palette.plumTint : 'transparent',
         flexDirection: desktop ? 'row' : 'column', alignItems: 'center', justifyContent: desktop ? 'flex-start' : 'center' })}>
-      <Feather name={icon} size={24} color={active === id ? palette.primary : palette.inkSoft} accessible={false} />
-      <AppText style={{ maxWidth: '100%', fontSize: desktop ? 18 : 16, lineHeight: desktop ? 27 : 22, textAlign: desktop ? 'left' : 'center', flexShrink: 1 }}>{t(label as Key)}</AppText>
+      <Feather name={icon} size={24} color={active === id ? palette.ai : palette.inkSoft} accessible={false} />
+      <AppText style={{ maxWidth: '100%', fontSize: desktop ? 18 : 16, lineHeight: desktop ? 27 : 22, fontWeight: active === id ? '600' : '400', color: active === id ? palette.ai : palette.inkSoft, textAlign: desktop ? 'left' : 'center', flexShrink: 1 }}>{t(label as Key)}</AppText>
     </Pressable>)}
     <Pressable accessibilityRole="tab" accessibilityLabel={t('hSettings')} accessibilityState={{ selected: active === 'settings' }} aria-selected={active === 'settings'}
       onPress={() => router.navigate('/her/settings')}
       style={({ pressed }) => ({ flex: desktop || compactNav ? undefined : 1, flexBasis: compactNav ? '28%' : undefined, flexGrow: compactNav ? 1 : undefined,
         minHeight: desktop ? 64 : 76, padding: desktop ? 14 : 4, gap: desktop ? 12 : 5, borderRadius: radii.control, borderWidth: 1,
-        borderColor: active === 'settings' ? palette.primary : 'transparent', backgroundColor: active === 'settings' || pressed ? palette.secondary : 'transparent',
+        borderColor: active === 'settings' ? palette.primary : 'transparent', backgroundColor: active === 'settings' || pressed ? palette.plumTint : 'transparent',
         flexDirection: desktop ? 'row' : 'column', alignItems: 'center', justifyContent: desktop ? 'flex-start' : 'center' })}>
-      <Feather name="settings" size={24} color={active === 'settings' ? palette.primary : palette.inkSoft} accessible={false} />
-      <AppText style={{ maxWidth: '100%', fontSize: desktop ? 18 : 16, lineHeight: desktop ? 27 : 22, textAlign: desktop ? 'left' : 'center', flexShrink: 1 }}>{t('hSettings')}</AppText>
+      <Feather name="settings" size={24} color={active === 'settings' ? palette.ai : palette.inkSoft} accessible={false} />
+      <AppText style={{ maxWidth: '100%', fontSize: desktop ? 18 : 16, lineHeight: desktop ? 27 : 22, fontWeight: active === 'settings' ? '600' : '400', color: active === 'settings' ? palette.ai : palette.inkSoft, textAlign: desktop ? 'left' : 'center', flexShrink: 1 }}>{t('hSettings')}</AppText>
     </Pressable>
   </View>;
   return <View testID="older-adult-shell" style={{ flex: 1, backgroundColor: palette.paper, paddingTop: top }}>

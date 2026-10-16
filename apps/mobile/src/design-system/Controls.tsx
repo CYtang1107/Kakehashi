@@ -56,7 +56,7 @@ export function IconButton({ icon, label, onPress, disabled }: Pick<ButtonProps,
 export function AccessibleSwitch({ label, description, value, onValueChange, disabled }: {
   label: string; description?: string; value: boolean; onValueChange: (value: boolean) => void; disabled?: boolean;
 }) {
-  const { palette, preferences } = useAccessibilityPreferences();
+  const { palette, preferences, olderAdult } = useAccessibilityPreferences();
   const [focused, setFocused] = useState(false);
   return <Pressable accessibilityRole="switch" accessibilityLabel={label} accessibilityHint={description}
     accessibilityState={{ checked: value, disabled: Boolean(disabled) }} aria-checked={value} aria-disabled={Boolean(disabled)} disabled={disabled}
@@ -70,6 +70,7 @@ export function AccessibleSwitch({ label, description, value, onValueChange, dis
     </View>
     <View pointerEvents="none" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <Switch value={value} disabled={disabled} accessible={false} focusable={false} tabIndex={-1}
+        {...(Platform.OS === 'web' && olderAdult ? { activeThumbColor: palette.surface } : {})}
         trackColor={{ false: palette.border, true: palette.primary }} thumbColor={palette.surface} />
     </View>
   </Pressable>;
