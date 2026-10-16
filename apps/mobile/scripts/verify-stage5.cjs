@@ -94,7 +94,9 @@ async function main() {
   const switchAccount=async name=>{await navigate('/her/friends/demo');await click(label('sUseDemo',{name}));await wait(180);};
   await fetch(base+'/__verification/stage3?weather=demo');await navigate('/her/friends');await evaluate(`localStorage.removeItem('${profileKey}');localStorage.removeItem('${socialKey}')`);await navigate('/her/companion');
   await field(translations.cMessage,'I enjoy growing orchids.');await click(translations.cSend);await has(translations.cRemember);
-  assert.equal((await stored(profileKey)).approved.length,0);await click(translations.cRemember);await click(translations.cRemember);assert.equal((await stored(profileKey)).approved.length,2);
+  // Each Remember is disabled while the previous save runs; wait for each save before the next tap.
+  const approvedCount=async n=>{for(let i=0;i<50;i++){if(((await stored(profileKey))?.approved.length||0)===n)return;await wait(100);}assert.equal((await stored(profileKey))?.approved.length||0,n);};
+  assert.equal((await stored(profileKey)).approved.length,0);await click(translations.cRemember);await approvedCount(1);await click(translations.cRemember);await approvedCount(2);
   await navigate('/her/friends');await has(translations.sEligibility_optedOut);assert.equal(await evaluate('document.body.innerText.includes("Aiko Mori")'),false);
   await click(translations.sPermissions);await click(translations.sMaster);
   await click(label('cShareInterest',{interest:translations.cInterest_gardening}));await click(label('cShareInterest',{interest:translations.cInterest_orchids}));await click(translations.sIdentity);await click(translations.sBackFriends);

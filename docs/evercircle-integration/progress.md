@@ -615,3 +615,9 @@ The required independent finish reviewer opened all 15 Stage 7 screenshots and s
 Final whitespace checks pass. Server/shared/API/DataProvider, family report implementation, house visualizations, package manifests, lockfile and canonical design documents remain unchanged. No dependency installation, external message, hardware action, commit, deployment or Stage 8 work occurred. The fixture and dedicated browser endpoints were no longer running on resumption; the task-created `.stage7-chrome` profile was removed only after verifying its resolved absolute workspace path. Ordinary browser profiles were untouched.
 
 **Stage 7 is complete at the documented implementation and local Expo Web verification scope. Stop after Stage 7.** Native devices, OS font scaling/gestures, VoiceOver/TalkBack, physical providers and production authorization are not certified by these fixture checks. Existing local-storage and simultaneous-tab limitations remain.
+
+## Stage 8 — final integration, testing and demo (16 October 2026)
+
+No new product features. Brought the team's demo pictures, see-through pixel icons and the floor-plan pin fix from `main`; removed the unused "coming soon" companion screen; made the Stage 5 interest-approval test wait for each save; added `verify-stage8.cjs` (private companion conversation never reaches family or student screens, the server or storage; fictional and simulated labels) and `verify-all.cjs` (runs every suite with clean browser storage). `render.yaml` now includes the agent-collaboration screen in hosted builds.
+
+Results: both typechecks pass; all 11 suites pass (50 domain checks; browser Stages 2–8: 6, 15, 9, 7, 9, 9 and 3 groups, Stage 7 with 32 layouts, zero exceptions). Full report, demo script, untested items and production gaps: [stage8-final.md](stage8-final.md). **Not production-ready.**

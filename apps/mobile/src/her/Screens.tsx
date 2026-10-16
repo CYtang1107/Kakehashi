@@ -165,11 +165,3 @@ export function SettingsScreen() {
     <Button label={t('switchRole')} kind="secondary" onPress={() => router.replace('/')} />
   </HerPage>;
 }
-export function FutureScreen({ kind }: { kind: 'companion' | 'smart' }) {
-  const { t } = useI18n();
-  return <HerPage back title={t(kind === 'companion' ? 'hCompanion' : 'hSmart')}>
-    <EmptyState icon={kind === 'companion' ? 'message-circle' : 'power'} title={t('hSoon')} message={t(kind === 'companion' ? 'hCompanionBody' : 'hSmartBody')} />
-    <Destination label={kind === 'companion' ? 'hFriends' : 'hRequestHelp'} href={kind === 'companion' ? '/her/friends' : '/her/help'} />
-    <Destination label="hReturn" href="/her" />
-  </HerPage>;
-}

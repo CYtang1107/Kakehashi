@@ -16,3 +16,7 @@ services:
       # The app calls the API at its own address.
       - key: EXPO_PUBLIC_API_URL
         value: same-origin
+      # Includes the agent-collaboration screen (/developer/agents) used in the demo.
+      # Fictional and local only; it is not a login or an admin area.
+      - key: EXPO_PUBLIC_EVERCIRCLE_DEVELOPER
+        value: "1"
