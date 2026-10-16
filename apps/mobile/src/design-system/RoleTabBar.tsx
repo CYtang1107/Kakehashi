@@ -15,8 +15,10 @@ export function RoleTabBar({ state, descriptors, navigation, icons }: TabBarProp
   const { scale, palette } = useAccessibilityPreferences();
   const { bottom } = useSafeAreaInsets();
   const wrap = width < 480 * scale * fontScale;
-  return <View style={{ padding: 8, paddingBottom: bottom + 8, backgroundColor: palette.surface,
-    borderTopWidth: 1, borderTopColor: palette.border }}>
+  return <View style={{ marginHorizontal: 12, marginTop: 8, marginBottom: bottom + 12, padding: 8,
+    borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.88)', borderWidth: 1, borderColor: palette.border,
+    shadowColor: '#202923', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.14, shadowRadius: 18, elevation: 5,
+    ...(typeof document !== 'undefined' ? { backdropFilter: 'blur(18px)' } : {}) }}>
     <View role="tablist" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, maxWidth: 1200, width: '100%', alignSelf: 'center' }}>
       {state.routes.map((route, index) => {
         const active = state.index === index;

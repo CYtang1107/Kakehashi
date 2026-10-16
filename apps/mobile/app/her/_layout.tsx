@@ -49,6 +49,9 @@ function HerNavigation() {
       {desktop ? <ScrollView style={{ flexGrow: 0, width: 260 * scale, backgroundColor: palette.surface }}>{nav}</ScrollView> : null}
       <View style={{ flex: 1, minWidth: 0 }}><Stack screenOptions={{ headerShown: false, animation: reducedMotion ? 'none' : 'default', contentStyle: { backgroundColor: palette.paper } }} /><ToastFeedback message={toast} /></View>
     </View>
-    {!desktop ? <View style={{ paddingBottom: bottom, backgroundColor: palette.surface, borderTopWidth: 1, borderColor: palette.separator }}>{nav}</View> : null}
+    {!desktop ? <View style={{ marginHorizontal: 12, marginTop: 8, marginBottom: bottom + 12, padding: 4, borderRadius: 20,
+      backgroundColor: 'rgba(255, 255, 255, 0.88)', borderWidth: 1, borderColor: palette.separator,
+      shadowColor: '#202923', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.14, shadowRadius: 18, elevation: 5,
+      ...(typeof document !== 'undefined' ? { backdropFilter: 'blur(18px)' } : {}) }}>{nav}</View> : null}
   </View>;
 }
