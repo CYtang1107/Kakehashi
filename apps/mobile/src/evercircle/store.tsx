@@ -44,7 +44,7 @@ function useFeatureStore() {
   const stop = () => { if (timer.current) clearTimeout(timer.current); timer.current = null; setReplying(false); };
   const clearChat = () => { stop(); setChatEpoch(value => value + 1); setMessages(welcome()); setChatError(null); return change({ type: 'clearPending' }); };
   const reset = () => { stop(); setChatEpoch(value => value + 1); setResetEpoch(value => value + 1); setMessages(welcome()); setChatError(null); return change({ type: 'reset' }); };
-  const send = (text: string, nextVisitDate?: string) => {
+  const send = (text: string, nextVisitDate?: string, extension?: () => Reply | undefined) => {
     if (timer.current || status.current === 'loading' || status.current === 'loadError') return false;
     const input = text.trim(); if (!input || input.length > 800) return false;
     if (messages.length >= 81) { setChatError('cChatLimit'); return false; }
@@ -53,7 +53,7 @@ function useFeatureStore() {
     timer.current = setTimeout(() => {
       timer.current = null;
       try {
-        const reply = respond(input, { approved: current.current.approved.map(i => i.id), nextVisitDate });
+        const reply = extension?.() ?? respond(input, { approved: current.current.approved.map(i => i.id), nextVisitDate });
         setMessages(previous => [...previous, { id: ++sequence.current, role: 'companion', reply }]);
         if (reply.candidates.length) void change({ type: 'suggest', ids: reply.candidates });
       } catch { setChatError('cChatError'); }

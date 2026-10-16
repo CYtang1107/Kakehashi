@@ -29,7 +29,7 @@ export const ACTIONS = {
 } as const satisfies Record<string, { label: Key; route: string }>;
 export type ActionId = keyof typeof ACTIONS;
 export type Intent = 'greeting' | 'interests' | 'memory' | 'help' | 'visits' | 'friends' | 'devices' | 'reminders' | 'activities' | 'unsupported';
-export type Reply = { intent: Intent; key: Key; actions: ActionId[]; candidates: InterestId[]; date?: string; interest?: InterestId };
+export type Reply = { intent: Intent; key: Key; actions: ActionId[]; candidates: InterestId[]; date?: string; interest?: InterestId; text?: string };
 export function respond(text: string, context: { approved: InterestId[]; nextVisitDate?: string }): Reply {
   const input = normalized(text), candidates = recognizeInterests(input);
   const reply = (intent: Intent, key: Key, actions: ActionId[]): Reply => ({ intent, key, actions, candidates });

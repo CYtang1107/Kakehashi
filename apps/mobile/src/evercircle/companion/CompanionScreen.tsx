@@ -11,11 +11,13 @@ import { useEverCircle } from '../store';
 import { PendingInterests, interestKey } from '../profile/PendingInterests';
 import { companionContext } from './bridge';
 import { ACTIONS } from './engine';
+import { useDailyCompanion } from '../assistance/companion';
 
 const starters = ['cStartHello', 'cStartMemory', 'cStartHelp', 'cStartFriends', 'cStartDay'] as const;
 export function CompanionScreen() {
   const { t, lang } = useI18n(); const { data } = useData();
   const store = useEverCircle(); const { palette, reducedMotion, scale } = useAccessibilityPreferences();
+  const dailyReply = useDailyCompanion();
   const [text, setText] = useState(''); const scroll = useRef<ScrollView>(null);
   const chatTop = useRef(0), latestTop = useRef(0);
   const context = companionContext(data, householdDay());
@@ -23,7 +25,7 @@ export function CompanionScreen() {
   useEffect(() => { if (store.messages.length <= 1) return;
     const timer = setTimeout(() => scroll.current?.scrollTo({ y: chatTop.current + latestTop.current, animated: !reducedMotion }), 80); return () => clearTimeout(timer);
   }, [store.messages.length, reducedMotion]);
-  const send = (value: string) => { if (store.send(value, context.nextVisitDate)) setText(''); };
+  const send = (value: string) => { if (store.send(value, context.nextVisitDate, () => dailyReply(value))) setText(''); };
   const suggestions = starters.map(key => <Button key={key} label={t(key)} kind="secondary" disabled={store.replying} onPress={() => send(t(key))} />);
   return <FeaturePage title="cTitle" description="cLead" scrollRef={scroll}
     footer={<View style={{ backgroundColor: palette.surface, borderTopWidth: 1, borderColor: palette.border, padding: 12 }}>
@@ -38,7 +40,7 @@ export function CompanionScreen() {
         backgroundColor: message.role === 'user' ? palette.secondary : palette.surface, borderWidth: 1, borderColor: palette.border, borderRadius: 16, padding: 20, gap: 12 }}>
         <AppText variant="bodyBold">{t(message.role === 'user' ? 'cYou' : 'cSpeaker')}</AppText>
         <AppText accessibilityLiveRegion={message.role === 'companion' && message.id === store.messages.at(-1)?.id ? 'polite' : 'none'}>
-          {message.role === 'user' ? message.text : t(message.reply.key, { date: message.reply.date ? formatDate(message.reply.date, lang) : '', interest: message.reply.interest ? t(interestKey(message.reply.interest)) : '' })}
+          {message.role === 'user' ? message.text : message.reply.text ?? t(message.reply.key, { date: message.reply.date ? formatDate(message.reply.date, lang) : '', interest: message.reply.interest ? t(interestKey(message.reply.interest)) : '' })}
         </AppText>
         {message.role === 'companion' ? message.reply.actions.map(id => <Button key={id} label={t(ACTIONS[id].label)} kind="secondary" onPress={() => router.push(ACTIONS[id].route)} />) : null}
       </View>)}

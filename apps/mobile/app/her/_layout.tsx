@@ -9,13 +9,14 @@ import { useData } from '../../src/data';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { EverCircleProvider } from '../../src/evercircle/store';
 import { SocialProvider } from '../../src/evercircle/social/store';
+import { HomeDemoProvider } from '../../src/evercircle/homeDemo/store';
 
 const tabs = [
   ['home', '/her', 'hHome', 'sun'], ['friends', '/her/friends', 'hFriends', 'users'],
   ['house', '/her/my-home', 'hMyHome', 'home'], ['memories', '/her/memories', 'hMemories', 'book-open'],
 ] as const;
 export default function HerLayout() {
-  return <EverCircleProvider><SocialProvider><HerNavigation /></SocialProvider></EverCircleProvider>;
+  return <HomeDemoProvider><EverCircleProvider><SocialProvider><HerNavigation /></SocialProvider></EverCircleProvider></HomeDemoProvider>;
 }
 function HerNavigation() {
   const path = usePathname();

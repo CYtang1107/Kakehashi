@@ -13,6 +13,7 @@ import { itemPhotos } from '../PhotoCarousel';
 import { DecisionChip } from '../ui';
 import { householdDay, planDate, plans } from './plans';
 import { StudentBadges } from '../Community';
+import { DailyAssistance, VisitReminder } from '../evercircle/assistance/DailyAssistance';
 
 export function Destination({ label, href, icon }: { label: Key; href: string; icon?: React.ComponentProps<typeof Button>['icon'] }) {
   const { t } = useI18n();
@@ -62,14 +63,15 @@ export function MyDayScreen() {
   </View>);
   const live = data?.home.outings.find(o => outingIsLive(o, Date.now()));
   const activity = data?.home.activities.find(a => a.id === live?.activityId);
-  return <HerPage back title={t('hDay')} description={t('hDayLead')}>
+  return <HerPage back title={t('hDay')} description={new Date(`${day}T12:00:00+09:00`).toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-GB', { timeZone: 'Asia/Tokyo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}>
+    <VisitReminder />
     <WeatherAdvice always />
     <View><AppText variant="section">{t('hPlans')}</AppText>{current.length ? entries(current) : <EmptyState title={t('hNothingPlanned')} message={t('hNothingBody')} />}</View>
+    <DailyAssistance />
     <View style={{ gap: 12 }}><AppText variant="section">{t('hOuting')}</AppText>
       <AppText>{live ? `${activity ? pick(lang, activity.title, activity.titleJa) : ''} · ${live.by}` : t('hNoOuting')}</AppText>
       {live ? <><AppText variant="caption">{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</AppText><Destination label="viewMap" href="/her/digital-house?view=map" /></> : null}
     </View>
-    <StatusBanner title={t('hReminders')} message={t('hReminderBody')} />
     {past.length ? <View style={{ gap: 12 }}><AppText variant="section">{t('hPastPlans')}</AppText><AppText variant="caption">{t('hPastNote')}</AppText>{entries(past)}</View> : null}
   </HerPage>;
 }
@@ -104,6 +106,7 @@ export function MyHomeScreen() {
     <Destination label="hHouseInfo" href="/her/house-information" icon="info" />
     <Destination label="hDigital" href="/her/digital-house" icon="home" />
     <Destination label="hSmart" href="/her/smart-home" icon="power" />
+    <AppText variant="caption">{t('hSmartBody')}</AppText>
     <StatusBanner title={t('dsSafetyTitle')} message={t('doorRule')} tone="warning" />
   </HerPage>;
 }

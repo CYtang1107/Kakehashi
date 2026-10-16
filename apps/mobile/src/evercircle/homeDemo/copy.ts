@@ -1,0 +1,66 @@
+import { useI18n, type Lang } from '../../i18n';
+import { DEVICES, type DeviceChange, type Device } from '../smartHome/model';
+const en = {
+  title: 'Smart Home', demo: 'Simulated home controls', lead: 'All controls are simulated. No real devices are connected.',
+  living: 'Living Room', bedroom: 'Bedroom', kitchen: 'Kitchen', light: 'Light', fan: 'Fan', curtains: 'Curtains', television: 'Television',
+  on: 'On', off: 'Off', open: 'Open', closed: 'Closed', turnOn: 'Turn on', turnOff: 'Turn off', openAction: 'Open', closeAction: 'Close',
+  controls: 'Choose a room', command: 'Tell your home what to do', commandLabel: 'Home command', run: 'Apply simulated command',
+  examples: 'Try “Turn on the living room light”, “Switch off the bedroom fan”, “Open the curtains” or “Turn off the television”. Only these action and device patterns are supported.',
+  unsupported: 'That command is not supported. Use Turn on / Turn off for a light, fan or television, or Open / Close for curtains. You can name the living room, bedroom or kitchen. Send one action at a time.',
+  ambiguous: 'Which device did you mean? Choose one below. Nothing has changed yet.', choose: 'Choose', cancel: 'Cancel',
+  simulated: 'Simulated:', unchanged: 'Already in this state. No device changed.', routines: 'Routines', morning: 'Morning Routine', evening: 'Evening Routine',
+  preview: 'Preview routine', previewTitle: 'Review before applying', willChange: 'Will change', noChange: 'Already set', apply: 'Apply this simulated routine', applied: 'Routine applied in the demonstration.',
+  log: 'Recent simulated actions', noLog: 'No device changes yet.', roomsNote: 'Safety fixes and the digital house keep their existing recorded status.',
+  loading: 'Loading your local demonstration…', loadError: 'Your saved demonstration could not be read. Retry, or continue temporarily without replacing the saved copy.',
+  saveError: 'Changes are visible here but could not be saved. Retry saving before making more changes.', retry: 'Retry', temporary: 'Continue temporarily',
+  session: 'Temporary session. Changes will disappear when you leave or reload.', saving: 'Saving locally…',
+  dayLead: 'Your plans, one step at a time.', localNote: 'Personal reminders and activities stay in this local demonstration. No notifications or messages are sent.',
+  today: 'Today', upcoming: 'Upcoming visits', noVisit: 'No upcoming student visit is recorded.', visitReminder: 'Student visit reminder',
+  reminders: 'Reminders & personal activities', noReminders: 'No personal reminders yet. Add something you would like to do.',
+  add: 'Add to My Day', reminder: 'Reminder', activity: 'Personal activity', titleLabel: 'What would you like to remember?', date: 'Date (YYYY-MM-DD)', time: 'Time (24-hour HH:MM)',
+  addReminder: 'Add a reminder or activity', added: 'Added to your local My Day.', invalid: 'Enter a title, a valid date such as 2026-10-16 and a time such as 09:30.',
+  limit: 'This demonstration holds up to 100 reminders and activities.', pending: 'To do', scheduled: 'Scheduled', overdue: 'Overdue', completed: 'Completed tasks',
+  complete: 'Mark completed', undo: 'Mark as to do', done: 'Completed', doneFeedback: 'Marked completed.', undoFeedback: 'Marked as to do.', noCompleted: 'Your completed reminders will appear here.',
+  suggestions: 'A gentle suggestion', suggestion: 'Make a little time for reading, music or a favourite hobby today.', schedule: 'Plan a quiet activity', quiet: 'Time for a favourite hobby',
+  contacts: 'People you trust', contactNote: 'View your recorded family contact or open student and helper information. No one is contacted automatically.', family: 'Family contact', students: 'Your visiting students', noContact: 'No phone number is stored here. Use your usual way to contact them.',
+  summary: 'Today’s recorded plans', noToday: 'No visits or personal reminders are recorded for today.', openDay: 'Open My Day', visitCount: 'Student visits today', reminderCount: 'Personal items to do today',
+  voice: 'Optional voice input', consent: 'Your browser may send microphone audio to its speech provider. KAKEHASHI does not save audio. Allow one spoken command? You can review the words before applying.',
+  allow: 'Allow microphone for one command', listen: 'Use my voice', listening: 'Listening…', stop: 'Stop listening', heard: 'Words received. Review the text, then apply the command.',
+  voiceUnavailable: 'Voice input is unavailable here. Type a command instead.', voiceError: 'Could not hear a command or microphone permission was denied. Type your command, or try again.',
+  speak: 'Read feedback aloud', stopSpeech: 'Stop reading', speechError: 'Spoken feedback is unavailable. The feedback remains on screen.',
+};
+const ja: Record<keyof typeof en, string> = {
+  title: 'スマートホーム', demo: '家の機器の操作デモ', lead: 'すべてデモの操作です。実際の機器には接続しません。',
+  living: 'リビング', bedroom: '寝室', kitchen: 'キッチン', light: '照明', fan: '扇風機', curtains: 'カーテン', television: 'テレビ',
+  on: 'オン', off: 'オフ', open: '開いています', closed: '閉じています', turnOn: 'つける', turnOff: '消す', openAction: '開ける', closeAction: '閉める',
+  controls: '部屋を選ぶ', command: '操作を言葉で伝える', commandLabel: '家の機器への指示', run: 'デモの操作を実行',
+  examples: '「リビングの照明をつけて」「寝室の扇風機を消して」「カーテンを開けて」「テレビを消して」などを使えます。決まった操作と機器の組み合わせに対応しています。',
+  unsupported: 'この指示には対応していません。照明・扇風機・テレビは「つけて／消して」、カーテンは「開けて／閉めて」を使ってください。リビング・寝室・キッチンを指定できます。一度に一つの操作を入力してください。',
+  ambiguous: 'どの機器ですか？下から一つ選んでください。まだ変更していません。', choose: '選ぶ', cancel: 'キャンセル',
+  simulated: 'デモの操作：', unchanged: 'すでにこの状態です。変更はありません。', routines: '毎日のまとめ操作', morning: '朝のまとめ操作', evening: '夜のまとめ操作',
+  preview: '操作内容を見る', previewTitle: '実行前に確認', willChange: '変更します', noChange: 'すでに設定済み', apply: 'このデモのまとめ操作を実行', applied: 'デモのまとめ操作を実行しました。',
+  log: '最近のデモ操作', noLog: 'まだ機器を変更していません。', roomsNote: '安全対策とデジタルハウスの記録済みの状態は変わりません。',
+  loading: '保存したデモを読み込み中…', loadError: '保存したデモを読み込めませんでした。再試行するか、保存内容を置き換えずに一時的に続けられます。',
+  saveError: '変更は画面に反映されましたが、保存できませんでした。次の操作の前に保存を再試行してください。', retry: '再試行', temporary: '一時的に続ける',
+  session: '一時的な利用です。終了や再読み込みで変更は消えます。', saving: 'この端末に保存中…',
+  dayLead: '今日の予定を、一つずつ。', localNote: '個人のリマインダーや活動はこの端末のデモに保存されます。通知やメッセージは送りません。',
+  today: '今日', upcoming: 'これからの訪問', noVisit: 'これからの学生の訪問は記録されていません。', visitReminder: '学生の訪問の予定',
+  reminders: 'リマインダーと個人の活動', noReminders: '個人のリマインダーはまだありません。やりたいことを追加できます。',
+  add: '今日の予定に追加', reminder: 'リマインダー', activity: '個人の活動', titleLabel: '何を覚えておきたいですか？', date: '日付（YYYY-MM-DD）', time: '時刻（24時間表示 HH:MM）',
+  addReminder: 'リマインダーや活動を追加', added: 'この端末の予定に追加しました。', invalid: '内容と正しい日付（例：2026-10-16）、時刻（例：09:30）を入力してください。',
+  limit: 'このデモではリマインダーと活動を100件まで保存できます。', pending: '未完了', scheduled: '予定', overdue: '期限が過ぎています', completed: '完了したこと',
+  complete: '完了にする', undo: '未完了に戻す', done: '完了', doneFeedback: '完了にしました。', undoFeedback: '未完了に戻しました。', noCompleted: '完了したリマインダーがここに表示されます。',
+  suggestions: '今日の小さなおすすめ', suggestion: '読書や音楽、好きな趣味の時間を少し取りませんか。', schedule: '趣味の時間を予定に入れる', quiet: '好きな趣味の時間',
+  contacts: '頼れる人たち', contactNote: '記録された家族の連絡先や、学生・お手伝いの情報を確認できます。自動で連絡はしません。', family: '家族の連絡先', students: '訪問する学生', noContact: 'ここには電話番号が保存されていません。いつもの方法で連絡してください。',
+  summary: '今日の記録された予定', noToday: '今日の訪問や個人のリマインダーは記録されていません。', openDay: '今日の予定を開く', visitCount: '今日の学生の訪問', reminderCount: '今日の未完了の個人の予定',
+  voice: '音声入力（任意）', consent: 'ブラウザーが音声認識サービスにマイクの音声を送る場合があります。KAKEHASHIは音声を保存しません。1回の音声入力を許可しますか？実行前に文字を確認できます。',
+  allow: '1回の音声入力を許可', listen: '音声で入力', listening: '聞き取り中…', stop: '聞き取りを止める', heard: '言葉を受け取りました。文字を確認してから実行してください。',
+  voiceUnavailable: 'ここでは音声入力が使えません。文字で入力してください。', voiceError: '聞き取れなかったか、マイクが許可されませんでした。文字で入力するか、再試行してください。',
+  speak: '結果を読み上げる', stopSpeech: '読み上げを止める', speechError: '読み上げが使えません。画面の結果をご確認ください。',
+};
+export type HomeCopy = keyof typeof en;
+export const homeCopy = (lang: Lang, key: HomeCopy) => (lang === 'ja' ? ja : en)[key];
+export function useHomeCopy() { const { lang } = useI18n(); return { lang, c: (key: HomeCopy) => homeCopy(lang, key) }; }
+export function deviceName(device: Device, lang: Lang) { return `${homeCopy(lang, device.room)} · ${homeCopy(lang, device.kind)}`; }
+export function stateLabel(device: Device, on: boolean, lang: Lang) { return homeCopy(lang, device.kind === 'curtains' ? on ? 'open' : 'closed' : on ? 'on' : 'off'); }
+export function changeLabel(change: DeviceChange, lang: Lang) { const d = DEVICES.find(d => d.id === change.id)!; return `${deviceName(d, lang)}: ${stateLabel(d, change.on, lang)}`; }
