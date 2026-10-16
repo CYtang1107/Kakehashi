@@ -17,6 +17,14 @@ import { useAccessibilityPreferences } from '../../src/design-system/preferences
 
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
 export default function StoriesFeed() {
+  const { t } = useI18n();
+  return <Screen requiresHome={false} wide fit globalNav="home"
+    header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
+    <StoriesFeedContent />
+  </Screen>;
+}
+
+export function StoriesFeedContent() {
   const { t, lang } = useI18n();
   // On a laptop the page fits the window: the globe fills the left, the posts scroll on the right.
   const fit = useWide();
@@ -33,8 +41,7 @@ export default function StoriesFeed() {
   }, [stories, reducedMotion]);
 
   return (
-    <Screen requiresHome={false} wide fit header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
-      <RoleEntry />
+    <>
       {error ? <StatusBanner tone="error" title={error} action={{ label: t('retry'), onPress: load }} /> : null}
       {!stories && !error ? <Text>{t('rNoStories')}</Text> : null}
       <Columns fill
@@ -66,35 +73,8 @@ export default function StoriesFeed() {
       <ConfirmationDialog visible={!!selected} title={t('feedTitle')} onCancel={() => { setSelected(null); load(); }}>
         {stories?.filter(st => st.id === selected).map(st => <StoryPost key={st.id} story={st} withJourney />)}
       </ConfirmationDialog>
-    </Screen>
+    </>
   );
-}
-
-function RoleEntry() {
-  const { t } = useI18n();
-  const roles: { path: '/her' | '/family' | '/student' | '/worker'; title: Key; hint: Key; icon: keyof typeof Feather.glyphMap }[] = [
-    { path: '/her', title: 'roleHer', hint: 'roleHerHint', icon: 'sun' },
-    { path: '/family', title: 'roleFamily', hint: 'roleFamilyHint', icon: 'home' },
-    { path: '/student', title: 'roleStudents', hint: 'roleStudentsHint', icon: 'users' },
-    { path: '/worker', title: 'roleHelpers', hint: 'roleHelpersHint', icon: 'tool' },
-  ];
-  return <View style={{ marginBottom: 20, padding: 16, gap: 12, borderRadius: 20, borderWidth: 1, borderColor: colors.line,
-    backgroundColor: 'rgba(255, 255, 255, 0.78)', shadowColor: colors.ink, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16,
-    ...(typeof document !== 'undefined' ? { backdropFilter: 'blur(14px)' } : {}) }}>
-    <View style={{ gap: 2 }}>
-      <Text style={type.eyebrow}>{t('roleEntryEyebrow')}</Text>
-      <Text style={type.section}>{t('chooseRole')}</Text>
-    </View>
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      {roles.map((role) => <Pressable key={role.path} accessibilityRole="button" onPress={() => router.push(role.path)}
-        style={({ pressed }) => ({ flexGrow: 1, flexBasis: '46%', minHeight: 72, padding: 10, gap: 8, flexDirection: 'row', alignItems: 'center',
-          borderRadius: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: pressed ? colors.secondary : 'rgba(248, 247, 242, 0.72)' })}>
-        <Feather name={role.icon} size={21} color={colors.primary} accessible={false} />
-        <View style={{ flex: 1, minWidth: 0 }}><Text style={type.bodyBold} numberOfLines={1}>{t(role.title)}</Text><Text style={type.caption} numberOfLines={2}>{t(role.hint)}</Text></View>
-        <Feather name="chevron-right" size={18} color={colors.inkSoft} accessible={false} />
-      </Pressable>)}
-    </View>
-  </View>;
 }
 
 // Hearts this browser has sent, so a reader can take one back. Only a convenience: it may be empty.

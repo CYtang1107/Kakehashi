@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { AccessibilityInfo, ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View, findNodeHandle, useWindowDimensions, type ViewStyle } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -11,9 +11,9 @@ import { AppText } from './design-system/AppText';
 import { Button, IconLabelButton, AccessibleTextInput } from './design-system/Controls';
 import { Card } from './design-system/Cards';
 import { StatusBanner, ToastFeedback } from './design-system/Feedback';
-import { ReadingSettings } from './design-system/ReadingSettings';
 import { ConfirmationDialog } from './design-system/ConfirmationDialog';
 import { useAccessibilityPreferences } from './design-system/preferences';
+import { AppBottomBar, GlobalBottomBar } from './design-system/AppBottomBar';
 export { AppText } from './design-system/AppText';
 export { Button, PrimaryButton, SecondaryButton, DestructiveButton, IconLabelButton, AccessibleSwitch, AccessibleTextInput } from './design-system/Controls';
 export { Card, UpcomingVisitCard, MemoryCard, FriendRecommendationCard, HomeAssistanceCard, DeviceControlCard, ReminderCard, SafetyCard } from './design-system/Cards';
@@ -31,38 +31,15 @@ export function TopBar({ back, roleSwitch }: { back?: boolean; roleSwitch?: bool
   const { top } = useSafeAreaInsets();
   const { t } = useI18n();
   const { palette } = useAccessibilityPreferences();
-  const [reading, setReading] = useState(false);
-  const [settings, setSettings] = useState(false);
-  const settingsTrigger = useRef<View>(null);
-  const closeReading = () => {
-    setReading(false);
-    // The reading trigger lived inside the now-closed Settings dialog. Return to its stable opener.
-    setTimeout(() => {
-      if (Platform.OS === 'web') {
-        (settingsTrigger.current as unknown as HTMLElement | null)?.querySelector<HTMLElement>('[role="button"],button')?.focus();
-      } else {
-        const handle = findNodeHandle(settingsTrigger.current);
-        if (handle) AccessibilityInfo.setAccessibilityFocus(handle);
-      }
-    }, 0);
-  };
+  void roleSwitch;
   return <View style={{ paddingTop: top + spacing.sm, paddingHorizontal: layout.margin, paddingBottom: spacing.lg,
     gap: spacing.md, backgroundColor: palette.paper, borderBottomWidth: 1, borderBottomColor: palette.separator }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.md }}>
       <AppText variant="bodyBold" style={{ color: palette.primary }}>KAKEHASHI 架け橋</AppText>
       <View style={{ flex: 1 }} />
-      <View ref={settingsTrigger} accessible={false}>
-        <IconLabelButton label={t('hSettings')} kind="secondary" icon="settings" onPress={() => setSettings(true)} />
-      </View>
       {back ? <IconLabelButton label={t('back')} kind="secondary" icon="chevron-left"
         onPress={() => router.canGoBack() ? router.back() : router.replace('/')} /> : null}
     </View>
-    <ConfirmationDialog visible={settings} title={t('hSettings')} onCancel={() => setSettings(false)}>
-      {roleSwitch ? <IconLabelButton label={t('switchRole')} kind="secondary" icon="users" onPress={() => router.replace('/')} /> : null}
-      <LangToggle />
-      <IconLabelButton label={t('dsReadingSettings')} kind="secondary" icon="type" onPress={() => { setSettings(false); setReading(true); }} />
-    </ConfirmationDialog>
-    <ReadingSettings visible={reading} onClose={closeReading} />
   </View>;
 }
 
@@ -77,8 +54,10 @@ export function useWide() {
 }
 
 // fit: on a laptop, the page fills the window and never scrolls; long panels scroll inside (Columns fill).
-export function Screen({ children, back, roleSwitch = true, header, wide, fit, requiresHome = true }: {
+export function Screen({ children, back, roleSwitch = true, header, wide, fit, requiresHome = true, bottomNav, globalNav }: {
   children: React.ReactNode; back?: boolean; roleSwitch?: boolean; header?: ScreenHeader; wide?: boolean; fit?: boolean; requiresHome?: boolean;
+  bottomNav?: { id: string; label: string; icon: keyof typeof Feather.glyphMap; active?: boolean; onPress: () => void }[];
+  globalNav?: 'home' | 'stories' | 'roles' | 'settings';
 }) {
   const { data, error, refresh } = useData();
   const { t } = useI18n();
@@ -103,6 +82,7 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
       <View style={{ padding: layout.margin, gap: layout.gap, maxWidth, width: '100%', alignSelf: 'center' }}>{body}</View>
     </ScrollView>}
     <Toast />
+    {globalNav ? <GlobalBottomBar active={globalNav} /> : bottomNav ? <AppBottomBar items={bottomNav} /> : null}
   </KeyboardAvoidingView>;
 }
 

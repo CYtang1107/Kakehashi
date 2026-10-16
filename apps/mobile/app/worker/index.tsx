@@ -1,6 +1,7 @@
 import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { COMMISSION, WORKER_CHECKS, isCleared, pick, type JobListing, type Worker } from '@kakehashi/shared';
 import { StatusBanner, Button, Card, Columns, Fold, Pill, Screen, formatDate } from '../../src/ui';
@@ -43,7 +44,11 @@ export default function HelperBoard() {
   };
 
   return (
-    <Screen wide fit header={{ title: t('helperTitle'), sub: t('helperLead', { pct: Math.round(COMMISSION * 100) }) }}>
+    <Screen wide fit bottomNav={[
+      { id: 'jobs', label: t('helperTitle'), icon: 'briefcase', active: true, onPress: () => undefined },
+      { id: 'settings', label: t('hSettings'), icon: 'settings', onPress: () => router.navigate('/settings') },
+    ]}
+      header={{ title: t('helperTitle'), sub: t('helperLead', { pct: Math.round(COMMISSION * 100) }) }}>
       <Columns fill scrollLeft
         left={<>
       <Text variant="caption">{t('rHelperDemo')}</Text>
