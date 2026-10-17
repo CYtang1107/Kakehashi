@@ -44,6 +44,7 @@ export default function Team() {
           </View>
           <Text variant="section">{t('uxReadiness', { done: READINESS.filter(step => s.passed[step]).length, total: READINESS.length })}</Text>
           <StudentBadges student={s} />
+          <Fold title={t('teamStepsDone', { done: READINESS.filter((x) => s.passed[x]).length, total: READINESS.length })} icon="check-square" open={READINESS.some((x) => !s.passed[x])}>
           {READINESS.map((step) => {
             const done = s.passed[step];
             return (
@@ -55,6 +56,7 @@ export default function Team() {
               </Pressable>
             );
           })}
+          </Fold>
         </Card>
   );
 

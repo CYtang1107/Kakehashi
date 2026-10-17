@@ -47,7 +47,7 @@ export function StoriesFeedContent() {
       {!stories && !error ? <CareLoadingScreen /> : null}
       {stories?.length ? <Fold title={t('uxExploreGlobe')} icon="globe" summary={t('globeHint')}>
         <View style={{ gap: 8, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
-          <StoryGlobe fill={fit} stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
+          <StoryGlobe fill={fit} height={300} stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
           <Text style={[type.caption, { textAlign: 'center' }]}>{t('globeHint')}</Text>
           <Fold title={t('uxStoryDirectory')} icon="list">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
