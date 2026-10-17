@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { router } from 'expo-router';
 import { pick } from '@kakehashi/shared';
-import { AppText, Button, Card, Field, Fold, StatusBanner } from '../../ui';
+import { AppText, Button, Card, ConfirmationDialog, Field, Fold, StatusBanner } from '../../ui';
 import { useData } from '../../data';
 import { useI18n } from '../../i18n';
 import { householdDay, planDate } from '../../her/plans';
@@ -46,26 +46,28 @@ export function DailyAssistance() {
     if (store.change({ type: 'add', reminder })) { setInvalid(false); setFeedback(c('added')); setTitle(''); setFormOpen(false); }
   };
   return <View style={{ gap: 24 }}>
-    <DemoStatus />
-    <View style={{ gap: 12 }}><AppText variant="section">{c('reminders')}</AppText><AppText variant="caption">{c('localNote')}</AppText>
-      {feedback ? <StatusBanner title={feedback} tone={invalid ? 'error' : 'info'} /> : null}
+    <View style={{ gap: 16 }}><AppText variant="section">{t('hMyReminders')}</AppText><AppText variant="caption">{c('localNote')}</AppText>
+      <DemoStatus />
+      {feedback && !formOpen ? <StatusBanner title={feedback} tone={invalid ? 'error' : 'info'} /> : null}
       {!['loading', 'loadError'].includes(store.status) ? <>
         {pending.length ? pending.map(item => <ReminderEntry key={item.id} item={item} onUpdate={message => { setInvalid(false); setFeedback(message); }} />) : <AppText>{c('noReminders')}</AppText>}
-        <Button label={c('addReminder')} icon="plus" disabled={!store.enabled} onPress={() => setFormOpen(value => !value)} />
+        <Button label={c('addReminder')} icon="plus" disabled={!store.enabled} onPress={() => { setFeedback(''); setInvalid(false); setFormOpen(true); }} />
       </> : null}
-      <View style={{ gap: 12, paddingVertical: 12 }}><AppText variant="bodyBold">{c('suggestions')}</AppText><AppText>{c('suggestion')}</AppText>
+      <Fold title={c('suggestions')} icon="sun"><AppText>{c('suggestion')}</AppText>
         <Button label={c('schedule')} kind="secondary" disabled={!store.enabled} onPress={() => { setKind('activity'); setTitle(c('quiet')); setDate(householdDay()); setTime('15:00'); setFormOpen(true); setFeedback(''); }} />
-      </View>
-      {formOpen ? <View style={{ gap: 16 }}>
+      </Fold>
+      <ConfirmationDialog visible={formOpen} title={c('addReminder')} message={c('localNote')} cancelLabel={c('cancel')}
+        onCancel={() => { setFormOpen(false); setFeedback(''); }}>
+        <DemoStatus />
+        {feedback ? <StatusBanner title={feedback} tone={invalid ? 'error' : 'info'} /> : null}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}><Button label={c('reminder')} selected={kind === 'reminder'} kind="secondary" onPress={() => setKind('reminder')} /><Button label={c('activity')} selected={kind === 'activity'} kind="secondary" onPress={() => setKind('activity')} /></View>
         <Field label={c('titleLabel')} value={title} onChangeText={setTitle} maxLength={120} />
         <Field label={c('date')} value={date} onChangeText={setDate} maxLength={10} />
         <Field label={c('time')} value={time} onChangeText={setTime} maxLength={5} />
         <Button label={c('add')} disabled={!store.enabled} onPress={add} />
-        <Button label={c('cancel')} kind="secondary" onPress={() => { setFormOpen(false); setFeedback(''); }} />
-      </View> : null}
+      </ConfirmationDialog>
     </View>
-    <Fold title={c('completed')} icon="check-circle">{completed.length ? completed.map(item => <ReminderEntry key={item.id} item={item} onUpdate={message => { setInvalid(false); setFeedback(message); }} />) : <AppText>{c('noCompleted')}</AppText>}</Fold>
+    <Fold title={t('hReminderHistory')} icon="check-circle">{completed.length ? completed.map(item => <ReminderEntry key={item.id} item={item} onUpdate={message => { setInvalid(false); setFeedback(message); }} />) : <AppText>{c('noCompleted')}</AppText>}</Fold>
     <Fold title={c('contacts')} icon="users"><AppText>{c('contactNote')}</AppText>
       {data?.home.childName ? <><Button label={`${c('family')} · ${pick(lang, data.home.childName, data.home.childNameJa)}`} kind="secondary" onPress={() => setFamilyOpen(value => !value)} />
         {familyOpen ? <AppText>{pick(lang, data.home.childName, data.home.childNameJa)} · {c('noContact')}</AppText> : null}</> : null}

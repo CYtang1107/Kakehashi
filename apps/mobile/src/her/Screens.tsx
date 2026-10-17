@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CONDITION_PARTS, outingIsLive, pick } from '@kakehashi/shared';
-import { AppText, Button, Card, EmptyState, StatusBanner, UpcomingVisitCard, AccessibleSwitch, LangToggle, formatDate } from '../ui';
+import { AppText, Button, Card, EmptyState, Fold, StatusBanner, AccessibleSwitch, LangToggle, formatDate } from '../ui';
 import { HerPage } from './HerPage';
 import { useData } from '../data';
 import { useI18n, type Key } from '../i18n';
@@ -14,7 +14,7 @@ import { itemPhotos } from '../PhotoCarousel';
 import { DecisionChip } from '../ui';
 import { householdDay, planDate, plans } from './plans';
 import { StudentBadges } from '../Community';
-import { DailyAssistance, VisitReminder } from '../evercircle/assistance/DailyAssistance';
+import { DailyAssistance } from '../evercircle/assistance/DailyAssistance';
 import { useAccessibilityPreferences } from '../design-system/preferences';
 import { radii, spacing } from '../theme';
 
@@ -52,23 +52,32 @@ export function HomeScreen() {
   const date = new Date().toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Tokyo' });
   const day = householdDay();
   const all = data ? plans(data.home, lang, t) : [];
-  const next = all.find(p => p.kind === 'visit' && p.date.slice(0, 10) >= day);
+  const next = all.find(p => (p.kind === 'visit' || p.kind === 'helper') && p.date.slice(0, 10) >= day);
   const todays = all.filter(p => p.date.slice(0, 10) === day);
-  return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hHome')} description={date}>
+  const helpers = data?.home.services.some(s => s.status === 'booked');
+  return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hToday')} description={date}>
     <AppText>{t('hHomeLead')}</AppText>
-    <Card tint style={{ backgroundColor: palette.plumTint, padding: 28, gap: 20 }}>
-      <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
+    <Card tint style={{ backgroundColor: palette.plumTint, gap: spacing.lg }}>
+      <AppText variant="section">{t('hCompanionWelcome')}</AppText>
       <AppText variant="caption">{t('cLead')}</AppText>
+      <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
     </Card>
-    {next ? <UpcomingVisitCard title={t('hVisit')} description={formatDate(next.date, lang)} detail={next.detail}
-      action={{ label: t('hSeeDay'), kind: 'secondary', onPress: () => router.push('/her/my-day') }} /> : <View style={{ gap: 8 }}><AppText>{t('hNoVisit')}</AppText></View>}
-    <Card><AppText variant="section">{t('hTodayPlans')}</AppText>
-      {todays.length ? todays.map(p => <AppText key={p.id}>{p.title} · {p.detail}</AppText>) : <AppText>{t('hNoToday')}</AppText>}
-      <Destination label="hDay" href="/her/my-day" icon="calendar" />
+    <Card><AppText variant="section">{t('hGlance')}</AppText>
+      <View style={{ gap: spacing.sm }}><AppText variant="bodyBold">{t('hNextVisit')}</AppText>
+        {next ? <><AppText>{next.title} · {planDate(next.date, lang)}</AppText><AppText variant="caption">{next.detail}</AppText></> : <AppText>{t('hNoVisit')}</AppText>}
+      </View>
+      <View style={{ gap: spacing.sm, paddingTop: spacing.lg, borderTopWidth: 1, borderColor: palette.separator }}>
+        <AppText variant="bodyBold">{t('hTodayPlans')}</AppText>
+        {todays.length ? todays.map(p => <AppText key={p.id}>{p.title} · {p.detail}</AppText>) : <AppText>{t('hNoToday')}</AppText>}
+      </View>
+      <WeatherAdvice />
+      <Button label={t('hSeeDay')} icon="calendar" kind="secondary" onPress={() => router.push('/her/my-day')} />
     </Card>
-    <View style={{ gap: 12 }}><Destination label="hMyHome" href="/her/my-home" icon="home" /><Destination label="hMemories" href="/her/memories" icon="book-open" /></View>
-    <Card><AppText variant="section">{t('hDiscover')}</AppText><AppText>{t('hFriendsBody')}</AppText><Destination label="hFriends" href="/her/friends" icon="users" /></Card>
-    <WeatherAdvice />
+    <View style={{ gap: spacing.lg }}><AppText variant="section">{t('hAssistance')}</AppText>
+      <AppText variant="caption">{t('hHelpScope')}</AppText>
+      <Destination label="hRequestHelp" href="/her/help" icon="tool" />
+      {helpers ? <Destination label="hHelpers" href="/her/helpers" icon="users" /> : null}
+    </View>
   </HerPage>;
 }
 export function MyDayScreen() {
@@ -83,15 +92,19 @@ export function MyDayScreen() {
   const live = data?.home.outings.find(o => outingIsLive(o, Date.now()));
   const activity = data?.home.activities.find(a => a.id === live?.activityId);
   return <HerPage back title={t('hDay')} description={new Date(`${day}T12:00:00+09:00`).toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-GB', { timeZone: 'Asia/Tokyo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}>
-    <VisitReminder />
-    <WeatherAdvice always />
-    <View><AppText variant="section">{t('hPlans')}</AppText>{current.length ? entries(current) : <EmptyState title={t('hNothingPlanned')} message={t('hNothingBody')} />}</View>
-    <DailyAssistance />
-    <View style={{ gap: 12 }}><AppText variant="section">{t('hOuting')}</AppText>
-      <AppText>{live ? `${activity ? pick(lang, activity.title, activity.titleJa) : ''} · ${live.by}` : t('hNoOuting')}</AppText>
-      {live ? <><AppText variant="caption">{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</AppText><Destination label="viewMap" href="/her/digital-house?view=map" /></> : null}
+    <View style={{ gap: spacing.lg }}><AppText variant="section">{t('hNext')}</AppText>
+      {current.length ? <Card>{entries(current.slice(0, 1))}</Card> : <AppText>{t('hNothingPlanned')}</AppText>}
+      <View style={{ gap: spacing.sm }}><AppText variant="bodyBold">{t('hOuting')}</AppText>
+        <AppText>{live ? `${activity ? pick(lang, activity.title, activity.titleJa) : ''} · ${live.by}` : t('hNoOuting')}</AppText>
+        {live ? <><AppText variant="caption">{t('outingFamilyNote')}{live.simulated ? ` ${t('outingSimulatedShort')}` : ''}</AppText><Destination label="viewMap" href="/her/digital-house?view=map" /></> : null}
+      </View>
+      <WeatherAdvice always />
     </View>
-    {past.length ? <View style={{ gap: 12 }}><AppText variant="section">{t('hPastPlans')}</AppText><AppText variant="caption">{t('hPastNote')}</AppText>{entries(past)}</View> : null}
+    <View style={{ gap: spacing.lg }}><AppText variant="section">{t('hMyPlans')}</AppText>
+      {current.length ? entries(current) : <EmptyState title={t('hNothingPlanned')} message={t('hNothingBody')} />}
+      {past.length ? <Fold title={t('hPlanHistory')} icon="clock" summary={t('hPastNote')}>{entries(past)}</Fold> : null}
+    </View>
+    <DailyAssistance />
   </HerPage>;
 }
 export function LegacyFriendsContent() {
@@ -119,14 +132,20 @@ export function LegacyFriendsContent() {
 export function MyHomeScreen() {
   const { t } = useI18n();
   return <HerPage title={t('hMyHome')} description={t('hMyHomeLead')}>
-    <Button label={t('hRequestHelp')} icon="tool" onPress={() => router.push('/her/help')} />
-    <Destination label="hHelpers" href="/her/helpers" icon="users" />
-    <Destination label="hSafety" href="/her/safety" icon="shield" />
-    <Destination label="hHouseInfo" href="/her/house-information" icon="info" />
-    <Destination label="hDigital" href="/her/digital-house" icon="home" />
-    <Destination label="hSmart" href="/her/smart-home" icon="power" />
-    <AppText variant="caption">{t('hSmartBody')}</AppText>
-    <StatusBanner title={t('dsSafetyTitle')} message={t('doorRule')} tone="warning" />
+    <Card><AppText variant="section">{t('hHelpVisitors')}</AppText>
+      <Button label={t('hRequestHelp')} icon="tool" onPress={() => router.push('/her/help')} />
+      <Destination label="hHelpers" href="/her/helpers" icon="users" />
+      <Destination label="hSafety" href="/her/safety" icon="shield" />
+      <StatusBanner title={t('dsSafetyTitle')} message={t('doorRule')} tone="warning" />
+    </Card>
+    <Card><AppText variant="section">{t('hAboutHome')}</AppText>
+      <Destination label="hHouseInfo" href="/her/house-information" icon="info" />
+      <Destination label="hDigital" href="/her/digital-house" icon="home" />
+    </Card>
+    <Card><AppText variant="section">{t('hHomeTechnology')}</AppText>
+      <AppText variant="caption">{t('hSmartBody')}</AppText>
+      <Destination label="hSmart" href="/her/smart-home" icon="power" />
+    </Card>
   </HerPage>;
 }
 const collections = [['hBelongings', 'all'], ['hPhotos', 'photos'], ['hAudio', 'audio'], ['hStories', 'stories'], ['hDecisions', 'decisions'], ['hWishes', 'wishes'], ['hSharing', 'sharing']] as const;

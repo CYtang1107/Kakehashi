@@ -1,15 +1,16 @@
 import { useAccessibilityPreferences } from '../design-system/preferences';
 import { HerPage } from './HerPage';
-import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Platform, Pressable, View, findNodeHandle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { HELP_KINDS, pick, type ServiceFeedback, type ServiceKind } from '@kakehashi/shared';
-import { AppText as Text, Button, Card, EmptyState, StatusBanner, formatDate } from '../ui';
+import { AppText as Text, Button, Card, EmptyState, StatusBanner } from '../ui';
 import { useData } from '../data';
 import { useI18n, type Key } from '../i18n';
 import { api } from '../api';
 import { workerName } from '../Services';
-import { colors, fonts } from '../theme';
+import { colors, control, fonts } from '../theme';
 
 // Her own screen: large text, few choices. She asks for help in two taps; she always sees who is coming.
 const big = { fontFamily: fonts.bold, fontSize: 23, lineHeight: 34, color: colors.ink };
@@ -25,9 +26,16 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
   const [busy, setBusy] = useState(false);
   const [rating, setRating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const stageHeading = useRef<View>(null);
+  const previousKind = useRef<ServiceKind | null>(null);
+  useEffect(() => {
+    if (!kind && !previousKind.current) return;
+    previousKind.current = kind;
+    if (Platform.OS === 'web') (stageHeading.current as unknown as HTMLElement)?.focus();
+    else { const handle = findNodeHandle(stageHeading.current); if (handle) AccessibilityInfo.setAccessibilityFocus(handle); }
+  }, [kind]);
   if (!data) return <HerPage>{null}</HerPage>;
   const { home } = data;
-  const pair = home.students.filter((s) => s.role === 'pair');
   const waiting = home.services.filter((s) => s.status === 'requested' || s.status === 'open');
   const coming = home.services.filter((s) => s.status === 'booked').sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''));
   const toRate = home.services.filter((s) => s.status === 'done' && !s.feedback);
@@ -40,7 +48,7 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
       await api.askHelp(home.id, { kind, when, by: 'her' });
       await refresh();
       setKind(null);
-      showToast(t('askedToast', { name: pair[0]?.name ?? '' }));
+      showToast(t('hRequestRecorded'));
     } catch { setError(t('dsConnectionBody')); } finally { setBusy(false); }
   };
   const rate = async (sid: string, feedback: ServiceFeedback) => {
@@ -55,13 +63,14 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
   return (
     <HerPage back title={t(visitorsOnly ? 'hHelpers' : 'hRequestHelp')}>
       {visitorsOnly ? <>
-      {/* Who is coming, with the door rule right underneath: the most important thing on her screen */}
-      <Text variant="section" style={big}>{t('whoIsComing')}</Text>
-      {coming.map((s) => {
+      {/* Keep the first visitor's identity and the door rule together, even with a long booking list. */}
+      {coming.map((s, index) => {
         const w = home.workers.find((x) => x.id === s.workerId);
         const d = s.date ? new Date(`${s.date}T12:00:00`) : null;
         return (
-          <Card key={s.id} style={{ gap: 16 }}>
+          <React.Fragment key={s.id}><Card style={{ gap: 16 }}>
+            <Text variant="eyebrow">{t('hBookedVisitors')}</Text>
+            <Text variant="section" style={big}>{workerName(w, lang)}</Text>
             {d ? (
               <View style={{ width: 72, paddingVertical: 8, borderRadius: 14, backgroundColor: colors.aiTint, alignItems: 'center' }}>
                 <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: colors.ai }}>{lang === 'ja' ? `${d.getMonth() + 1}月` : d.toLocaleDateString('en-GB', { month: 'short' })}</Text>
@@ -69,7 +78,6 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
               </View>
             ) : null}
             <View style={{ flex: 1, gap: 4 }}>
-              <Text variant="section" style={big}>{workerName(w, lang)}</Text>
               <Text style={body}>{t(`svc_${s.kind}` as Key)}{s.hours ? `, ${t('hoursN', { n: s.hours })}` : ''}</Text>
               {w ? <Text style={[body, { fontSize: 18, color: colors.inkSoft }]}>{pick(lang, w.from, w.fromJa)}</Text> : null}
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -78,14 +86,19 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
               </View>
             </View>
           </Card>
+          {index === 0 ? <StatusBanner title={t('dsSafetyTitle')} message={t('doorRule')} tone="warning" /> : null}
+          </React.Fragment>
         );
       })}
-      {!coming.length ? <EmptyState title={t('dsNoVisitors')} message={t('dsNoVisitorsBody')} icon="users" /> : null}
-      <StatusBanner title={t('dsSafetyTitle')} message={t('doorRule')} tone="warning" />
+      {!coming.length ? <><StatusBanner title={t('dsSafetyTitle')} message={t('doorRule')} tone="warning" />
+        <EmptyState title={t('dsNoVisitors')} message={t('dsNoVisitorsBody')} icon="users" /></> : null}
+      <Text variant="caption">{t('hBookingNote')}</Text>
 
         </> : <>
-      {/* Ask for help: pick one, then when */}
-      
+      <Text>{t('hHelpScope')}</Text>
+      <Button label={t('hHelpers')} icon="users" kind="secondary" onPress={() => router.push('/her/helpers')} />
+      {!kind ? <View style={{ gap: 16 }}>
+      <View ref={stageHeading} tabIndex={-1} accessibilityLabel={t('hChooseService')}><Text variant="section">{t('hChooseService')}</Text></View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {HELP_KINDS.map((k) => (
           <Pressable key={k} accessibilityRole="button" accessibilityLabel={t(`svc_${k}` as Key)}
@@ -96,28 +109,31 @@ export default function HelpScreen({ visitorsOnly = false }: { visitorsOnly?: bo
             <Text style={[big, { fontSize: 20, textAlign: 'center', maxWidth: '100%' }]}>{t(`svc_${k}` as Key)}</Text>
           </Pressable>
         ))}
-      </View>
+      </View></View> : null}
       {kind ? (
         <Card>
-          <Text variant="section" style={big}>{t('whenQ')}</Text>
-          {(['soon', 'next-visit'] as const).map(when => <Button key={when} label={t(`when_${when}`)} busy={busy} onPress={() => ask(when)} />)}
+          <View ref={stageHeading} tabIndex={-1} accessibilityLabel={t('hChooseTiming')}><Text variant="section" style={big}>{t('hChooseTiming')}</Text></View>
+          <Text>{t('hSelectedService', { service: t(`svc_${kind}` as Key) })}</Text>
+          {(['soon', 'next-visit'] as const).map(when => <Button key={when} label={t(`when_${when}`)} kind="secondary" style={{ minHeight: control.primary }} busy={busy} onPress={() => ask(when)} />)}
+          <Button label={t('hChangeService')} icon="chevron-left" kind="tertiary" disabled={busy} onPress={() => { setKind(null); setError(null); }} />
           {error ? <StatusBanner title={t('dsConnectionTitle')} message={error} tone="error" /> : null}
         </Card>
       ) : null}
 
       {waiting.length ? (
         <>
-          <Text variant="section" style={big}>{t('waitingTitle')}</Text>
+          <Text variant="section" style={big}>{t('hWaitingRequests')}</Text>
           {waiting.map((s) => (
             <Card key={s.id}>
               <Text variant="section" style={big}>{t(`svc_${s.kind}` as Key)}</Text>
-              <Text style={[body, { color: colors.inkSoft }]}>{t('waitingLine')}</Text>
+              <Text style={[body, { color: colors.inkSoft }]}>{t('hRequestedNote')}</Text>
             </Card>
           ))}
         </>
       ) : null}
 
       {error && !kind ? <StatusBanner title={t('dsConnectionTitle')} message={error} tone="error" /> : null}
+      {toRate.length ? <Text variant="section">{t('hCompletedServices')}</Text> : null}
       {toRate.map((s) => (
         <Card key={s.id}>
           <Text variant="section" style={big}>{t('howWasIt')}</Text>

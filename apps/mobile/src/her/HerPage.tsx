@@ -1,9 +1,10 @@
 import React, { useCallback, useRef } from 'react';
 import { AccessibilityInfo, ActivityIndicator, Platform, ScrollView, View, findNodeHandle } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect, usePathname } from 'expo-router';
 import { AppText, Button, ScreenFrame, StatusBanner, type ScreenHeader } from '../ui';
 import { useData } from '../data';
 import { useI18n } from '../i18n';
+import { herLocation } from './navigation';
 
 // The persistent shell owns navigation and feedback; pages own a single scroll area.
 export function HerPage({ children, title, description, header, back, wide, requiresHome = true, footer, scrollRef }: {
@@ -12,6 +13,7 @@ export function HerPage({ children, title, description, header, back, wide, requ
 }) {
   const { data, error, refresh } = useData();
   const { t } = useI18n();
+  const location = herLocation(usePathname());
   const heading = useRef<View>(null);
   useFocusEffect(useCallback(() => {
     const timer = setTimeout(() => {
@@ -24,6 +26,7 @@ export function HerPage({ children, title, description, header, back, wide, requ
     {back ? <Button label={t('back')} icon="chevron-left" kind="tertiary" style={{ alignSelf: 'flex-start', paddingHorizontal: 12 }}
       onPress={() => router.canGoBack() ? router.back() : router.replace('/her')} /> : null}
     <View ref={heading} tabIndex={-1} accessibilityLabel={title ?? header?.title} style={{ gap: 8 }}>
+      {location.parent ? <AppText variant="caption">{t(location.parent)}{location.label ? ` / ${t(location.label)}` : ''}</AppText> : null}
       <AppText variant="title">{title ?? header?.title}</AppText>
       {description || header?.sub ? <AppText variant="caption">{description ?? header?.sub}</AppText> : null}
     </View>
