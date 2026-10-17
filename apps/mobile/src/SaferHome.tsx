@@ -1,18 +1,21 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
+import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { FIX_CATALOG, FIX_KINDS, fixCost, pick, safetyEstimate, type FixKind, type FixStatus, type SafetyFix } from '@kakehashi/shared';
-import { Button, Card, Field, Pill } from './ui';
+import { StatusBanner, Button, Card, Field, Pill } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api } from './api';
-import { colors, fonts, type, yen } from './theme';
+import { colors, fonts, type, yen, type Palette } from './theme';
 
-export const fixTone: Record<FixStatus, { fg: string; bg: string }> = {
-  suggested: { fg: colors.kaki, bg: colors.kakiTint },
-  agreed: { fg: colors.ai, bg: colors.aiTint },
-  'not-now': { fg: colors.inkSoft, bg: colors.paper },
-  done: { fg: colors.moss, bg: colors.mossTint },
-};
+export const getFixColors = (palette: Palette): Record<FixStatus, { fg: string; bg: string }> => ({
+  suggested: { fg: palette.kaki, bg: palette.kakiTint },
+  agreed: { fg: palette.ai, bg: palette.aiTint },
+  'not-now': { fg: palette.inkSoft, bg: palette.paper },
+  done: { fg: palette.moss, bg: palette.mossTint },
+});
+export const fixTone = getFixColors(colors);
 
 const statusKey = (s: FixStatus) => `fixstatus_${s}` as Key;
 
@@ -25,7 +28,9 @@ function amountLabel(f: Pick<SafetyFix, 'kind' | 'amount'>, lang: 'en' | 'ja') {
 
 // Safer home plan (安心リフォーム): students note small fixes with her; she decides; the family sees the cost
 // and an estimate of the care-insurance home-modification subsidy.
-export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student'; roomId?: string }) {
+export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student' | 'her'; roomId?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
+  const fixTone = getFixColors(colors);
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [kind, setKind] = useState<FixKind>('handrail');
@@ -43,18 +48,18 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student'; ro
 
   const run = async (key: string, fn: () => Promise<unknown>, done?: string) => {
     setBusy(key); setError(null);
-    try { await fn(); await refresh(); if (done) showToast(done); }
-    catch (e) { setError(e instanceof Error ? e.message : 'Could not save.'); }
+    try { await fn(); await refresh(); if (done) showToast(done); return true; }
+    catch { setError(t('rSaveError')); return false; }
     finally { setBusy(null); }
   };
 
   const add = () => run('add', () => api.addFix(home.id, { roomId: roomId ?? home.rooms[0].id, kind, amount: Number(amount), note: note.trim() || undefined }), t('saved'))
-    .then(() => { setNote(''); setAmount('1'); });
+    .then(ok => { if (ok) { setNote(''); setAmount('1'); } });
 
   return (
     <Card>
       <Text style={type.section}>{t('saferTitle')}</Text>
-      <Text style={type.caption}>{mode === 'student' ? t('saferLeadStudent') : t('saferLeadFamily')}</Text>
+      <Text style={type.caption}>{t(mode === 'student' ? 'saferLeadStudent' : mode === 'her' ? 'hSafetyBody' : 'saferLeadFamily')}</Text>
 
       {home.safety.map((f) => (
         <View key={f.id} style={{ gap: 4, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
@@ -96,9 +101,9 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student'; ro
         <View style={{ gap: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.line }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {FIX_KINDS.map((k) => (
-              <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} onPress={() => setKind(k)}
-                style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: kind === k ? colors.ai : colors.ink }}>{t(`fix_${k}`)}</Text>
+              <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} aria-checked={kind === k} onPress={() => setKind(k)}
+                style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
+                <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: kind === k ? colors.ai : colors.ink }}>{t(`fix_${k}`)}</Text>
               </Pressable>
             ))}
           </View>
@@ -108,14 +113,15 @@ export function SaferHomeCard({ mode, roomId }: { mode: 'family' | 'student'; ro
           <Button label={t('addFix')} icon="plus" busy={busy === 'add'} disabled={!(Number(amount) > 0)} onPress={add} />
         </View>
       ) : null}
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
     </Card>
   );
 }
 
 function Row({ label, value, strong, quiet, color }: { label: string; value: string; strong?: boolean; quiet?: boolean; color?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
       <Text style={[strong ? type.bodyBold : type.body, { flex: 1, color: quiet ? colors.inkSoft : colors.ink }]}>{label}</Text>
       <Text style={[strong ? type.section : type.body, { color: color ?? (quiet ? colors.inkSoft : colors.ink), fontVariant: ['tabular-nums'] }]}>{value}</Text>
     </View>

@@ -1,20 +1,14 @@
 import React from 'react';
-import type { ColorValue } from 'react-native';
 import { Tabs } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
 import { useI18n } from '../../src/i18n';
-import { colors, fonts } from '../../src/theme';
-
-export default function StudentTabs() {
+import { RoleTabBar } from '../../src/design-system/RoleTabBar';
+import { RoleGate } from '../../src/auth';
+export default function RoleTabs() {
   const { t } = useI18n();
-  const icon = (name: keyof typeof Feather.glyphMap) => ({ color, size }: { color: ColorValue; size: number }) => <Feather name={name} color={color as string} size={size - 2} />;
-  return (
-    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.kakiNight, tabBarInactiveTintColor: colors.onNightSoft,
-      tabBarStyle: { backgroundColor: colors.night, borderTopWidth: 0 }, tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 12 } }}>
-      <Tabs.Screen name="index" options={{ title: t('tabVisit'), tabBarIcon: icon('check-square') }} />
-      <Tabs.Screen name="add" options={{ title: t('tabAdd'), tabBarIcon: icon('camera') }} />
-      <Tabs.Screen name="wallet" options={{ title: t('tabWallet'), tabBarIcon: icon('credit-card') }} />
-      <Tabs.Screen name="team" options={{ title: t('tabTeam'), tabBarIcon: icon('award') }} />
-    </Tabs>
-  );
+  return <RoleGate role="student"><Tabs backBehavior="history" screenOptions={{ headerShown: false }} tabBar={props => <RoleTabBar {...props} icons={{"index":"check-square","add":"camera","wallet":"credit-card","team":"award"}} />}>
+    <Tabs.Screen name="index" options={{ title: t('tabVisit') }} />
+    <Tabs.Screen name="add" options={{ title: t('tabAdd') }} />
+    <Tabs.Screen name="wallet" options={{ title: t('tabWallet') }} />
+    <Tabs.Screen name="team" options={{ title: t('tabTeam') }} />
+  </Tabs></RoleGate>;
 }

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { useAccessibilityPreferences } from './design-system/preferences';
+import { AppText as Text } from './design-system/AppText';
+import React, { useEffect, useState, useRef } from 'react';
+import { Image, Pressable, ScrollView, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import { pick, type Item, type ItemPhoto, type PhotoKind } from '@kakehashi/shared';
@@ -19,12 +21,24 @@ export function itemPhotos(item: Pick<Item, 'photos' | 'photoUrl'>): ItemPhoto[]
 
 // Swipe through an item's pictures, like a post. Illustrations always carry a label saying they are not real photos.
 export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'name' | 'photos' | 'photoUrl' | 'icon'>; dark?: boolean; onMakePixel?: (photoId: string) => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
   const photos = itemPhotos(item);
+  const scroll = useRef<ScrollView>(null);
   const [w, setW] = useState(0);
   const [i, setI] = useState(0);
+  const page = useRef(0);
+  useEffect(() => {
+    page.current = Math.min(page.current, Math.max(0, photos.length - 1));
+    setI(page.current);
+    if (w) scroll.current?.scrollTo({ x: page.current * w, animated: false });
+  }, [w, photos.length]);
   if (photos.length === 0) return null;
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => { if (w) setI(Math.round(e.nativeEvent.contentOffset.x / w)); };
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (!w) return;
+    page.current = Math.max(0, Math.min(photos.length - 1, Math.round(e.nativeEvent.contentOffset.x / w)));
+    setI(page.current);
+  };
   const cur = photos.at(Math.min(i, photos.length - 1))!;
   const caption = pick(lang, cur.caption, cur.captionJa);
   const ink = dark ? '#F5EBDD' : colors.ink, soft = dark ? '#CDBFAE' : colors.inkSoft;
@@ -32,18 +46,18 @@ export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'n
     <View style={{ gap: 8 }}>
       <View onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)} style={{ borderRadius: 14, overflow: 'hidden', backgroundColor: colors.line }}>
         {w ? (
-          <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16}>
+          <ScrollView ref={scroll} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16}>
             {photos.map((p) => (
               <View key={p.id} style={{ width: w, aspectRatio: 4 / 3 }}>
                 <Image source={{ uri: fileUrl(p.url) }} style={{ width: '100%', height: '100%' }} resizeMode="cover" accessibilityLabel={pick(lang, p.caption, p.captionJa) || item.name} />
                 {p.kind !== 'photo' ? (
                   <View style={{ position: 'absolute', left: 10, top: 10, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 99, backgroundColor: p.kind === 'illustration' ? 'rgba(181,86,43,0.92)' : 'rgba(28,35,48,0.75)' }}>
-                    <Text style={{ fontFamily: fonts.bold, fontSize: 11.5, color: '#fff' }}>{t(p.kind === 'illustration' ? 'photoIllustrationBadge' : 'photoOldBadge')}</Text>
+                    <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#fff' }}>{t(p.kind === 'illustration' ? 'photoIllustrationBadge' : 'photoOldBadge')}</Text>
                   </View>
                 ) : null}
                 {photos.length > 1 ? (
                   <View style={{ position: 'absolute', right: 10, top: 10, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99, backgroundColor: 'rgba(28,35,48,0.65)' }}>
-                    <Text style={{ fontFamily: fonts.bold, fontSize: 11.5, color: '#fff' }}>{photos.indexOf(p) + 1}/{photos.length}</Text>
+                    <Text style={{ fontFamily: fonts.bold, fontSize: 16, color: '#fff' }}>{photos.indexOf(p) + 1}/{photos.length}</Text>
                   </View>
                 ) : null}
               </View>
@@ -56,12 +70,13 @@ export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'n
           {photos.map((p, k) => <View key={p.id} style={{ width: k === i ? 18 : 6, height: 6, borderRadius: 3, backgroundColor: k === i ? colors.ai : (dark ? '#5C544C' : colors.line) }} />)}
         </View>
       ) : null}
-      {caption ? <Text style={{ fontFamily: fonts.medium, fontSize: 13, lineHeight: 19, color: ink }}>{caption}</Text> : null}
-      {cur.kind === 'illustration' ? <Text style={{ fontFamily: fonts.medium, fontSize: 12, lineHeight: 17, color: soft }}>{t('photoIllustrationNote')}</Text> : null}
+      {photos.length > 1 ? <View style={{ gap: 8 }}><Button label={t('previous')} kind="secondary" disabled={i === 0} onPress={() => scroll.current?.scrollTo({ x: (i - 1) * w, animated: false })} /><Button label={t('next')} kind="secondary" disabled={i >= photos.length - 1} onPress={() => scroll.current?.scrollTo({ x: (i + 1) * w, animated: false })} /></View> : null}
+      {caption ? <Text style={{ fontFamily: fonts.medium, fontSize: 18, lineHeight: 28, color: ink }}>{caption}</Text> : null}
+      {cur.kind === 'illustration' ? <Text style={{ fontFamily: fonts.medium, fontSize: 17, lineHeight: 27, color: soft }}>{t('photoIllustrationNote')}</Text> : null}
       {onMakePixel && cur.kind === 'photo' && item.icon?.fromId !== cur.id ? (
-        <Pressable accessibilityRole="button" onPress={() => onMakePixel(cur.id)} style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4 }}>
+        <Pressable accessibilityRole="button" onPress={() => onMakePixel(cur.id)} style={{ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 56, paddingVertical: 12 }}>
           <Feather name="grid" size={15} color={colors.ai} />
-          <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: colors.ai }}>{t('photoMakePixel')}</Text>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: colors.ai }}>{t('photoMakePixel')}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -69,14 +84,15 @@ export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'n
 }
 
 // Students: add a picture to the item's album, saying what kind of picture it is.
-export function AddPhotoCard({ item }: { item: Item }) {
+export function AddPhotoCard({ item, author }: { item: Item; author?: string }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, replaceItem, showToast } = useData();
   const { t } = useI18n();
   const [kind, setKind] = useState<PhotoKind>('photo');
   const [caption, setCaption] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const by = data?.home.students.find((s) => s.role === 'pair')?.name ?? 'Student';
+  const by = author ?? data?.home.students.find((s) => s.role === 'pair')?.name ?? 'Student';
 
   const add = async (camera: boolean) => {
     setError(null);
@@ -102,17 +118,17 @@ export function AddPhotoCard({ item }: { item: Item }) {
       <Text style={type.caption}>{t('photoAddLead')}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {(['photo', 'old-photo', 'illustration'] as const).map((k) => (
-          <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} onPress={() => setKind(k)}
-            style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: kind === k ? colors.ai : colors.ink }}>{t(`photoKind_${k}` as Key)}</Text>
+          <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} aria-checked={kind === k} onPress={() => setKind(k)}
+            style={{ maxWidth: '100%', paddingHorizontal: 12, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: kind === k ? colors.ai : colors.ink }}>{t(`photoKind_${k}` as Key)}</Text>
           </Pressable>
         ))}
       </View>
       {kind === 'illustration' ? <Text style={[type.caption, { color: colors.kaki }]}>{t('photoIllustrationNote')}</Text> : null}
       <Field label={t('photoCaption')} value={caption} onChangeText={setCaption} />
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
-        <View style={{ flex: 1 }}><Button label={t('choosePhoto')} kind="secondary" icon="image" busy={busy} onPress={() => add(false)} /></View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('choosePhoto')} kind="secondary" icon="image" busy={busy} onPress={() => add(false)} /></View>
       </View>
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
     </Card>

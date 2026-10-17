@@ -1,0 +1,98 @@
+:root {
+  --kk-paper: #f5f6f3;
+  --kk-surface: #fff;
+  --kk-ink: #202923;
+  --kk-primary: #245846;
+  --kk-secondary: #e8f0ea;
+  --kk-border: #78877c;
+  --kk-separator: #dee5df;
+  --kk-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  font-optical-sizing: auto;
+}
+
+html, body { background: var(--kk-paper); overscroll-behavior: none; }
+#root { height: var(--kk-viewport-height, 100dvh); }
+[data-testid="app-text"] { overflow-wrap: anywhere; }
+[data-testid="mobile-navigation"] { flex-shrink: 0; }
+html[data-keyboard-open="true"] [data-testid="mobile-navigation"] { display: none; }
+textarea, input { scroll-margin-block: 24px; }
+[data-testid="dialog-panel"] { overscroll-behavior: contain; }
+[data-testid="dialog-backdrop"] { max-height: var(--kk-viewport-height, 100dvh); }
+* { scrollbar-width: thin; scrollbar-color: var(--kk-border) transparent; }
+*::-webkit-scrollbar { width: 7px; height: 7px; }
+*::-webkit-scrollbar-thumb { background: var(--kk-border); border: 2px solid var(--kk-paper); border-radius: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+::selection { color: var(--kk-ink); background: var(--kk-secondary); }
+:focus-visible { outline: 3px solid var(--kk-primary) !important; outline-offset: 3px; }
+input, textarea { caret-color: var(--kk-primary); transition: border-color 140ms ease, box-shadow 140ms ease; }
+input:focus, textarea:focus { box-shadow: 0 0 0 3px var(--kk-secondary); }
+input:disabled, textarea:disabled { cursor: not-allowed; }
+
+button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], [role="switch"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+[role="button"], [role="tab"], [role="radio"], [role="checkbox"] {
+  min-height: 44px;
+}
+[data-testid="premium-button"], [data-testid="icon-button"] {
+  min-width: 48px;
+  transition: scale 120ms var(--kk-ease), background-color 120ms var(--kk-ease);
+}
+[data-testid="premium-button"]:active:not(:focus-visible):not([aria-disabled="true"]),
+[data-testid="icon-button"]:active:not(:focus-visible):not([aria-disabled="true"]) { scale: 0.99; }
+[data-testid="disclosure-chevron"] { transition: transform 160ms var(--kk-ease); }
+[aria-disabled="true"] { cursor: not-allowed; }
+[data-testid="navigation-surface"] { background: color-mix(in srgb, var(--kk-surface) 94%, transparent) !important; backdrop-filter: blur(16px); }
+[data-testid="app-toolbar"] { background: color-mix(in srgb, var(--kk-surface) 96%, transparent) !important; }
+[data-testid="dialog-panel"] { box-shadow: 0 16px 48px rgb(24 20 28 / 16%); }
+[data-testid="older-adult-shell"] [role="button"],
+[data-testid="older-adult-shell"] [role="switch"] { min-height: 56px; }
+
+@media (hover: hover) and (pointer: fine) {
+  [data-testid="premium-button"]:hover:not([aria-disabled="true"]),
+  [data-testid="icon-button"]:hover:not([aria-disabled="true"]) { filter: brightness(0.97); }
+  [role="tab"]:hover:not([aria-selected="true"]) { background-color: var(--kk-secondary) !important; }
+}
+@media (pointer: coarse) { input, textarea, select { font-size: max(16px, 1em); } }
+@media (pointer: coarse) and (max-height: 500px) {
+  body:has(input:focus, textarea:focus) [data-testid="mobile-navigation"] { display: none; }
+  body:has(input:focus, textarea:focus) [data-testid="app-toolbar"] { padding-top: env(safe-area-inset-top, 0px); padding-bottom: 0; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  [data-testid="navigation-surface"], [data-testid="app-toolbar"] { background: var(--kk-surface) !important; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  [data-testid="navigation-surface"], [data-testid="app-toolbar"] { background: var(--kk-surface) !important; border-color: var(--kk-ink) !important; backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; }
+  [role="button"], [role="radio"], [role="checkbox"] { scale: 1 !important; }
+}
+html[data-reduced-motion="true"] *, html[data-high-contrast="true"] [data-testid="navigation-surface"] { backdrop-filter: none; }
+html[data-high-contrast="true"] [data-testid="navigation-surface"] { background: var(--kk-surface) !important; }
+html[data-high-contrast="true"] :is([role="button"], [role="tab"], [role="radio"], [role="checkbox"]):not([data-testid="premium-button"]):not([data-testid="icon-button"]) { border-width: 2px !important; border-color: var(--kk-primary) !important; }
+html[data-reduced-motion="true"] * { transition-duration: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+html[data-reduced-motion="true"] [role="button"], html[data-reduced-motion="true"] [role="radio"], html[data-reduced-motion="true"] [role="checkbox"] { scale: 1 !important; }
+
+/* CSS keeps the loading scene moving while the web app's JS is busy. */
+#care-loading-motion [data-testid="care-elder"] { animation: care-elder-breathe 4.4s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid="care-caregiver"] { animation: care-caregiver-breathe 4.4s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid="care-hand"] { animation: care-hand 3.6s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid="care-blink"] { animation: care-blink 3.62s linear infinite; }
+#care-loading-motion [data-testid="care-heart"] { animation: care-heart 4.2s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid^="care-dot-"] { animation: care-dot 1.8s ease-in-out infinite; }
+#care-loading-motion [data-testid="care-dot-1"] { animation-delay: 0.36s; }
+#care-loading-motion [data-testid="care-dot-2"] { animation-delay: 0.72s; }
+@keyframes care-elder-breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes care-caregiver-breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.1px); } }
+@keyframes care-hand { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2deg); } }
+@keyframes care-blink { 0%, 93.9%, 100% { transform: scaleY(1); } 96.4% { transform: scaleY(0.12); } }
+@keyframes care-heart { 0%, 100% { transform: translateY(0); opacity: 0.45; } 50% { transform: translateY(-8px); opacity: 0.9; } }
+@keyframes care-dot { 0%, 10%, 50%, 100% { opacity: 0.35; } 30% { opacity: 1; } }

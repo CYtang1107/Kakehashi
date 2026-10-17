@@ -1,29 +1,80 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import '../src/design-system/global.css';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts, ZenKakuGothicNew_400Regular, ZenKakuGothicNew_500Medium, ZenKakuGothicNew_700Bold } from '@expo-google-fonts/zen-kaku-gothic-new';
-import { ShipporiMincho_600SemiBold, ShipporiMincho_700Bold } from '@expo-google-fonts/shippori-mincho';
+import { useFonts } from 'expo-font';
+import { ZenKakuGothicNew_400Regular } from '@expo-google-fonts/zen-kaku-gothic-new/400Regular';
+import { ZenKakuGothicNew_500Medium } from '@expo-google-fonts/zen-kaku-gothic-new/500Medium';
+import { ZenKakuGothicNew_700Bold } from '@expo-google-fonts/zen-kaku-gothic-new/700Bold';
+import { ShipporiMincho_600SemiBold } from '@expo-google-fonts/shippori-mincho/600SemiBold';
+import { ShipporiMincho_700Bold } from '@expo-google-fonts/shippori-mincho/700Bold';
 import { I18nProvider } from '../src/i18n';
 import { DataProvider } from '../src/data';
-import { colors } from '../src/theme';
-
-// Thin scrollbars in the app's colours, instead of the browser's heavy grey ones (web only).
-if (typeof document !== 'undefined' && !document.getElementById('kk-scrollbars')) {
-  const st = document.createElement('style');
-  st.id = 'kk-scrollbars';
-  st.textContent = '* { scrollbar-width: thin; scrollbar-color: #C3C8BE transparent; } *::-webkit-scrollbar { width: 6px; height: 6px; } *::-webkit-scrollbar-thumb { background: #C3C8BE; border-radius: 3px; } *::-webkit-scrollbar-track { background: transparent; }';
-  document.head.appendChild(st);
-}
+import { AccessibilityProvider, useAccessibilityPreferences } from '../src/design-system/preferences';
+import { AuthProvider } from '../src/auth';
+import { CareLoadingScreen } from '../src/design-system/CareLoadingScreen';
 
 export default function RootLayout() {
-  const [loaded] = useFonts({ ZenKakuGothicNew_400Regular, ZenKakuGothicNew_500Medium, ZenKakuGothicNew_700Bold, ShipporiMincho_600SemiBold, ShipporiMincho_700Bold });
-  if (!loaded) return null;
+  const [loaded, error] = useFonts({ ZenKakuGothicNew_400Regular, ZenKakuGothicNew_500Medium, ZenKakuGothicNew_700Bold, ShipporiMincho_600SemiBold, ShipporiMincho_700Bold });
+  const [minimumStartupElapsed, setMinimumStartupElapsed] = useState(false);
+  // The root layout stays mounted across routes; only startup gets this minimum.
+  useEffect(() => {
+    const timer = setTimeout(() => setMinimumStartupElapsed(true), 4500);
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <I18nProvider>
+      <AccessibilityProvider>
+      {!minimumStartupElapsed || (!loaded && !error) ? <CareLoadingScreen fullScreen /> : <AuthProvider>
       <DataProvider>
-        <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper } }} />
+        <AppStack />
       </DataProvider>
+      </AuthProvider>}
+      </AccessibilityProvider>
     </I18nProvider>
   );
+}
+
+function AppStack() {
+  const { reducedMotion, preferences, palette } = useAccessibilityPreferences();
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const viewport = window.visualViewport;
+    const root = document.documentElement;
+    const resize = () => {
+      // Safari's keyboard resizes the visual viewport, while its layout viewport stays tall.
+      if (viewport.scale !== 1) return;
+      root.style.setProperty('--kk-viewport-height', `${viewport.height}px`);
+      root.dataset.keyboardOpen = String(window.innerHeight - viewport.height > 120 &&
+        Boolean(document.activeElement?.matches('input, textarea, [contenteditable="true"]')));
+    };
+    resize();
+    viewport.addEventListener('resize', resize);
+    document.addEventListener('focusin', resize);
+    document.addEventListener('focusout', resize);
+    return () => {
+      viewport.removeEventListener('resize', resize);
+      document.removeEventListener('focusin', resize);
+      document.removeEventListener('focusout', resize);
+      root.style.removeProperty('--kk-viewport-height');
+      delete root.dataset.keyboardOpen;
+    };
+  }, []);
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    for (const key of ['paper', 'surface', 'ink', 'primary', 'secondary', 'border', 'separator'] as const) {
+      root.style.setProperty(`--kk-${key}`, palette[key]);
+    }
+    root.dataset.reducedMotion = String(reducedMotion);
+    root.dataset.highContrast = String(preferences.highContrast);
+    root.style.colorScheme = preferences.darkMode && !preferences.highContrast ? 'dark' : 'light';
+    let theme = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (!theme) { theme = document.createElement('meta'); theme.name = 'theme-color'; document.head.appendChild(theme); }
+    theme.content = palette.surface;
+    const viewport = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    if (viewport) viewport.content = 'width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content';
+  }, [palette, reducedMotion, preferences.highContrast, preferences.darkMode]);
+  return <><StatusBar style={preferences.darkMode && !preferences.highContrast ? 'light' : 'dark'} /><Stack screenOptions={{ headerShown: false,
+    animation: 'none', contentStyle: { backgroundColor: palette.paper } }} /></>;
 }

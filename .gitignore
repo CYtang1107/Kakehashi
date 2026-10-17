@@ -9,3 +9,14 @@ apps/server/data/
 .DS_Store
 .claude/skills/logo-design/
 .superpowers/
+.agents/
+audit.md
+docs/*.md
+docs/ux-baseline/screenshots/*.jpg
+docs/ux-baseline/*.json
+docs/ux-phase2/*.png
+docs/ux-phase2/*.md
+docs/ux-phase2/*.json
+docs/ux-phase1/*.png
+docs/ux-phase1/*.md
+docs/ux-phase1/*.json

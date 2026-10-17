@@ -1,8 +1,10 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
+import { AppText as Text } from './design-system/AppText';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick, type AlertKind, type CheckResult2, type WeatherStatus } from '@kakehashi/shared';
-import { Button, Field } from './ui';
+import { StatusBanner, Button, Field } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api } from './api';
@@ -28,33 +30,37 @@ function alertLine(w: WeatherStatus, lang: 'en' | 'ja') {
 
 // Student: call her on a warning day and log how she is.
 export function WeatherCheckCard() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, showToast } = useData();
   const { t, lang } = useI18n();
-  const { w, setW } = useWeather();
+  const { w, setW, load } = useWeather();
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
-  if (!data || !w) return null;
+  const [error, setError] = useState(false);
+  if (!data) return null;
+  if (!w) return <StatusBanner title={t('wxUnavailable')} tone="warning" action={{ label: t('retry'), onPress: load }} />;
   const { home } = data;
   const student = home.students.find((s) => s.role === 'pair')?.name ?? 'Student';
   const her = lang === 'ja' && home.seniorNameJa ? `${home.seniorNameJa.split(' ')[1]}さん` : home.seniorName.split(' ')[0];
 
   const log = async (result: CheckResult2) => {
-    setBusy(result);
+    setBusy(result); setError(false);
     try { setW(await api.weatherCheck(home.id, result, student, note.trim() || undefined)); setNote(''); showToast(t('wxLogged')); }
-    finally { setBusy(null); }
+    catch { setError(true); } finally { setBusy(null); }
   };
-  const demo = async (code: string | null) => { setBusy('demo'); try { setW(await api.weatherDemo(home.id, code)); } finally { setBusy(null); } };
+  const demo = async (code: string | null) => { setBusy('demo'); try { setW(await api.weatherDemo(home.id, code)); } catch { setError(true); } finally { setBusy(null); } };
 
   if (!w.callNeeded) {
     return (
       <View style={{ gap: 6 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        {error ? <StatusBanner tone="error" title={t('rSaveError')} /> : null}
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <Feather name="sun" size={16} color={colors.inkSoft} />
           <Text style={[type.caption, { flex: 1 }]}>
             {w.source === 'unavailable' ? t('wxUnavailable') : t('wxNone', { area: pick(lang, w.area, w.areaJa), time: w.reportAt ? time(w.reportAt, lang) : '' })}
           </Text>
           <Pressable accessibilityRole="button" onPress={() => demo('06')} disabled={busy === 'demo'} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text style={{ fontFamily: fonts.medium, fontSize: 12, color: colors.ai }}>{t('wxDemoOn')}</Text>
+            <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: colors.ai }}>{t('wxDemoOn')}</Text>
           </Pressable>
         </View>
       </View>
@@ -63,8 +69,8 @@ export function WeatherCheckCard() {
 
   const kind = w.alerts.find((a) => a.callHer)?.kind ?? 'other';
   return (
-    <View style={{ gap: 10, padding: 14, borderRadius: 14, backgroundColor: colors.kakiTint, borderLeftWidth: 5, borderLeftColor: colors.kaki }}>
-      <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+    <View style={{ gap: 10, padding: 14, borderRadius: 14, backgroundColor: colors.kakiTint, }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         <Feather name={ICON[kind]} size={22} color={colors.kaki} />
         <View style={{ flex: 1 }}>
           <Text style={[type.bodyBold, { color: colors.kaki }]}>{alertLine(w, lang)} · {pick(lang, w.area, w.areaJa)}</Text>
@@ -74,10 +80,11 @@ export function WeatherCheckCard() {
       {w.today ? (
         <Text style={type.body}>{t(`wxDone_${w.today.result}` as Key, { by: w.today.by, time: time(w.today.at, lang), her })}{w.today.note ? ` "${w.today.note}"` : ''}</Text>
       ) : (
-        <Text style={[type.section, { fontSize: 16 }]}>{t('wxCallHer', { her })}</Text>
+        <Text style={[type.section, { fontSize: 17 }]}>{t('wxCallHer', { her })}</Text>
       )}
       {!w.today || w.today.result !== 'fine' ? (
         <>
+          {error ? <StatusBanner tone="error" title={t('rSaveError')} /> : null}
           <Field label={t('wxNote')} value={note} onChangeText={setNote} />
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
             <Button label={t('wxFine')} icon="check" busy={busy === 'fine'} onPress={() => log('fine')} />
@@ -88,7 +95,7 @@ export function WeatherCheckCard() {
       ) : null}
       {w.source === 'demo' ? (
         <Pressable accessibilityRole="button" onPress={() => demo(null)} style={{ alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' }}>
-          <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: colors.ai }}>{t('wxDemoOff')}</Text>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: colors.ai }}>{t('wxDemoOff')}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -97,6 +104,7 @@ export function WeatherCheckCard() {
 
 // Family: shown only on a warning day: who called, and what to do if she needs help or did not answer.
 export function WeatherBanner() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const { w } = useWeather();
@@ -107,10 +115,10 @@ export function WeatherBanner() {
   const fg = urgent ? colors.danger : r === 'fine' ? colors.moss : colors.kaki;
   const bg = urgent ? '#F6DEDC' : r === 'fine' ? colors.mossTint : colors.kakiTint;
   return (
-    <View style={{ flexDirection: 'row', gap: 10, padding: 12, borderRadius: 12, backgroundColor: bg, borderLeftWidth: 4, borderLeftColor: fg }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, padding: 12, borderRadius: 12, backgroundColor: bg, }}>
       <Feather name={ICON[w.alerts.find((a) => a.callHer)?.kind ?? 'other']} size={20} color={fg} />
       <View style={{ flex: 1, gap: 2 }}>
-        <Text style={{ fontFamily: fonts.bold, fontSize: 14, color: fg }}>{alertLine(w, lang)} · {pick(lang, w.area, w.areaJa)}</Text>
+        <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: fg }}>{alertLine(w, lang)} · {pick(lang, w.area, w.areaJa)}</Text>
         <Text style={type.body}>
           {w.today ? t(`wxFamily_${w.today.result}` as Key, { by: w.today.by, time: time(w.today.at, lang), her }) : t('wxFamilyPending', { her })}
         </Text>
@@ -122,6 +130,7 @@ export function WeatherBanner() {
 
 // Her screen: one calm line of advice on a warning day.
 export function WeatherNote() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const { w } = useWeather();

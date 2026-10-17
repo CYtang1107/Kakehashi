@@ -1,8 +1,10 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
+import { AppText as Text } from './design-system/AppText';
 import React, { useState } from 'react';
-import { Image, ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { READINESS, isReady, pick, type ActivityStatus, type CommunityActivity, type Student } from '@kakehashi/shared';
-import { Avatar, Button, Card, Pill, formatDate } from './ui';
+import { StatusBanner, Avatar, Button, Card, Pill, formatDate } from './ui';
 import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api, fileUrl } from './api';
@@ -19,6 +21,7 @@ const actTone: Record<ActivityStatus, { fg: string; bg: string }> = {
 
 // Badges that show the family the students are trained and checked.
 export function StudentBadges({ student }: { student: Student }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   const done = READINESS.filter((r) => student.passed[r]).length;
   return (
@@ -40,7 +43,7 @@ export function StudentsCard() {
     <Card>
       <Text style={type.section}>{t('yourStudents')}</Text>
       {data.home.students.map((s, i) => (
-        <View key={s.id} style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start', paddingTop: i ? 8 : 0 }}>
+        <View key={s.id} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start', paddingTop: i ? 8 : 0 }}>
           <Avatar initial={s.initial} tone={i % 2 ? 'moss' : 'plum'} />
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={type.bodyBold}>{s.name} · <Text style={type.caption}>{pick(lang, s.university, s.universityJa)}</Text></Text>
@@ -55,25 +58,28 @@ export function StudentsCard() {
 
 // From home to community: activities matched to her interests. Students propose; she decides.
 export function ActivitiesCard({ mode }: { mode: 'family' | 'student' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   if (!data) return null;
   const { home } = data;
   const list = mode === 'family' ? home.activities.filter((a) => a.status !== 'suggested' && a.status !== 'not-now') : home.activities;
 
   const set = async (a: CommunityActivity, status: ActivityStatus) => {
-    setBusy(a.id);
-    try { await api.activity(home.id, a.id, status); await refresh(); showToast(t(actKey(status))); } finally { setBusy(null); }
+    setBusy(a.id); setError(null);
+    try { await api.activity(home.id, a.id, status); await refresh(); showToast(t(actKey(status))); } catch { setError(t('rSaveError')); } finally { setBusy(null); }
   };
 
   return (
     <Card>
       <Text style={type.section}>{t('fromHomeToCommunity')}</Text>
       {mode === 'student' ? <Text style={type.caption}>{t('activitiesLead')}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
       {list.map((a) => (
         <View key={a.id} style={{ gap: 6, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.line }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
             <Text style={[type.bodyBold, { flex: 1 }]}>{pick(lang, a.title, a.titleJa)}</Text>
             <Pill label={t(actKey(a.status))} color={actTone[a.status].fg} bg={actTone[a.status].bg} />
           </View>
@@ -101,12 +107,13 @@ export function ActivitiesCard({ mode }: { mode: 'family' | 'student' }) {
 }
 
 function Thumbs({ photos }: { photos: string[] }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t } = useI18n();
   if (photos.length === 0) return <Text style={type.caption}>{t('noPhotos')}</Text>;
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
       {photos.map((p) => (
-        <Image key={p} source={{ uri: fileUrl(p) }} style={{ width: 96, height: 72, borderRadius: 8, backgroundColor: colors.line }} accessibilityLabel="Room photo" />
+        <Image key={p} source={{ uri: fileUrl(p) }} style={{ width: 96, height: 72, borderRadius: 8, backgroundColor: colors.line }} accessibilityLabel={t('rRoomPhoto')} />
       ))}
     </ScrollView>
   );
@@ -124,7 +131,7 @@ export function RoomCapture({ roomId }: { roomId: string }) {
   const add = async (camera: boolean) => {
     setError(null);
     try {
-      if (camera && !(await ImagePicker.requestCameraPermissionsAsync()).granted) { setError('Camera permission was not given.'); return; }
+      if (camera && !(await ImagePicker.requestCameraPermissionsAsync()).granted) { setError(t('rCameraDenied')); return; }
       const opts: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.5, base64: true };
       const r = camera ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts);
       const a = r.assets?.[0];
@@ -134,7 +141,7 @@ export function RoomCapture({ roomId }: { roomId: string }) {
       await refresh();
       showToast(t('saved'));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save the photo.');
+      setError(t('rSaveError'));
     } finally {
       setBusy(false);
     }
@@ -145,17 +152,18 @@ export function RoomCapture({ roomId }: { roomId: string }) {
       <Text style={type.section}>{t('roomCaptureTitle')} · {lang === 'ja' ? room.nameJa : room.name}</Text>
       <Text style={type.caption}>{t('roomCaptureLead')}</Text>
       <Thumbs photos={room.photos} />
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
-        <View style={{ flex: 1 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => add(false)} /></View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => add(false)} /></View>
       </View>
-      {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
+      {error ? <StatusBanner tone="error" title={error} /> : null}
     </Card>
   );
 }
 
 // The family sees each room's real photos under the digital 実家.
 export function RoomGallery() {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   if (!data) return null;

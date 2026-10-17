@@ -1,5 +1,7 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
+import { AppText as Text } from './design-system/AppText';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import type { Handover } from '@kakehashi/shared';
 import { colors, type } from './theme';
 import { useI18n } from './i18n';
@@ -7,6 +9,7 @@ import { formatDate } from './ui';
 
 // Chain of custody: each handover the item went through.
 export function Journey({ steps }: { steps: Handover[] }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
   return (
     <View>

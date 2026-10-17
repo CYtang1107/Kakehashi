@@ -1,0 +1,93 @@
+import React, { useEffect, useId, useRef } from 'react';
+import { AccessibilityInfo, Modal, Platform, Pressable, ScrollView, View, KeyboardAvoidingView, useWindowDimensions, findNodeHandle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { floatingElevation, radii, spacing, surface } from '../theme';
+import { useI18n } from '../i18n';
+import { AppText } from './AppText';
+import { Button, IconButton } from './Controls';
+import { useAccessibilityPreferences } from './preferences';
+
+export type ConfirmationDialogProps = {
+  visible: boolean; title: string; message?: string; confirmLabel?: string; cancelLabel?: string;
+  onConfirm?: () => void; onCancel: () => void; destructive?: boolean; busy?: boolean; children?: React.ReactNode;
+  dismissOnBackdrop?: boolean;
+};
+
+export function ConfirmationDialog({ visible, title, message, confirmLabel, cancelLabel, onConfirm,
+  onCancel, destructive, busy, children, dismissOnBackdrop }: ConfirmationDialogProps) {
+  const { palette, preferences, reducedMotion } = useAccessibilityPreferences();
+  const { t } = useI18n();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const compact = width < 760;
+  const panel = useRef<View>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+  const cancelRef = useRef(onCancel);
+  const busyRef = useRef(busy);
+  cancelRef.current = onCancel;
+  busyRef.current = busy;
+  const id = useId();
+  const focusFirst = () => {
+    if (Platform.OS === 'web') {
+      const element = panel.current as unknown as HTMLElement | null;
+      element?.querySelector<HTMLElement>('[role="button"],button,input,[tabindex="0"]')?.focus();
+    } else {
+      const handle = findNodeHandle(panel.current);
+      if (handle) AccessibilityInfo.setAccessibilityFocus(handle);
+    }
+  };
+  useEffect(() => {
+    if (!visible || Platform.OS !== 'web') return;
+    previousFocus.current = document.activeElement as HTMLElement | null;
+    const timer = setTimeout(focusFirst, 0);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); if (!busyRef.current) cancelRef.current(); return; }
+      if (event.key !== 'Tab') return;
+      const element = panel.current as unknown as HTMLElement | null;
+      const controls = Array.from(element?.querySelectorAll<HTMLElement>('button:not([disabled]),[role="button"]:not([aria-disabled="true"]),input:not([disabled]),textarea:not([disabled]),[role="switch"]:not([aria-disabled="true"]),[tabindex="0"]') ?? [])
+        .filter(item => item.getClientRects().length > 0);
+      if (!controls.length) { event.preventDefault(); return; }
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !element?.contains(document.activeElement))) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !element?.contains(document.activeElement))) {
+        event.preventDefault(); first.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      clearTimeout(timer); document.removeEventListener('keydown', onKey);
+      const trigger = previousFocus.current;
+      if (trigger?.isConnected) trigger.focus();
+    };
+  }, [visible]);
+
+  return <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'}
+    onShow={focusFirst} onRequestClose={() => { if (!busy) onCancel(); }}>
+    <KeyboardAvoidingView testID="dialog-backdrop" behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, minHeight: 0, backgroundColor: palette.scrim, justifyContent: compact ? 'flex-end' : 'center', alignItems: 'center',
+      paddingLeft: compact ? insets.left : spacing.lg, paddingRight: compact ? insets.right : spacing.lg, paddingTop: insets.top + spacing.lg, paddingBottom: compact ? 0 : insets.bottom + spacing.lg }}>
+      {dismissOnBackdrop ? <Pressable accessible={false} focusable={false} tabIndex={-1}
+        onPress={() => { if (!busy) onCancel(); }} style={{ position: 'absolute', inset: 0 }} /> : null}
+      <View ref={panel} role={onConfirm ? 'alertdialog' : 'dialog'} aria-modal accessibilityViewIsModal
+        testID="dialog-panel"
+        aria-labelledby={`${id}-title`} aria-describedby={message ? `${id}-message` : undefined}
+        style={{ width: '100%', minHeight: 0, flexShrink: 1, maxWidth: compact ? undefined : surface.dialogWidth, maxHeight: '100%', backgroundColor: palette.surface, borderRadius: radii.dialog,
+          borderBottomLeftRadius: compact ? 0 : radii.dialog, borderBottomRightRadius: compact ? 0 : radii.dialog,
+          ...floatingElevation, borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : palette.separator }}>
+        <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets={Platform.OS !== 'ios'}
+          contentContainerStyle={{ padding: compact ? spacing.lg : spacing.xl, paddingBottom: compact ? insets.bottom + spacing.xl : spacing.xl, gap: spacing.xl }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
+            <AppText variant="section" nativeID={`${id}-title`} style={{ flex: 1 }}>{title}</AppText>
+            <IconButton icon="x" label={t('close')} disabled={busy} onPress={onCancel} />
+          </View>
+          {message ? <AppText nativeID={`${id}-message`}>{message}</AppText> : null}
+          {children}
+          <View style={{ gap: spacing.md }}>
+            <Button label={cancelLabel ?? t(onConfirm ? 'dsCancel' : 'close')} kind="secondary" disabled={busy} onPress={onCancel} />
+            {onConfirm ? <Button label={confirmLabel ?? t('dsConfirm')} kind={destructive ? 'danger' : 'primary'} busy={busy} onPress={onConfirm} /> : null}
+          </View>
+        </ScrollView>
+      </View>
+    </KeyboardAvoidingView>
+  </Modal>;
+}

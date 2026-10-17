@@ -1,9 +1,10 @@
+import { useAccessibilityPreferences } from './design-system/preferences';
 import React from 'react';
 import { Platform } from 'react-native';
 import Svg, { G, Line, Rect, Circle, Polygon, Text as SvgText } from 'react-native-svg';
 import type { Item, Room, SafetyFix } from '@kakehashi/shared';
-import { fixTone } from './SaferHome';
-import { colors, decisionColor, roomColor } from './theme';
+import { getFixColors } from './SaferHome';
+import { colors, getDecisionColors, getRoomColors } from './theme';
 import { useI18n } from './i18n';
 
 // On the web, react-native-svg hands onPress's responder props to the DOM <g> (console warnings);
@@ -14,6 +15,10 @@ const pressProps = (fn: () => void) =>
 
 // 2D floor plan on the shared 320 x 240 grid, with a tappable pin per item.
 export function FloorPlan({ rooms, items, selected, onSelect, fixes = [], fill }: { rooms: Room[]; items: Item[]; selected?: string; onSelect: (id: string) => void; fixes?: SafetyFix[]; fill?: boolean }) {
+  const { palette: colors } = useAccessibilityPreferences();
+  const fixTone = getFixColors(colors);
+  const decisionColor = getDecisionColors(colors);
+  const roomColor = getRoomColors(colors);
   const { lang } = useI18n();
   const tatami = rooms.find((r) => r.id === 'washitsu');
   return (

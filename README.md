@@ -110,6 +110,17 @@ With her consent, a story can be shared publicly, named as she chooses (her firs
 
 Above the posts, a **story globe** (adapted from EVE's EVEth) shows every shared story as a light on its town, rounded to about 10 km and never the home. Drag to spin, zoom in and out, and tap a light to open the story with "Where it went": the stages and dates of its journey, with no names or places. The demo adds six invented example stories from other towns (Akita, Sendai, Kanazawa, Onomichi, Kagoshima, Sapporo) so the globe shows how it fills up; they are marked "Example" in gold and take no messages. Messages appear only after a student approves them, and messages with links, phone numbers or emails are refused.
 
+### EverCircle (test version)
+
+The second pillar: a small agent on her own screen that knows only what she chooses to share. Everything runs locally with fictional people; nothing is sent anywhere.
+
+- **Companion** (`/her/companion`): she talks about her day or her hobbies. An interest it notices (for example gardening or orchids) is only a suggestion until she taps **Remember**, and she can delete it later. Supported requests open the right KAKEHASHI screen: memories, help, today's plans, safety, smart home.
+- **Friends** (`/her/friends`): matching stays off until she turns it on and chooses which remembered interests to share. A fictional neighbour then appears with the shared hobbies and an explained score. Inviting, accepting, messaging, declining, blocking and reporting each need a confirmation; blocking closes the conversation for both sides.
+- **Smart home** (`/her/smart-home`): simulated lights and devices by tap, by short text command or by browser voice (reviewed before it applies). No real hardware is connected.
+- **My Day**: her own reminders and activities beside the student visits, which are read from the existing visit plan and never duplicated.
+- **Agent collaboration** (`/developer/agents`): a diagram of the seven logical agents for demos. Each step is shown, a permission gate can stop a workflow, and replays never repeat an action. Web builds include it only with `EXPO_PUBLIC_EVERCIRCLE_DEVELOPER=1` (set in `render.yaml`); the fictional persona switch there is not a login.
+
+Family and student screens never read her companion conversation or remembered interests, and the raw conversation is not saved.
 ### Her circle (preview)
 
 A mock-up of a future idea: people she chooses (family, her students, one neighbour) get a gentle "could someone check on her?" message when a morning does not look normal. Her screen shows who is in it and a switch only she controls; the family sees what she chose. Nothing is sensed or sent yet, a person always calls, and it never replaces 119. Camera-free Wi-Fi sensing such as RuView is one possible signal later (see the proposal).
@@ -128,10 +139,15 @@ A mock-up of a future idea: people she chooses (family, her students, one neighb
 - Public stories need her consent per story; visitors' messages are moderated.
 - Job listings show the area only; item tracking shows the new owner's area only.
 - Live location only during an outing she agreed to, deleted when it ends.
-- AI works behind the scenes and never talks to her: it checks reports, helps with letters and estimates value only when asked, and a person confirms they read anything before it goes out. The server refuses reports and letter printing without that confirmation.
+- AI never calls or texts her. Behind the scenes it checks reports, helps with letters and estimates value only when asked, and a person confirms they read anything before it goes out; the server refuses reports and letter printing without that confirmation. The one exception is the optional EverCircle companion on her own screen, which answers only when she opens it and saves nothing without her approval.
 
 ## Design
 
+- **Visit thread:** the family home opens on a year of visits drawn as knots on a white thread over indigo cloth (藍染): done, next, and months ahead.
+- Warm ivory backgrounds, sage surfaces, deep-green actions and charcoal text. Shared body text starts at 19 logical units; primary actions have a minimum height of 60. Zen Kaku Gothic New carries the interface and Shippori Mincho remains for stories.
+- **Reading settings** in the toolbar offer Normal, Large and Extra Large text, stronger contrast and reduced motion across roles. Shared controls and the older-adult pilot adopt these preferences; inline screen styles are being migrated separately. Preferences persist on web and are session-only on native.
+- Long screens use **folds** with a stable labelled header, wrapping status and an announced expanded state.
+- [Design system](apps/mobile/DESIGN.md), [component reference](apps/mobile/app/design-system.tsx) (`/design-system`), and [Stage 1 verification](docs/evercircle-integration/progress.md) document the implemented foundations and remaining device checks.
 - **Night band:** every screen opens under a night-indigo band (夜) holding the title, with kinari text and persimmon (柿) accents; the bottom tab bars match. Pages sit on cool washi-grey paper below. Zen Kaku Gothic New for text, Shippori Mincho for titles and her words.
 - **Decision colours keep their meaning everywhere:** moss = keep, plum = family, indigo = pass on, persimmon = recycle (in lists, the floor plan and the 3D house).
 - **Laptop layout:** at 900 px and wider every page fits the window without the page scrolling. It splits into two columns (for example the 3D house beside the item list, the story globe beside the posts); a column that holds more scrolls on its own and fades at the bottom while there is more. Phones keep one column that scrolls as usual. Her screen keeps its large text in both.
@@ -176,9 +192,21 @@ docs/superpowers       Design spec and build plan for the night band and laptop 
 render.yaml            The public demo on Render
 ```
 
+## Checks
+
+```
+npm run typecheck -w apps/mobile
+node apps/mobile/scripts/verify-all.cjs --domain-only   # 50 domain checks, no browser needed
+node apps/mobile/scripts/verify-all.cjs                 # plus 7 browser suites
+```
+
+The browser suites need a web export (`EXPO_PUBLIC_API_URL=same-origin EXPO_PUBLIC_EVERCIRCLE_DEVELOPER=1 npx expo export -p web --output-dir dist --clear` in `apps/mobile`), the disposable fixture host (`node apps/mobile/scripts/preview-design-system.cjs`, in-memory data only) and a headless Chrome on `--remote-debugging-port=9223` with a temporary profile. Results go to `apps/mobile/.impeccable/review/verify-all.json`. The Stage 8 report and demo script are in [docs/evercircle-integration/stage8-final.md](docs/evercircle-integration/stage8-final.md).
+
 ## Known limits
 
 - A pilot prototype: no real sign-in (helpers pick who they are), and data is a JSON file.
+- EverCircle keeps its data in the browser (or memory on native): not encrypted, not shared between tabs, and the fictional persona switch is not authentication. Its smart-home devices are simulated.
+- Browser checks run on Chrome against an export; not yet tested end to end on a phone, with VoiceOver/TalkBack or with OS text scaling.
 - Not yet tested end to end on a phone.
 - Her circle is a preview only: nothing is sensed or sent.
 - Prices, fees and subsidy figures are examples to verify.

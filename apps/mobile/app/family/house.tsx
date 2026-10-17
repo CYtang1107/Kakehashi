@@ -1,8 +1,12 @@
+import { HerPage } from '../../src/her/HerPage';
+import { AppText as Text } from '../../src/design-system/AppText';
+import { useAccessibilityPreferences } from '../../src/design-system/preferences';
+import { Destination } from '../../src/her/Screens';
 import React, { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
-import { Button, Card, Columns, DecisionChip, Glyph, Screen, useWide } from '../../src/ui';
+import { Button, Card, DecisionChip, Screen, ConfirmationDialog, Fold, TaskWorkspace } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
 import { NearbyList, NeighbourhoodMap } from '../../src/NeighbourhoodMap';
 import { Home3D, eveningState, hasStory, memoryColors, type ColorBy, type Evening } from '../../src/Home3D';
@@ -17,12 +21,17 @@ import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
-import { colors, decisionColor, fonts, roomColor, type } from '../../src/theme';
+import { getDecisionColors, fonts, getRoomColors, type } from '../../src/theme';
+import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
 
 type View3 = '3d' | '2d' | 'memory' | 'map';
 const TOUR_MS = 7000;
 
-export default function House() {
+export default function House({ olderAdult = false }: { olderAdult?: boolean }) {
+  const { palette: colors } = useAccessibilityPreferences();
+  const roomColor = getRoomColors(colors);
+  const Frame = olderAdult ? HerPage : Screen;
+  const { reducedMotion } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const params = useLocalSearchParams<{ view?: string }>();
@@ -33,14 +42,14 @@ export default function House() {
   const [colorBy, setColorBy] = useState<ColorBy>('none');
   const [evening, setEvening] = useState<Evening>('off');
   const [focus, setFocus] = useState<{ id: string; n: number } | undefined>();
-  const [section, setSection] = useState<'items' | 'safer' | 'future' | 'photos'>('items');
+  const [menu, setMenu] = useState<'view' | 'options' | 'items' | null>(null);
 
   const memories = data ? data.items.filter((i) => i.story || i.audioUrl) : [];
   const memory = view === 'memory';
 
   // The memory tour steps through every item with a story, one every few seconds.
   useEffect(() => {
-    if (!touring || memories.length === 0) return;
+    if (reducedMotion || !touring || memories.length === 0) return;
     const timer = setInterval(() => {
       setSelected((cur) => {
         const i = memories.findIndex((m) => m.id === cur);
@@ -48,7 +57,7 @@ export default function House() {
       });
     }, TOUR_MS);
     return () => clearInterval(timer);
-  }, [touring, memories.length]);
+  }, [touring, memories.length, reducedMotion]);
 
   const pickView = (v: View3) => {
     setView(v);
@@ -59,7 +68,7 @@ export default function House() {
   const onSelect = (id: string) => {
     setSelected(id);
     if (memory) setTouring(false);
-    else router.push(`/item/${id}`);
+    else router.push(`${olderAdult ? "/her" : ""}/item/${id}`);
   };
 
   const step = (dir: 1 | -1) => {
@@ -71,22 +80,23 @@ export default function House() {
   const current = data?.items.find((i) => i.id === selected);
   const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
-  // On a laptop the whole page fits the window: the stage fills the height, the side panel scrolls on its own.
-  const fit = useWide();
+  // Large scenes have a bounded stage; household details share the page's scroll area.
+  const { width, height, compact } = useResponsiveLayout();
+  const fit = width >= 760;
   const colourCard = (
-    <Card style={{ gap: 10 }}>
+    <View style={{ gap: 24 }}> 
       <Segment label={t('colourBy')} value={colorBy} options={(['none', 'decision', 'stories', 'fixes'] as const).map((v) => [v, t(`colour_${v}`)])}
         onChange={(v) => { setColorBy(v); setEvening('off'); }} />
       <Segment label={t('evening')} value={evening} options={(['off', 'today', 'plan'] as const).map((v) => [v, t(`evening_${v}`)])}
         onChange={(v) => { setEvening(v); setColorBy('none'); }} />
       <ViewLegend colorBy={colorBy} evening={evening} />
-    </Card>
+    </View>
   );
   const tourButtons = (
-    <View style={{ flexDirection: 'row', gap: 8 }}>
-      <View style={{ flex: 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
-      <View style={{ flex: 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} onPress={() => setTouring((x) => !x)} /></View>
-      <View style={{ flex: 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
+    <View style={{ flexDirection: compact ? 'column' : 'row', gap: 8 }}>
+      <View style={{ flex: compact ? undefined : 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
+      <View style={{ flex: compact ? undefined : 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} disabled={reducedMotion} onPress={() => setTouring((x) => !x)} /></View>
+      <View style={{ flex: compact ? undefined : 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
     </View>
   );
   const header = data ? {
@@ -96,21 +106,14 @@ export default function House() {
   } : undefined;
 
   return (
-    <Screen wide fit header={header}>
-      {data ? (
-        <Columns fill
-          left={<>
-          <View style={{ flexDirection: 'row', backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
-            {(['3d', '2d', 'memory', 'map'] as const).map((v) => (
-              <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: view === v }} onPress={() => pickView(v)}
-                style={{ flex: 1, paddingVertical: 8, borderRadius: 9, alignItems: 'center', backgroundColor: view === v ? (v === 'memory' ? memoryColors.sky : colors.aiTint) : 'transparent' }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: view === v ? (v === 'memory' ? memoryColors.lantern : colors.ai) : colors.inkSoft }}>{labels[v]}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {view === 'map' ? <LiveOutingBanner /> : null}
-          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
+    <Frame back={olderAdult} wide header={header}>
+      {data ? <>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+          <Button label={`${t('uxChangeView')} · ${labels[view]}`} icon="layers" kind="secondary" onPress={() => setMenu('view')} />
+          {view === '3d' ? <Button label={t('uxViewOptions')} icon="sliders" kind="tertiary" onPress={() => setMenu('options')} /> : null}
+        </View>
+        {view === 'map' ? <LiveOutingBanner /> : null}
+          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line, ...(fit ? { height: Math.min(640, height * 0.62) } : null) }}>
             {view === 'map'
               ? <NeighbourhoodMap homeId={data.home.id} focus={focus} fill={fit} />
               : view === '2d'
@@ -129,32 +132,22 @@ export default function House() {
               </View>
             ) : null}
           </Card>
-          {/* On a laptop these sit with the stage so they never need scrolling to; on a phone, where they always were. */}
-          {view === '3d' && !fit ? colourCard : null}
-          {memory && fit ? tourButtons : null}
-          </>}
-          right={<>
-          {view === '3d' && fit ? colourCard : null}
-          {view === 'map' ? (
-            <NearbyList onFocus={(id) => setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }))} />
-          ) : memory ? (
-            <>
-              {current ? <MemoryCard item={current} rooms={data.home.rooms} /> : null}
-              {!fit ? tourButtons : null}
-              <Text style={type.caption}>{t('memoryPrivacy')}</Text>
-            </>
-          ) : (
-            <>
-              <Segment label="" value={section} onChange={setSection}
-                options={[['items', t('items')], ['safer', t('saferShort')], ['future', t('futureShort')], ['photos', t('photosShort')]]} />
-              {section === 'safer' ? <SaferHomeCard mode="family" /> : null}
-              {section === 'future' ? <HouseFutureCard mode="family" /> : null}
-              {section === 'photos' ? <RoomGallery /> : null}
-              {section === 'items' ? data.items.map((it) => {
+
+        {view === 'map' ? <NearbyList onFocus={id => setFocus(f => ({ id, n: (f?.n ?? 0) + 1 }))} />
+          : memory ? <>
+            {tourButtons}
+            {current ? <MemoryCard item={current} rooms={data.home.rooms} /> : null}
+            <Text style={type.caption}>{t('memoryPrivacy')}</Text>
+          </> : null}
+        {compact && view !== 'map' ? <Button label={t('items')} icon="list" kind="secondary" onPress={() => setMenu('items')} /> : null}
+        <Fold title={t('uxHomeDetails')} icon="home" summary={t('items')}>
+          <TaskWorkspace tasks={[
+            { id: 'items', label: t('items'), icon: 'box', content: <>
+              {data.items.map((it) => {
                 const room = data.home.rooms.find((r) => r.id === it.roomId);
                 return (
                   <Pressable key={it.id} accessibilityRole="button" onPress={() => onSelect(it.id)}
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet }}>
+                    style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, minHeight: 64, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: colors.separator, backgroundColor: colors.sheet }}>
                     <PixelIcon sprite={spriteFor(it)} />
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={type.bodyBold}>{lang === 'ja' && it.nameJa ? it.nameJa : it.name}</Text>
@@ -163,13 +156,21 @@ export default function House() {
                     <DecisionChip decision={it.decision} />
                   </Pressable>
                 );
-              }) : null}
-            </>
-          )}
-          </>}
-        />
-      ) : null}
-    </Screen>
+              })}
+            </> },
+            { id: 'safety', label: t('saferShort'), icon: 'shield', content: <SaferHomeCard mode={olderAdult ? 'her' : 'family'} /> },
+            { id: 'future', label: t('futureShort'), icon: 'home', content: olderAdult ? <Destination label="hHouseInfo" href="/her/house-information" /> : <HouseFutureCard mode="family" /> },
+            { id: 'photos', label: t('roomPhotosTitle'), icon: 'image', content: <RoomGallery /> },
+          ]} />
+        </Fold>
+        <ConfirmationDialog visible={menu !== null} title={t(menu === 'items' ? 'items' : menu === 'options' ? 'uxViewOptions' : 'uxChangeView')} onCancel={() => setMenu(null)}>
+          {menu === 'items' ? data.items.map(item => <Button key={item.id} label={pick(lang, item.name, item.nameJa)} kind="secondary"
+            onPress={() => { setMenu(null); onSelect(item.id); }} />) :
+          menu === 'view' ? (['3d', '2d', 'memory', 'map'] as const).map(v => <Button key={v} label={labels[v]} kind="secondary" selected={view === v}
+            onPress={() => { pickView(v); setMenu(null); }} />) : colourCard}
+        </ConfirmationDialog>
+      </> : null}
+    </Frame>
   );
 }
 
@@ -192,37 +193,38 @@ function MemoryCard({ item, rooms }: { item: Item; rooms: { id: string; name: st
         <PixelIcon sprite={spriteFor(item)} size={46} />
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: fonts.display, fontSize: 20, color: '#F5EBDD' }}>{lang === 'ja' && item.nameJa ? item.nameJa : item.name}</Text>
-          <Text style={{ fontFamily: fonts.medium, fontSize: 12.5, color: '#CDBFAE' }}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{item.year ? ` · ${item.year}` : ''}</Text>
+          <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: '#CDBFAE' }}>{room ? (lang === 'ja' ? room.nameJa : room.name) : ''}{item.year ? ` · ${item.year}` : ''}</Text>
         </View>
       </View>
       <PhotoCarousel item={item} dark />
       {item.story || item.storyJa ? (
-        <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', borderLeftWidth: 3, borderLeftColor: memoryColors.lantern, paddingLeft: 12 }}>“{pick(lang, item.story, item.storyJa)}”</Text>
+        <Text style={{ fontFamily: fonts.displaySemi, fontSize: 17, lineHeight: 28, color: '#F5EBDD', paddingLeft: 12 }}>“{pick(lang, item.story, item.storyJa)}”</Text>
       ) : null}
       {item.audioUrl ? <StoryPlayer path={item.audioUrl} /> : null}
-      <Text style={{ fontFamily: fonts.bold, fontSize: 13, color: memoryColors.lantern }}>{now}</Text>
+      <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: memoryColors.lantern }}>{now}</Text>
       {isTrackable(item) ? (
         <View style={{ gap: 6 }}>
-          <Text style={{ fontFamily: fonts.bold, fontSize: 12, letterSpacing: 1, color: '#CDBFAE' }}>{t('whereNow')}</Text>
+          <Text style={{ fontFamily: fonts.bold, fontSize: 17, letterSpacing: 1, color: '#CDBFAE' }}>{t('whereNow')}</Text>
           <TrackMap item={item} height={220} />
         </View>
       ) : null}
       {thanks ? (
-        <Text style={{ fontFamily: fonts.regular, fontSize: 14, lineHeight: 21, color: '#CDBFAE' }}>{t('thanksFrom', { name: thanks.from })}: “{thanks.message}”</Text>
+        <Text style={{ fontFamily: fonts.regular, fontSize: 17, lineHeight: 21, color: '#CDBFAE' }}>{t('thanksFrom', { name: thanks.from })}: “{thanks.message}”</Text>
       ) : null}
     </View>
   );
 }
 
 function Segment<V extends string>({ label, value, options, onChange }: { label: string; value: V; options: (readonly [V, string])[]; onChange: (v: V) => void }) {
+  const { palette: colors } = useAccessibilityPreferences();
   return (
     <View style={{ gap: 6 }}>
       {label ? <Text style={type.eyebrow}>{label}</Text> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {options.map(([v, l]) => (
-          <Pressable key={v} accessibilityRole="radio" accessibilityState={{ checked: value === v }} onPress={() => onChange(v)}
-            style={{ paddingHorizontal: 11, paddingVertical: 6, borderRadius: 99, borderWidth: 1, borderColor: value === v ? colors.ai : colors.line, backgroundColor: value === v ? colors.aiTint : colors.sheet }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 12.5, color: value === v ? colors.ai : colors.ink }}>{l}</Text>
+          <Pressable key={v} accessibilityRole="radio" accessibilityState={{ checked: value === v }} aria-checked={value === v} onPress={() => onChange(v)}
+            style={{ paddingHorizontal: 16, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: value === v ? colors.ai : colors.line, backgroundColor: value === v ? colors.aiTint : colors.sheet }}>
+            <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: value === v ? colors.ai : colors.ink }}>{l}</Text>
           </Pressable>
         ))}
       </View>
@@ -232,6 +234,8 @@ function Segment<V extends string>({ label, value, options, onChange }: { label:
 
 // Legend for the chosen 3D view, with counts (like a unit-type legend on a building model).
 function ViewLegend({ colorBy, evening }: { colorBy: ColorBy; evening: Evening }) {
+  const { palette: colors } = useAccessibilityPreferences();
+  const decisionColor = getDecisionColors(colors);
   const { data } = useData();
   const { t, lang } = useI18n();
   if (!data) return null;
