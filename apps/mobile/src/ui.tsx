@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View, useWindowDimensions, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, usePathname } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -16,6 +16,7 @@ import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppBottomBar, GlobalBottomBar } from './design-system/AppBottomBar';
 import { Brand } from './design-system/Brand';
 import { useResponsiveLayout } from './design-system/useResponsiveLayout';
+import { CareLoadingScreen } from './design-system/CareLoadingScreen';
 export { AppText } from './design-system/AppText';
 export { Button, PrimaryButton, SecondaryButton, TertiaryButton, DestructiveButton, IconButton, IconLabelButton, AccessibleSwitch, AccessibleTextInput } from './design-system/Controls';
 export { Card, UpcomingVisitCard, MemoryCard, FriendRecommendationCard, HomeAssistanceCard, DeviceControlCard, ReminderCard, SafetyCard } from './design-system/Cards';
@@ -86,9 +87,7 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
   const maxWidth = wide && isWide ? layout.wideWidth : layout.compactWidth;
   const body = requiresHome && error ? <StatusBanner title={t('dsConnectionTitle')} message={t('dsConnectionBody')}
     tone="error" action={{ label: t('retry'), onPress: refresh }} />
-    : requiresHome && !data ? <View style={{ padding: spacing.section, gap: spacing.lg, alignItems: 'center' }}>
-      <ActivityIndicator color={palette.primary} accessibilityLabel={t('dsLoading')} /><AppText>{t('dsLoading')}</AppText>
-    </View> : children;
+    : requiresHome && !data ? <CareLoadingScreen /> : children;
   return <KeyboardAvoidingView style={{ flex: 1, minHeight: 0, minWidth: 0, backgroundColor: palette.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <TopBar back={back} roleSwitch={roleSwitch} />
     {fit && isWide && (!requiresHome || (data && !error)) ? <View style={{ flex: 1, minHeight: 0 }}>

@@ -14,6 +14,7 @@ import { api } from '../../src/api';
 import { elevation, fonts, radii, spacing, type } from '../../src/theme';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
+import { CareLoadingScreen } from '../../src/design-system/CareLoadingScreen';
 
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
 export default function StoriesFeed() {
@@ -43,7 +44,7 @@ export function StoriesFeedContent() {
   return (
     <>
       {error ? <StatusBanner tone="error" title={error} action={{ label: t('retry'), onPress: load }} /> : null}
-      {!stories && !error ? <Text>{t('rNoStories')}</Text> : null}
+      {!stories && !error ? <CareLoadingScreen /> : null}
       {stories?.length ? <Fold title={t('uxExploreGlobe')} icon="globe" summary={t('globeHint')}>
         <View style={{ gap: 8, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
           <StoryGlobe fill={fit} stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />

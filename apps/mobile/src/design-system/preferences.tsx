@@ -26,7 +26,8 @@ const Preferences = createContext({ preferences: defaults, systemReducedMotion: 
 
 export function AccessibilityProvider({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] = useState(loadPreferences);
-  const [systemReducedMotion, setSystemReducedMotion] = useState(false);
+  // Keep startup artwork still until the system's motion preference is known.
+  const [systemReducedMotion, setSystemReducedMotion] = useState(true);
   useEffect(() => {
     let active = true;
     AccessibilityInfo.isReduceMotionEnabled().then(value => { if (active) setSystemReducedMotion(value); }).catch(() => {});

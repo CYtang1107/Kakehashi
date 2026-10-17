@@ -1,10 +1,11 @@
 import React, { useCallback, useRef } from 'react';
-import { AccessibilityInfo, ActivityIndicator, Platform, ScrollView, View, findNodeHandle } from 'react-native';
+import { AccessibilityInfo, Platform, ScrollView, View, findNodeHandle } from 'react-native';
 import { router, useFocusEffect, usePathname } from 'expo-router';
 import { AppText, Button, ScreenFrame, StatusBanner, type ScreenHeader } from '../ui';
 import { useData } from '../data';
 import { useI18n } from '../i18n';
 import { herLocation } from './navigation';
+import { CareLoadingScreen } from '../design-system/CareLoadingScreen';
 
 // The persistent shell owns navigation and feedback; pages own a single scroll area.
 export function HerPage({ children, title, description, header, back, wide, requiresHome = true, footer, scrollRef }: {
@@ -31,8 +32,6 @@ export function HerPage({ children, title, description, header, back, wide, requ
       {description || header?.sub ? <AppText variant="caption">{description ?? header?.sub}</AppText> : null}
     </View>
     {requiresHome && error ? <StatusBanner tone="error" title={t('dsConnectionTitle')} message={t('dsConnectionBody')}
-      action={{ label: t('retry'), onPress: refresh }} /> : requiresHome && !data ? <View style={{ gap: 16 }}>
-      <ActivityIndicator /><AppText>{t('dsLoading')}</AppText>
-    </View> : children}
+      action={{ label: t('retry'), onPress: refresh }} /> : requiresHome && !data ? <CareLoadingScreen /> : children}
   </ScreenFrame>;
 }

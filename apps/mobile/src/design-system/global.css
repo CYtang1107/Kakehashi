@@ -80,3 +80,19 @@ html[data-high-contrast="true"] [data-testid="navigation-surface"] { background:
 html[data-high-contrast="true"] :is([role="button"], [role="tab"], [role="radio"], [role="checkbox"]):not([data-testid="premium-button"]):not([data-testid="icon-button"]) { border-width: 2px !important; border-color: var(--kk-primary) !important; }
 html[data-reduced-motion="true"] * { transition-duration: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 html[data-reduced-motion="true"] [role="button"], html[data-reduced-motion="true"] [role="radio"], html[data-reduced-motion="true"] [role="checkbox"] { scale: 1 !important; }
+
+/* CSS keeps the loading scene moving while the web app's JS is busy. */
+#care-loading-motion [data-testid="care-elder"] { animation: care-elder-breathe 4.4s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid="care-caregiver"] { animation: care-caregiver-breathe 4.4s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid="care-hand"] { animation: care-hand 3.6s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid="care-blink"] { animation: care-blink 3.62s linear infinite; }
+#care-loading-motion [data-testid="care-heart"] { animation: care-heart 4.2s cubic-bezier(0.77, 0, 0.175, 1) infinite; }
+#care-loading-motion [data-testid^="care-dot-"] { animation: care-dot 1.8s ease-in-out infinite; }
+#care-loading-motion [data-testid="care-dot-1"] { animation-delay: 0.36s; }
+#care-loading-motion [data-testid="care-dot-2"] { animation-delay: 0.72s; }
+@keyframes care-elder-breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5px); } }
+@keyframes care-caregiver-breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.1px); } }
+@keyframes care-hand { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(2deg); } }
+@keyframes care-blink { 0%, 93.9%, 100% { transform: scaleY(1); } 96.4% { transform: scaleY(0.12); } }
+@keyframes care-heart { 0%, 100% { transform: translateY(0); opacity: 0.45; } 50% { transform: translateY(-8px); opacity: 0.9; } }
+@keyframes care-dot { 0%, 10%, 50%, 100% { opacity: 0.35; } 30% { opacity: 1; } }
