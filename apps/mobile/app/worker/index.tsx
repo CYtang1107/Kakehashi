@@ -53,7 +53,6 @@ export default function HelperBoard() {
       { id: 'settings', label: t('hSettings'), icon: 'settings', onPress: () => router.push('/settings') },
     ]}
       header={{ title: t('helperTitle'), sub: t('helperLead', { pct: Math.round(COMMISSION * 100) }) }}>
-      <StatusBanner title={t('uxDemoIdentity')} message={t('rHelperDemo')} />
       {worker ? <Card>
         <Text variant="section">{workerName(worker, lang)}</Text>
         <Text variant="caption">{pick(lang, worker.from, worker.fromJa)}</Text>
@@ -113,7 +112,7 @@ export default function HelperBoard() {
           ))}
         </> },
         { id: 'status', label: t('uxStatusEarnings'), content: <>
-          <Card><Text variant="eyebrow">{t('uxStatusEarnings')}</Text><Text variant="value">{yen(board.earned)}</Text><Text>{t('earned', { amount: yen(board.earned) })}</Text><Text variant="caption">{t('rHelperDemo')}</Text></Card>
+          <Card><Text variant="eyebrow">{t('uxStatusEarnings')}</Text><Text variant="value">{yen(board.earned)}</Text><Text>{t('earned', { amount: yen(board.earned) })}</Text></Card>
           <Checks worker={worker} />
         </> },
       ]} /> : !worker ? <Card tint style={{ alignItems: 'center', paddingVertical: compact ? cardPadding : 28 }}>

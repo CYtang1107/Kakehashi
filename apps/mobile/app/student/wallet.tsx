@@ -55,8 +55,6 @@ export default function WalletScreen() {
 
   return (
     <Screen header={{ title: t('walletTitle'), sub: t('walletLead') }}>
-
-      <StatusBanner title={t('rDemo')} message={t('rWalletDemo')} />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {pair.map((s) => (
           <Pressable key={s.id} accessibilityRole="radio" accessibilityState={{ checked: me === s.id, disabled: busy !== null }} aria-checked={me === s.id} aria-disabled={busy !== null} disabled={busy !== null} onPress={() => setSid(s.id)}
