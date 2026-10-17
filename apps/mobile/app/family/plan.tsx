@@ -47,7 +47,6 @@ export default function PlanScreen() {
 
   return (
     <Screen header={{ title: t('plansTitle'), sub: t('plansLead') }}>
-      <StatusBanner title={t('rDemo')} message={t(data.services.payments === 'stripe-test' ? 'rPaymentTest' : 'rPaymentDemo')} />
       <Card>
         <Text variant="eyebrow">{t('currentPlan')}</Text>
         <Text variant="section">{data.home.planId ? pickPlanName(data.plans.find(p => p.id === data.home.planId), lang) : t('plansTitle')}</Text>
