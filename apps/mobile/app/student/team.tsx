@@ -62,7 +62,6 @@ export default function Team() {
 
   return (
     <Screen header={{ title: t('teamTitle'), sub: t('teamLead') }}>
-      <StatusBanner title={t('rDemo')} message={t('rCoordinator')} />
       {error ? <StatusBanner tone="error" title={error} /> : null}
       <SectionTabs label={t('teamTitle')} value={studentId ?? data.home.students[0]?.id ?? ''}
         options={data.home.students.map(s => [s.id, s.name] as const)} onChange={setStudentId} />

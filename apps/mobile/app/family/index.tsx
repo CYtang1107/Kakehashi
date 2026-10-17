@@ -46,7 +46,6 @@ export default function FamilyHome() {
               stats={t('threadStats', { stories, rooms: safer, interests: a ? pick(lang, a.interests, a.interestsJa) : '' })}
               onPress={() => router.push('/family/house')} />
             </Fold>
-            <Text variant="caption">{t('rDemo')}: {t('rDemoBody')}</Text>
             {latest ? (
               <Card>
                 <Text style={type.eyebrow}>{t('uxNewMemories')}</Text>
