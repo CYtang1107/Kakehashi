@@ -73,6 +73,19 @@ for (const [mode, palette] of Object.entries({ her: herColors, 'her dark': herDa
   );
 }
 
+for (const [mode, palette] of Object.entries({ light: colors, dark: darkColors, contrast: highContrastColors,
+  her: herColors, 'her dark': herDarkColors, 'her contrast': herHighContrastColors })) {
+  pairs.push(
+    [`${mode} secondary control`, palette.ink, palette.controlSurface, 4.5],
+    [`${mode} pressed control`, palette.ink, palette.controlPressed, 4.5],
+    [`${mode} quiet / selected text`, palette.ai, palette.secondary, 4.5],
+    [`${mode} pressed quiet text`, palette.ai, palette.controlPressed, 4.5],
+    [`${mode} disabled control`, palette.disabledText, palette.disabledSurface, 4.5],
+    [`${mode} pressed destructive`, palette.danger, palette.dangerPressed, 4.5],
+    [`${mode} focus on control`, palette.focus, palette.controlSurface, 3],
+  );
+}
+
 let failed = 0;
 for (const [label, fg, bg, min] of pairs) {
   const r = fg && bg ? ratio(fg, bg) : NaN;

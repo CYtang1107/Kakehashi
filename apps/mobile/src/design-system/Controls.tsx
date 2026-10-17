@@ -14,26 +14,28 @@ export type ButtonProps = {
 
 export function Button({ label, onPress, kind = 'primary', icon, disabled, busy, selected,
   accessibilityLabel, accessibilityHint, style }: ButtonProps) {
-  const { palette, preferences, reducedMotion } = useAccessibilityPreferences();
+  const { palette, preferences } = useAccessibilityPreferences();
   const [focused, setFocused] = useState(false);
   const inactive = Boolean(disabled || busy);
   const primary = kind === 'primary';
-  const foreground = primary ? palette.onPrimary : kind === 'danger' ? palette.danger : kind === 'tertiary' ? palette.primary : palette.ink;
+  const foreground = disabled && !busy ? palette.disabledText : primary ? palette.onPrimary
+    : kind === 'danger' ? palette.danger : selected || kind === 'tertiary' ? palette.ai : palette.ink;
   return <Pressable testID="premium-button" accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
     accessibilityHint={accessibilityHint} accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }} aria-disabled={inactive} aria-busy={Boolean(busy)} aria-pressed={selected}
     disabled={inactive} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
     style={({ pressed }) => [{ minHeight: primary ? control.primary : control.secondary, minWidth: control.minimum, maxWidth: '100%', flexShrink: 1,
-      paddingHorizontal: spacing.xl, paddingVertical: spacing.md, borderRadius: radii.control,
-      flexDirection: 'row', gap: spacing.md, alignItems: 'center', justifyContent: 'center',
-      borderWidth: preferences.highContrast ? 2 : 1,
-      borderColor: focused ? palette.focus : primary ? palette.primary : selected ? palette.primary : kind === 'tertiary' ? 'transparent' : palette.border,
-      backgroundColor: primary ? (pressed ? palette.primaryPressed : palette.primary)
-        : pressed || selected ? palette.secondary : kind === 'danger' ? palette.dangerSurface : kind === 'tertiary' ? 'transparent' : palette.surface,
-      ...(Platform.OS !== 'web' && !reducedMotion ? { transform: [{ scale: pressed ? 0.98 : 1 }] } : {}),
-      opacity: inactive ? 0.5 : 1 }, style]}>
+      paddingHorizontal: kind === 'tertiary' ? spacing.lg : spacing.xl, paddingVertical: spacing.md, borderRadius: radii.control,
+      flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: focused ? palette.focus : selected ? palette.primary
+        : preferences.highContrast ? kind === 'danger' ? palette.danger : palette.border : 'transparent',
+      backgroundColor: disabled && !busy ? palette.disabledSurface : primary ? (pressed ? palette.primaryPressed : palette.primary)
+        : kind === 'danger' ? pressed ? palette.dangerPressed : palette.dangerSurface : pressed ? palette.controlPressed
+        : selected ? palette.secondary : kind === 'tertiary' ? 'transparent' : palette.controlSurface }, style]}>
     {busy ? <ActivityIndicator color={foreground} accessibilityElementsHidden importantForAccessibility="no" />
       : icon ? <Feather name={icon} size={control.icon} color={foreground} accessible={false} /> : null}
     <AppText variant="button" style={{ color: foreground, textAlign: 'center', flexShrink: 1 }}>{label}</AppText>
+    {selected && !icon && !busy ? <Feather name="check" size={20} color={foreground} accessible={false} /> : null}
   </Pressable>;
 }
 export const PrimaryButton = (props: Omit<ButtonProps, 'kind'>) => <Button {...props} kind="primary" />;
@@ -42,14 +44,19 @@ export const TertiaryButton = (props: Omit<ButtonProps, 'kind'>) => <Button {...
 export const DestructiveButton = (props: Omit<ButtonProps, 'kind'>) => <Button {...props} kind="danger" />;
 export const IconLabelButton = (props: ButtonProps & { icon: NonNullable<ButtonProps['icon']> }) => <Button {...props} />;
 
-export function IconButton({ icon, label, onPress, disabled }: Pick<ButtonProps, 'label' | 'onPress' | 'disabled'> & { icon: NonNullable<ButtonProps['icon']> }) {
-  const { palette } = useAccessibilityPreferences();
+export function IconButton({ icon, label, onPress, disabled, busy, selected }: Pick<ButtonProps, 'label' | 'onPress' | 'disabled' | 'busy' | 'selected'> & { icon: NonNullable<ButtonProps['icon']> }) {
+  const { palette, preferences } = useAccessibilityPreferences();
+  const [focused, setFocused] = useState(false);
+  const inactive = Boolean(disabled || busy);
+  const foreground = disabled && !busy ? palette.disabledText : palette.ai;
   return <Pressable testID="icon-button" accessibilityRole="button" accessibilityLabel={label}
-    accessibilityState={{ disabled: Boolean(disabled) }} aria-disabled={Boolean(disabled)} disabled={disabled} onPress={onPress}
+    accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }} aria-disabled={inactive} aria-busy={Boolean(busy)} aria-pressed={selected}
+    disabled={inactive} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
     style={({ pressed }) => ({ minWidth: control.minimum, minHeight: control.minimum, borderRadius: radii.control,
-      alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? palette.secondary : palette.surface,
-      borderWidth: 1, borderColor: palette.separator, opacity: disabled ? 0.5 : 1 })}>
-    <Feather name={icon} size={22} color={palette.primary} accessible={false} />
+      alignItems: 'center', justifyContent: 'center', backgroundColor: disabled && !busy ? palette.disabledSurface : pressed ? palette.controlPressed : selected ? palette.secondary : palette.controlSurface,
+      borderWidth: 2, borderColor: focused ? palette.focus : selected ? palette.primary : preferences.highContrast ? palette.border : 'transparent' })}>
+    {busy ? <ActivityIndicator color={foreground} accessibilityElementsHidden importantForAccessibility="no" />
+      : <Feather name={icon} size={control.icon} color={foreground} accessible={false} />}
   </Pressable>;
 }
 

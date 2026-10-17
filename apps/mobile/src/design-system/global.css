@@ -34,23 +34,25 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], [ro
 }
 [role="button"], [role="tab"], [role="radio"], [role="checkbox"] {
   min-height: 44px;
-  transition: scale 120ms var(--kk-ease), background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
-[role="button"]:active:not(:focus-visible):not([aria-disabled="true"]),
-[role="radio"]:active:not(:focus-visible):not([aria-disabled="true"]),
-[role="checkbox"]:active:not(:focus-visible):not([aria-disabled="true"]) { scale: 0.98; }
+[data-testid="premium-button"], [data-testid="icon-button"] {
+  min-width: 48px;
+  transition: scale 120ms var(--kk-ease), background-color 120ms var(--kk-ease);
+}
+[data-testid="premium-button"]:active:not(:focus-visible):not([aria-disabled="true"]),
+[data-testid="icon-button"]:active:not(:focus-visible):not([aria-disabled="true"]) { scale: 0.99; }
+[data-testid="disclosure-chevron"] { transition: transform 160ms var(--kk-ease); }
 [aria-disabled="true"] { cursor: not-allowed; }
-[data-testid="premium-button"], [data-testid="icon-button"] { min-width: 48px; }
 [data-testid="navigation-surface"] { background: color-mix(in srgb, var(--kk-surface) 94%, transparent) !important; backdrop-filter: blur(16px); }
 [data-testid="app-toolbar"] { background: color-mix(in srgb, var(--kk-surface) 96%, transparent) !important; }
-[data-testid="dialog-panel"] { box-shadow: 0 24px 80px rgb(15 35 24 / 20%); }
+[data-testid="dialog-panel"] { box-shadow: 0 16px 48px rgb(24 20 28 / 16%); }
 [data-testid="older-adult-shell"] [role="button"],
 [data-testid="older-adult-shell"] [role="switch"] { min-height: 56px; }
 
 @media (hover: hover) and (pointer: fine) {
   [data-testid="premium-button"]:hover:not([aria-disabled="true"]),
-  [data-testid="icon-button"]:hover:not([aria-disabled="true"]) { box-shadow: 0 3px 10px rgb(20 41 31 / 12%); }
-  [role="tab"]:hover { background-color: var(--kk-secondary) !important; }
+  [data-testid="icon-button"]:hover:not([aria-disabled="true"]) { filter: brightness(0.97); }
+  [role="tab"]:hover:not([aria-selected="true"]) { background-color: var(--kk-secondary) !important; }
 }
 @media (pointer: coarse) { input, textarea, select { font-size: max(16px, 1em); } }
 @media (prefers-reduced-transparency: reduce) {
@@ -65,6 +67,6 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], [ro
 }
 html[data-reduced-motion="true"] *, html[data-high-contrast="true"] [data-testid="navigation-surface"] { backdrop-filter: none; }
 html[data-high-contrast="true"] [data-testid="navigation-surface"] { background: var(--kk-surface) !important; }
-html[data-high-contrast="true"] :is([role="button"], [role="tab"], [role="radio"], [role="checkbox"]) { border-width: 2px !important; border-color: var(--kk-primary) !important; }
+html[data-high-contrast="true"] :is([role="button"], [role="tab"], [role="radio"], [role="checkbox"]):not([data-testid="premium-button"]):not([data-testid="icon-button"]) { border-width: 2px !important; border-color: var(--kk-primary) !important; }
 html[data-reduced-motion="true"] * { transition-duration: 0ms !important; animation-duration: 0ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 html[data-reduced-motion="true"] [role="button"], html[data-reduced-motion="true"] [role="radio"], html[data-reduced-motion="true"] [role="checkbox"] { scale: 1 !important; }

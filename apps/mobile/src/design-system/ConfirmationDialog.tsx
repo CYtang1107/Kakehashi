@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { AccessibilityInfo, Modal, Platform, Pressable, ScrollView, View, findNodeHandle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { radii, spacing } from '../theme';
+import { floatingElevation, radii, spacing, surface } from '../theme';
 import { useI18n } from '../i18n';
 import { AppText } from './AppText';
 import { Button, IconButton } from './Controls';
@@ -15,7 +15,7 @@ export type ConfirmationDialogProps = {
 
 export function ConfirmationDialog({ visible, title, message, confirmLabel, cancelLabel, onConfirm,
   onCancel, destructive, busy, children, dismissOnBackdrop }: ConfirmationDialogProps) {
-  const { palette, reducedMotion } = useAccessibilityPreferences();
+  const { palette, preferences, reducedMotion } = useAccessibilityPreferences();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const panel = useRef<View>(null);
@@ -62,15 +62,15 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
 
   return <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'}
     onShow={focusFirst} onRequestClose={() => { if (!busy) onCancel(); }}>
-    <View style={{ flex: 1, backgroundColor: 'rgba(32,41,35,0.48)', justifyContent: 'center', alignItems: 'center',
+    <View style={{ flex: 1, backgroundColor: palette.scrim, justifyContent: 'center', alignItems: 'center',
       paddingHorizontal: spacing.lg, paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }}>
       {dismissOnBackdrop ? <Pressable accessible={false} focusable={false} tabIndex={-1}
         onPress={() => { if (!busy) onCancel(); }} style={{ position: 'absolute', inset: 0 }} /> : null}
       <View ref={panel} role={onConfirm ? 'alertdialog' : 'dialog'} aria-modal accessibilityViewIsModal
         testID="dialog-panel"
         aria-labelledby={`${id}-title`} aria-describedby={message ? `${id}-message` : undefined}
-        style={{ width: '100%', maxWidth: 560, maxHeight: '100%', backgroundColor: palette.surface, borderRadius: radii.dialog,
-          borderWidth: 1, borderColor: palette.separator }}>
+        style={{ width: '100%', maxWidth: surface.dialogWidth, maxHeight: '100%', backgroundColor: palette.surface, borderRadius: radii.dialog,
+          ...floatingElevation, borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : palette.separator }}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl }}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
             <AppText variant="section" nativeID={`${id}-title`} style={{ flex: 1 }}>{title}</AppText>

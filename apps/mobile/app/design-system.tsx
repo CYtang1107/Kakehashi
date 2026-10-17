@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { useI18n } from '../src/i18n';
 import { spacing } from '../src/theme';
-import { AppText, ConfirmationDialog, EmptyState, Field, PrimaryButton, SecondaryButton, DestructiveButton,
+import { AppText, ConfirmationDialog, EmptyState, Field, PrimaryButton, SecondaryButton, TertiaryButton, DestructiveButton, IconButton,
   IconLabelButton, ScreenFrame, StatusBanner, TopBar, ToastFeedback, UpcomingVisitCard, MemoryCard,
   FriendRecommendationCard, HomeAssistanceCard, DeviceControlCard, ReminderCard, SafetyCard, ReadConfirm, Fold } from '../src/ui';
 
@@ -15,6 +15,7 @@ export default function DesignSystemReference() {
   const [light, setLight] = useState(false);
   const [read, setRead] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [selected, setSelected] = useState(true);
   const showExample = () => setToast(t('dsExampleStatusBody'));
   return <ScreenFrame wide title={t('dsShowcaseTitle')} description={t('dsShowcaseLead')} toolbar={<TopBar back />}>
     <StatusBanner title={t('dsExampleStatus')} message={t('dsExampleStatusBody')} />
@@ -25,7 +26,15 @@ export default function DesignSystemReference() {
         setError(''); setToast(t('dsExampleSuccess'));
       }} />
       <SecondaryButton label={t('dsExampleAction')} onPress={showExample} />
+      <TertiaryButton label={t('dsExampleAction')} onPress={showExample} />
+      <SecondaryButton label={t('dsExampleAction')} selected={selected} onPress={() => setSelected(value => !value)} />
       <IconLabelButton label={t('dsExampleAction')} icon="image" kind="secondary" onPress={showExample} />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md }}>
+        <IconButton label={t('dsExampleAction')} icon="image" onPress={showExample} />
+        <IconButton label={t('dsExampleAction')} icon="image" selected onPress={showExample} />
+        <IconButton label={t('dsExampleAction')} icon="image" disabled onPress={showExample} />
+        <IconButton label={t('dsLoading')} icon="image" busy onPress={showExample} />
+      </View>
       <DestructiveButton label={t('dsExampleRemove')} icon="trash-2" onPress={() => setConfirm(true)} />
       <PrimaryButton label={t('dsLoading')} onPress={() => {}} busy />
       <SecondaryButton label={t('dsExampleAction')} onPress={() => {}} disabled />

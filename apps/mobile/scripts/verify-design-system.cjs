@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const output = path.resolve(__dirname, '../.impeccable/review');
+const output = path.resolve(__dirname, '../../../docs/ux-phase1');
 fs.mkdirSync(output, { recursive: true });
 const base = 'http://127.0.0.1:4399';
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -47,25 +47,38 @@ async function main() {
   };
   await command('Page.enable'); await command('Runtime.enable');
   let initializer;
-  const navigate = async (route, width = 390, language = 'en', mode = 'normal', highContrast = false) => {
+  const navigate = async (route, width = 390, language = 'en', mode = 'normal', highContrast = false, darkMode = false) => {
     await command('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: false });
     if (initializer) await command('Page.removeScriptToEvaluateOnNewDocument', { identifier: initializer });
-    initializer = (await command('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('kakehashi-lang',${JSON.stringify(language)});localStorage.setItem('kakehashi-reading-preferences-v1',${JSON.stringify(JSON.stringify({ textMode: mode, highContrast, reduceMotion: true }))});` })).identifier;
+    initializer = (await command('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('kakehashi-lang',${JSON.stringify(language)});localStorage.setItem('kakehashi-reading-preferences-v1',${JSON.stringify(JSON.stringify({ textMode: mode, highContrast, darkMode, reduceMotion: true }))});` })).identifier;
     await command('Page.navigate', { url: base + route });
     for (let attempt = 0; attempt < 120; attempt++) {
       await wait(100);
-      if (await evaluate(`document.body?.innerText.includes(${JSON.stringify(language === 'en' ? (route.startsWith('/her') ? 'Settings' : 'Reading settings') : '\u898b\u3084\u3059\u3055\u306e\u8a2d\u5b9a')})`)) break;
+      const login = language === 'en' ? 'Log in' : 'ログイン';
+      if (await evaluate(`Boolean(${buttonExpression(login)})`)) { await click(login); await wait(150); }
+      if (await evaluate(`Boolean(document.querySelector('[aria-level="1"]')) && !Boolean(${buttonExpression(login)})`)) break;
       if (attempt === 119) throw new Error('Screen did not load: ' + route);
     }
     await evaluate('document.fonts.ready.then(() => true)'); await wait(120);
   };
   const measure = () => evaluate(`(() => {
-    const controls=Array.from(document.querySelectorAll('[role="button"],[role="switch"],input,textarea'))
+    const controls=Array.from(document.querySelectorAll('[role="button"],[role="switch"],[role="tab"],input,textarea'))
       .filter(element=>element.getClientRects().length && !element.closest('[aria-hidden="true"]'));
     const small=controls.map(element=>({name:element.getAttribute('aria-label')||element.textContent.trim(),width:element.getBoundingClientRect().width,height:element.getBoundingClientRect().height}))
       .filter(box=>box.width<44 || box.height<44);
     const overflow=Array.from(document.querySelectorAll('*')).filter(element=>{ const box=element.getBoundingClientRect(); const css=getComputedStyle(element); return box.width>0 && box.right>innerWidth+2 && css.position!=='absolute' && !element.closest('svg'); }).slice(0,8).map(element=>element.textContent.slice(0,100));
-    return {width:innerWidth,small,overflow,controlCount:controls.length,title:document.querySelector('[role="heading"]')?.textContent};
+    const shared=controls.filter(e=>['premium-button','icon-button'].includes(e.dataset.testid));
+    const sharedFailures=shared.filter(e=>{const b=e.getBoundingClientRect();return b.width<48 || b.height<(e.dataset.testid==='icon-button'?48:56) || !e.getAttribute('aria-label');}).map(e=>e.getAttribute('aria-label'));
+    const luminance=rgb=>{const c=rgb.match(/[\\d.]+/g).slice(0,3).map(v=>{v=Number(v)/255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;});return c[0]*.2126+c[1]*.7152+c[2]*.0722;};
+    const contrastFailures=shared.filter(e=>e.dataset.testid==='premium-button').flatMap(e=>{
+      const label=Array.from(e.querySelectorAll('[dir="auto"]')).find(t=>t.textContent===e.getAttribute('aria-label'));
+      if(!label)return [];
+      const bg=getComputedStyle(e).backgroundColor;
+      if(bg==='rgba(0, 0, 0, 0)')return [];
+      const a=luminance(getComputedStyle(label).color),b=luminance(bg),ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+      return ratio<4.5?[{label:label.textContent,ratio}]:[];
+    });
+    return {width:innerWidth,small,sharedFailures,contrastFailures,overflow,controlCount:controls.length,title:document.querySelector('[role="heading"]')?.textContent};
   })()`);
   const screenshot = async name => {
     await evaluate('Array.from(document.querySelectorAll("div")).filter(element => element.scrollHeight>element.clientHeight+20 && /auto|scroll/.test(getComputedStyle(element).overflowY)).forEach(element=>element.scrollTop=0); window.scrollTo(0,0);');
@@ -92,21 +105,17 @@ async function main() {
     results.matrices.push(observation);
     if ((width === 390 || width === 1440) && (mode === 'normal' || mode === 'extraLarge')) await screenshot(`reference-${language}-${width}-${mode}`);
   }
-  for (const language of ['en','ja']) for (const width of [390,1440]) {
-    await navigate('/her', width, language, 'extraLarge', true);
-    results.matrices.push({ route: '/her', language, mode: 'extraLarge', ...(await measure()) });
-    await screenshot(`her-${language}-${width}-extraLarge`);
+  for (const route of ['/', '/family', '/student', '/her', '/worker']) for (const language of ['en','ja']) for (const width of [390,1440]) for (const mode of ['normal','extraLarge']) {
+    await navigate(route, width, language, mode);
+    results.matrices.push({ route, language, mode, ...(await measure()) });
+    if (mode === 'normal' || language === 'ja' && width === 390) await screenshot(`${route === '/' ? 'public' : route.slice(1)}-${language}-${width}-${mode}`);
+  }
+  for (const route of ['/design-system','/her','/family','/student']) for (const appearance of ['dark','contrast']) {
+    await navigate(route,390,'ja','extraLarge',appearance === 'contrast',appearance === 'dark');
+    results.matrices.push({route,appearance,language:'ja',mode:'extraLarge',...await measure()});
+    await screenshot(`${route.slice(1)}-${appearance}-ja-390-extraLarge`);
   }
   await navigate('/design-system');
-  await click('Reading settings');
-  assert.equal(await evaluate("document.querySelector('[role=dialog]') !== null"), true);
-  await evaluate("document.querySelector('[role=dialog] [role=button]').focus()");
-  await key('Tab', 8);
-  assert.equal(await evaluate("document.querySelector('[role=dialog]').contains(document.activeElement)"), true);
-  await key('Escape');
-  assert.equal(await evaluate("document.querySelector('[role=dialog]') === null"), true);
-  const restored = await evaluate("document.activeElement?.getAttribute('aria-label')");
-  results.interactions.push({ name: 'reading dialog keyboard containment/Escape/return focus', restored });
   await click('Save example note');
   assert.equal(await evaluate("document.body.innerText.includes('Write a short note before continuing.')"), true);
   const inputPoint = await evaluate("(() => {const element=document.querySelector('textarea');element.scrollIntoView({block:'center'});const b=element.getBoundingClientRect();return {x:b.x+30,y:b.y+30};})()");
@@ -117,6 +126,14 @@ async function main() {
   assert.equal(await evaluate("document.body.innerText.includes('Example note saved for this session.')"), true);
   await click('Remove example note');
   assert.equal(await evaluate("document.querySelector('[role=alertdialog]') !== null"), true);
+  await evaluate("document.querySelector('[role=alertdialog] [role=button]').focus()");
+  await key('Tab', 8);
+  assert.equal(await evaluate("document.querySelector('[role=alertdialog]').contains(document.activeElement)"), true);
+  await key('Escape');
+  assert.equal(await evaluate("document.querySelector('[role=alertdialog]') === null"), true);
+  assert.equal(await evaluate("document.activeElement?.getAttribute('aria-label')"), 'Remove example note');
+  results.interactions.push({name:'confirmation keyboard containment, Escape, trigger focus restored',passed:true});
+  await click('Remove example note');
   await click('Cancel');
   assert.equal(await evaluate("document.querySelector('textarea').value"), 'A memory I want to keep.');
   await click('Remove example note');
@@ -138,7 +155,7 @@ async function main() {
     const observation = await measure();
     results.routes.push({ route, textLength: (await evaluate('document.body.innerText')).length, overflow: observation.overflow, smallExistingControls: observation.small });
   }
-  results.failures = results.matrices.filter(observation => observation.small.length || observation.overflow.length);
+  results.failures = results.matrices.filter(observation => observation.small.length || observation.sharedFailures.length || observation.contrastFailures.length || observation.overflow.length);
   fs.writeFileSync(path.join(output, 'verification.json'), JSON.stringify(results, null, 2));
   console.log(JSON.stringify({ matrices: results.matrices.length, failures: results.failures, interactions: results.interactions, routes: results.routes, exceptions: results.exceptions }, null, 2));
   ws.close(); await fetch('http://127.0.0.1:9223/json/close/' + target.id);

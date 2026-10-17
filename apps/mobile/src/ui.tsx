@@ -123,19 +123,19 @@ export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: R
   if (!wide) return <>{left}{right}</>;
   if (fill) {
     return (
-      <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: 20 }}>
+      <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: layout.gap }}>
         {scrollLeft
           ? <ScrollPanel flex={1.38}>{left}</ScrollPanel>
-          : <View style={{ flex: 1.38, minWidth: 0, minHeight: 0, gap: 14 }}>{left}</View>}
+          : <View style={{ flex: 1.38, minWidth: 0, minHeight: 0, gap: spacing.xl }}>{left}</View>}
         <ScrollPanel flex={1}>{right}</ScrollPanel>
       </View>
     );
   }
   const sticky = stickyLeft && Platform.OS === 'web' ? ({ position: 'sticky', top: 16 } as unknown as ViewStyle) : null;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 20 }}>
-      <View style={[{ flex: 1.38, minWidth: 0, gap: 14 }, sticky]}>{left}</View>
-      <View style={{ flex: 1, minWidth: 0, gap: 14 }}>{right}</View>
+    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: layout.gap }}>
+      <View style={[{ flex: 1.38, minWidth: 0, gap: spacing.xl }, sticky]}>{left}</View>
+      <View style={{ flex: 1, minWidth: 0, gap: spacing.xl }}>{right}</View>
     </View>
   );
 }
@@ -151,7 +151,7 @@ function ScrollPanel({ children, flex }: { children: React.ReactNode; flex: numb
   const more = content - box - offset > 4;
   return (
     <View style={{ flex, minWidth: 0, minHeight: 0 }}>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: 14, paddingBottom: 24, paddingRight: 8 }} keyboardShouldPersistTaps="handled"
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ gap: spacing.xl, paddingBottom: spacing.xl, paddingRight: spacing.sm }} keyboardShouldPersistTaps="handled"
         scrollEventThrottle={32} onLayout={(e) => setBox(e.nativeEvent.layout.height)} onContentSizeChange={(_, h) => setContent(h)}
         onScroll={(e) => setOffset(e.nativeEvent.contentOffset.y)}>
         {children}
@@ -191,7 +191,8 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
         <AppText variant="bodyBold">{title}</AppText>
         {summary ? <AppText variant="caption">{summary}</AppText> : null}
       </View>
-      <Feather name={open ? 'chevron-up' : 'chevron-down'} size={24} color={palette.primary} accessible={false} />
+      <Feather testID="disclosure-chevron" name="chevron-down" size={24} color={palette.primary} accessible={false}
+        style={{ transform: [{ rotate: open ? '180deg' : '0deg' }] }} />
     </Pressable>
     {open ? children : null}
   </View>;

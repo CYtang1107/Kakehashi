@@ -1,7 +1,7 @@
 import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { layout, spacing } from '../theme';
+import { layout, spacing, surface } from '../theme';
 import { AppText } from './AppText';
 import { useAccessibilityPreferences } from './preferences';
 
@@ -16,7 +16,7 @@ export function ScreenFrame({ children, title, description, toolbar, wide, foote
     <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
       contentContainerStyle={{ paddingTop: toolbar ? spacing.xxl : insets.top + spacing.xxl, paddingBottom: insets.bottom + spacing.section }}>
       <View style={{ width: '100%', maxWidth: wide ? layout.wideWidth : layout.compactWidth, alignSelf: 'center',
-        paddingHorizontal: width < 360 ? spacing.lg : layout.margin, gap: spacing.xl }}>
+        paddingHorizontal: width < 360 ? spacing.lg : layout.margin, gap: surface.sectionGap }}>
         {title || description ? <View style={{ gap: spacing.sm }}>
           {title ? <AppText variant="title">{title}</AppText> : null}
           {description ? <AppText variant="caption">{description}</AppText> : null}
