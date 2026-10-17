@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef } from 'react';
-import { AccessibilityInfo, Modal, Platform, Pressable, ScrollView, View, findNodeHandle } from 'react-native';
+import { AccessibilityInfo, Modal, Platform, Pressable, ScrollView, View, KeyboardAvoidingView, useWindowDimensions, findNodeHandle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { floatingElevation, radii, spacing, surface } from '../theme';
 import { useI18n } from '../i18n';
@@ -18,6 +18,8 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
   const { palette, preferences, reducedMotion } = useAccessibilityPreferences();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const compact = width < 760;
   const panel = useRef<View>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const cancelRef = useRef(onCancel);
@@ -62,7 +64,7 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
 
   return <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'}
     onShow={focusFirst} onRequestClose={() => { if (!busy) onCancel(); }}>
-    <View style={{ flex: 1, backgroundColor: palette.scrim, justifyContent: 'center', alignItems: 'center',
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: palette.scrim, justifyContent: compact ? 'flex-end' : 'center', alignItems: 'center',
       paddingHorizontal: spacing.lg, paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }}>
       {dismissOnBackdrop ? <Pressable accessible={false} focusable={false} tabIndex={-1}
         onPress={() => { if (!busy) onCancel(); }} style={{ position: 'absolute', inset: 0 }} /> : null}
@@ -84,6 +86,6 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
           </View>
         </ScrollView>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   </Modal>;
 }

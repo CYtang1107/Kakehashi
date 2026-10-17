@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { router } from 'expo-router';
-import { AppText, Button, Card, ConfirmationDialog, Field, Fold, ReadConfirm, StatusBanner } from '../../ui';
+import { AppText, Button, Card, ConfirmationDialog, Field, Fold, ReadConfirm, StatusBanner, TaskWorkspace } from '../../ui';
 import { useData } from '../../data';
 import { useI18n, type Key } from '../../i18n';
 import { householdDay } from '../../her/plans';
@@ -16,10 +16,10 @@ function Options<T extends string>({ title, values, selected, disabled, onChange
   title: Key; values: readonly T[]; selected: T[]; disabled: boolean; onChange: (values: T[]) => void;
 }) {
   const { t } = useI18n();
-  return <Fold title={t(title)} summary={selected.length ? selected.map(id => t(`cOption_${id}` as Key)).join(' · ') : t('cOptionsHint')}>
+  return <View style={{ gap: 12 }}><AppText variant="caption">{selected.length ? selected.map(id => t(`cOption_${id}` as Key)).join(' · ') : t('cOptionsHint')}</AppText>
     {values.map(value => <ReadConfirm key={value} label={t(`cOption_${value}` as Key)} checked={selected.includes(value)} disabled={disabled}
       onChange={() => onChange(selected.includes(value) ? selected.filter(v => v !== value) : [...selected, value])} />)}
-  </Fold>;
+  </View>;
 }
 export function ProfileScreen() {
   const { t, lang } = useI18n(), { data } = useData(); const store = useEverCircle();
@@ -41,18 +41,24 @@ export function ProfileScreen() {
       {!store.saved.approved.length ? <AppText>{t('cNoInterests')}</AppText> : store.saved.approved.map(interest => <Card key={interest.id}>
         <AppText variant="bodyBold">{t(interestKey(interest.id))}</AppText>
         <AppText variant="caption">{t(eligible.includes(interest.id) ? 'cShared' : 'cPrivate')}</AppText>
+        <Fold title={t('cEdit')} icon="edit-2">
         <Button label={t('cEdit')} accessibilityLabel={t('cEdit') + ': ' + t(interestKey(interest.id))} kind="secondary" disabled={busy} onPress={() => { setEdit(interest.id); setReplacement(interest.id); }} />
         <Button label={t('cDelete')} accessibilityLabel={t('cDelete') + ': ' + t(interestKey(interest.id))} kind="danger" disabled={busy} onPress={() => setDeleting(interest.id)} />
+        </Fold>
       </Card>)}
     </View>
     <PendingInterests />
+    <AppText variant="section">{draft.displayName}</AppText>
+    <Fold title={t('cDisplayName')} icon="user">
     <Field label={t('cDisplayName')} value={draft.displayName} maxLength={60} editable={!busy} onChangeText={value => update('displayName', value)} />
-    <AppText variant="caption">{t('cOptionsHint')}</AppText>
-    <Options title="cLanguages" values={LANGUAGES} selected={draft.languages} disabled={busy} onChange={value => update('languages', value)} />
-    <Options title="cActivities" values={ACTIVITIES} selected={draft.activities} disabled={busy} onChange={value => update('activities', value)} />
-    <Options title="cTimes" values={TIMES} selected={draft.times} disabled={busy} onChange={value => update('times', value)} />
-    <Options title="cCommunication" values={COMMUNICATION} selected={draft.communication} disabled={busy} onChange={value => update('communication', value)} />
-    <Options title="cLocations" values={LOCATIONS} selected={draft.locations} disabled={busy} onChange={value => update('locations', value)} />
+    </Fold>
+    <TaskWorkspace label={t('hPreferences')} tasks={[
+      { id: 'languages', label: t('cLanguages'), icon: 'globe', content: <Options title="cLanguages" values={LANGUAGES} selected={draft.languages} disabled={busy} onChange={value => update('languages', value)} /> },
+      { id: 'activities', label: t('cActivities'), icon: 'coffee', content: <Options title="cActivities" values={ACTIVITIES} selected={draft.activities} disabled={busy} onChange={value => update('activities', value)} /> },
+      { id: 'times', label: t('cTimes'), icon: 'clock', content: <Options title="cTimes" values={TIMES} selected={draft.times} disabled={busy} onChange={value => update('times', value)} /> },
+      { id: 'communication', label: t('cCommunication'), icon: 'message-circle', content: <Options title="cCommunication" values={COMMUNICATION} selected={draft.communication} disabled={busy} onChange={value => update('communication', value)} /> },
+      { id: 'locations', label: t('cLocations'), icon: 'map-pin', content: <Options title="cLocations" values={LOCATIONS} selected={draft.locations} disabled={busy} onChange={value => update('locations', value)} /> },
+    ]} />
     <Button label={t('cSaveProfile')} icon="check" busy={busy} disabled={!dirty} onPress={() => { setFeedback(null); store.change({ type: 'profile', profile: draft }).then(ok => { if (ok) { setDirty(false); setFeedback('cProfileSaved'); } }); }} />
     <Button label={t('hCompanion')} kind="secondary" onPress={() => router.navigate('/her/companion')} />
     <ConfirmationDialog visible={edit !== null} title={t('cEditTitle')} message={t('cEditBody')} busy={busy} confirmLabel={t('cSaveChanges')}

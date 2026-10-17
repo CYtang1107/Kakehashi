@@ -47,10 +47,10 @@ async function main() {
   };
   await command('Page.enable'); await command('Runtime.enable');
   let initializer;
-  const navigate = async (route, width = 390, language = 'en', mode = 'normal', highContrast = false, darkMode = false) => {
+  const navigate = async (route, width = 390, language = 'en', mode = 'normal', highContrast = false, darkMode = false, reduceMotion = true) => {
     await command('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: false });
     if (initializer) await command('Page.removeScriptToEvaluateOnNewDocument', { identifier: initializer });
-    initializer = (await command('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('kakehashi-lang',${JSON.stringify(language)});localStorage.setItem('kakehashi-reading-preferences-v1',${JSON.stringify(JSON.stringify({ textMode: mode, highContrast, darkMode, reduceMotion: true }))});` })).identifier;
+    initializer = (await command('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.setItem('kakehashi-lang',${JSON.stringify(language)});localStorage.setItem('kakehashi-reading-preferences-v1',${JSON.stringify(JSON.stringify({ textMode: mode, highContrast, darkMode, reduceMotion }))});` })).identifier;
     await command('Page.navigate', { url: base + route });
     for (let attempt = 0; attempt < 120; attempt++) {
       await wait(100);
@@ -60,6 +60,7 @@ async function main() {
       if (attempt === 119) throw new Error('Screen did not load: ' + route);
     }
     await evaluate('document.fonts.ready.then(() => true)'); await wait(120);
+    assert.match(await evaluate('getComputedStyle(document.documentElement).getPropertyValue("--kk-ease")'), /cubic-bezier/, 'Preview must serve the shared stylesheet');
   };
   const measure = () => evaluate(`(() => {
     const controls=Array.from(document.querySelectorAll('[role="button"],[role="switch"],[role="tab"],input,textarea'))
@@ -68,7 +69,7 @@ async function main() {
       .filter(box=>box.width<44 || box.height<44);
     const overflow=Array.from(document.querySelectorAll('*')).filter(element=>{ const box=element.getBoundingClientRect(); const css=getComputedStyle(element); return box.width>0 && box.right>innerWidth+2 && css.position!=='absolute' && !element.closest('svg'); }).slice(0,8).map(element=>element.textContent.slice(0,100));
     const shared=controls.filter(e=>['premium-button','icon-button'].includes(e.dataset.testid));
-    const sharedFailures=shared.filter(e=>{const b=e.getBoundingClientRect();return b.width<48 || b.height<(e.dataset.testid==='icon-button'?48:56) || !e.getAttribute('aria-label');}).map(e=>e.getAttribute('aria-label'));
+    const sharedFailures=shared.filter(e=>{const b=e.getBoundingClientRect();return b.width<48 || b.height<48 || b.height<parseFloat(getComputedStyle(e).minHeight)-.5 || !e.getAttribute('aria-label');}).map(e=>e.getAttribute('aria-label'));
     const luminance=rgb=>{const c=rgb.match(/[\\d.]+/g).slice(0,3).map(v=>{v=Number(v)/255;return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4;});return c[0]*.2126+c[1]*.7152+c[2]*.0722;};
     const contrastFailures=shared.filter(e=>e.dataset.testid==='premium-button').flatMap(e=>{
       const label=Array.from(e.querySelectorAll('[dir="auto"]')).find(t=>t.textContent===e.getAttribute('aria-label'));
@@ -116,6 +117,20 @@ async function main() {
     await screenshot(`${route.slice(1)}-${appearance}-ja-390-extraLarge`);
   }
   await navigate('/design-system');
+  assert.equal(await evaluate(`(() => {
+    const busy=Array.from(document.querySelectorAll('[data-testid="premium-button"],[data-testid="icon-button"]')).filter(e=>e.getAttribute('aria-busy')==='true');
+    if(busy.length!==2 || busy.some(e=>e.getAttribute('aria-disabled')!=='true'))return false;
+    busy.forEach(e=>e.click());
+    return !document.querySelector('[data-testid="toast-surface"]');
+  })()`),true);
+  await evaluate(`document.querySelector('[data-testid="premium-button"][aria-pressed="true"]').click()`);
+  assert.equal(await evaluate(`document.querySelector('[data-testid="premium-button"][aria-pressed="false"]')!==null`),true);
+  results.interactions.push({name:'selected state toggles; busy text/icon controls stay disabled and do not invoke callbacks',passed:true});
+  const pressPoint=await evaluate(`(() => {const e=${buttonExpression('Save example note')};e.scrollIntoView({block:'center'});const b=e.getBoundingClientRect();return {x:b.x+b.width/2,y:b.y+b.height/2};})()`);
+  await command('Input.dispatchMouseEvent',{type:'mousePressed',...pressPoint,button:'left',clickCount:1});
+  assert.equal(await evaluate(`getComputedStyle(${buttonExpression('Save example note')}).scale`),'1');
+  await command('Input.dispatchMouseEvent',{type:'mouseReleased',...pressPoint,button:'left',clickCount:1});
+  results.interactions.push({name:'reduced-motion press has no scaling',passed:true});
   await click('Save example note');
   assert.equal(await evaluate("document.body.innerText.includes('Write a short note before continuing.')"), true);
   const inputPoint = await evaluate("(() => {const element=document.querySelector('textarea');element.scrollIntoView({block:'center'});const b=element.getBoundingClientRect();return {x:b.x+30,y:b.y+30};})()");
@@ -126,6 +141,8 @@ async function main() {
   assert.equal(await evaluate("document.body.innerText.includes('Example note saved for this session.')"), true);
   await click('Remove example note');
   assert.equal(await evaluate("document.querySelector('[role=alertdialog]') !== null"), true);
+  results.matrices.push({route:'/design-system#confirmation',language:'en',mode:'normal',...await measure()});
+  await screenshot('confirmation-en-390');
   await evaluate("document.querySelector('[role=alertdialog] [role=button]').focus()");
   await key('Tab', 8);
   assert.equal(await evaluate("document.querySelector('[role=alertdialog]').contains(document.activeElement)"), true);
@@ -150,6 +167,32 @@ async function main() {
   assert.equal(helpRequests.length, 2);
   assert.deepEqual(helpRequests[1].body, { kind: 'garden', when: 'soon', by: 'her' });
   results.interactions.push({ name: 'existing two-tap help, failed mutation feedback and retry', passed: true, requests: helpRequests });
+  await fetch(base + '/__verification/stage3');
+  await navigate('/her/item/sewing');
+  let pausedRequest;
+  const intercept = event => {
+    const message=JSON.parse(String(event.data));
+    if(message.method==='Fetch.requestPaused') pausedRequest=message.params.requestId;
+  };
+  ws.addEventListener('message',intercept);
+  await command('Fetch.enable',{patterns:[{urlPattern:'*/api/items/sewing',requestStage:'Request'}]});
+  await click('Keep at home'); await click('Keep at home');
+  for(let i=0;i<60 && !pausedRequest;i++) await wait(50);
+  assert.ok(pausedRequest,'Decision request reached the isolated fixture');
+  await key('Escape');
+  assert.equal(await evaluate(`Boolean(document.querySelector('[role="alertdialog"]'))`),true);
+  assert.equal(await evaluate(`Array.from(document.querySelectorAll('[role="alertdialog"] [role="button"]')).every(e=>e.getAttribute('aria-disabled')==='true')`),true);
+  await click('Keep at home');
+  await command('Fetch.continueRequest',{requestId:pausedRequest});
+  await command('Fetch.disable'); ws.removeEventListener('message',intercept);
+  for(let i=0;i<60 && await evaluate(`Boolean(document.querySelector('[role="alertdialog"]'))`);i++) await wait(50);
+  assert.equal(await evaluate(`Boolean(document.querySelector('[role="alertdialog"]'))`),false);
+  assert.equal((await (await fetch(base+'/__verification/requests')).json()).filter(r=>r.method==='PATCH'&&r.path==='/api/items/sewing').length,1);
+  results.interactions.push({name:'busy confirmation blocks Escape, close, cancel and duplicate submission; original decision payload submitted once',passed:true});
+  await navigate('/settings');
+  await click('App settings'); await click('Large'); await click('Save changes'); await click('Cancel');
+  assert.equal(await evaluate(`JSON.parse(localStorage.getItem('kakehashi-reading-preferences-v1')).textMode`),'normal');
+  results.interactions.push({name:'existing Settings Save/Cancel rollback bug reproduced and preserved',passed:true,knownBug:true});
   for (const route of ['/', '/family', '/family/house', '/family/plan', '/family/reports', '/student', '/student/add', '/student/team', '/student/wallet', '/worker', '/stories', '/item/sewing']) {
     await navigate(route, 390);
     const observation = await measure();

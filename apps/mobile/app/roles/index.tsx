@@ -19,13 +19,14 @@ export default function RolesPage() {
   const { palette, preferences } = useAccessibilityPreferences();
   const wide = useWide();
   return <Screen requiresHome={false} wide globalNav="roles" header={{ eyebrow: t('roleEntryEyebrow'), title: t('chooseRole') }}>
+    <AppText variant="caption">{t('uxRoleLead')}</AppText>
     <View style={{ gap: spacing.lg, flexDirection: wide ? 'row' : 'column', flexWrap: 'wrap' }}>
       {roles.map((role) => <Pressable key={role.path} accessibilityRole="button" accessibilityLabel={t(role.title)} accessibilityHint={t(role.hint)} onPress={() => router.push(role.path)}
-        style={({ pressed }) => ({ minHeight: 132, padding: spacing.xl, gap: spacing.lg, flexDirection: 'row', alignItems: 'center',
+        style={({ pressed }) => ({ minHeight: 152, padding: spacing.xl, gap: spacing.lg, flexDirection: 'row', alignItems: 'center',
           ...(wide ? { flexBasis: '47%', flexGrow: 1 } : {}), ...elevation,
-          borderRadius: radii.card, borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : palette.separator,
+          borderRadius: radii.card, borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : 'transparent',
           backgroundColor: pressed ? palette.secondary : palette.surface })}>
-        <View style={{ width: 52, height: 52, borderRadius: radii.control, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.secondary }}>
+        <View style={{ width: 60, height: 60, borderRadius: radii.control, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.secondary }}>
           <Feather name={role.icon} size={26} color={palette.primary} accessible={false} />
         </View>
         <View style={{ flex: 1, minWidth: 0, gap: 3 }}>

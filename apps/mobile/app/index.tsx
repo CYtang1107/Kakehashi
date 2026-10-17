@@ -5,7 +5,7 @@ import { StoriesFeedContent } from './stories';
 
 export default function HomePage() {
 	const { t } = useI18n();
-	return <Screen requiresHome={false} wide fit globalNav="home"
+	return <Screen requiresHome={false} globalNav="home"
     header={{ eyebrow: t('roleEntryEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
 		<StoriesFeedContent />
 	</Screen>;

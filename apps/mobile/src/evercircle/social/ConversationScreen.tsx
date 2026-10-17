@@ -31,14 +31,17 @@ export function ConversationScreen(){
     <AppText variant="section">{name}</AppText><AppText>{t(`sState_${status}` as Key)}</AppText>
     {status!=='accepted'?<StatusBanner title={t('sMessageClosed')}/>:<>
       <View onLayout={event=>{chatTop.current=event.nativeEvent.layout.y;}} style={{gap:20}}>
-      {!messages.length?<AppText>{t('sNoMessages')}</AppText>:messages.map(message=><View key={message.id} onLayout={event=>{if(message.id===messages.at(-1)?.id)latestTop.current=event.nativeEvent.layout.y;}} style={{width:'95%',alignSelf:message.from===social.active.id?'flex-end':'flex-start',backgroundColor:message.from===social.active.id?palette.secondary:palette.surface,borderWidth:1,borderColor:palette.border,borderRadius:16,padding:20,gap:12}}>
+      {!messages.length?<AppText>{t('sNoMessages')}</AppText>:messages.map(message=><View key={message.id} onLayout={event=>{if(message.id===messages.at(-1)?.id)latestTop.current=event.nativeEvent.layout.y;}} style={{width:'95%',alignSelf:message.from===social.active.id?'flex-end':'flex-start',backgroundColor:message.from===social.active.id?palette.secondary:palette.surface,borderWidth:0,borderColor:palette.separator,borderRadius:24,padding:20,gap:12}}>
         <AppText variant="bodyBold">{message.kind==='scripted'?t('sScripted',{name:message.from===social.active.id?displayPerson(social.active,lang):name}):message.from===social.active.id?t('cYou'):name}</AppText>
         <AppText accessibilityLiveRegion={message.id===messages.at(-1)?.id?'polite':'none'}>{message.kind==='scripted'?t('sMockReply'):message.text}</AppText>
       </View>)}
       </View>
       {full?<StatusBanner title={t('sMessageLimit')}/>:null}
       <Fold title={t('cStarterTitle')}>{(['sStarterHello','sStarterHobby','sStarterDay'] as const).map(key=><Button key={key} label={t(key)} kind="secondary" disabled={!allowed||full} onPress={()=>setText(t(key))}/>)}</Fold>
+      <Fold title={t('uxOptions')} icon="sliders">
+      <AppText variant="caption">{t('sMessageNotice')}</AppText>
       <Button label={t('sSimulateReply')} kind="secondary" disabled={!allowed||full} onPress={()=>{void social.act({type:'reply',actor:social.active.id,target:peer.id});}}/>
+      </Fold>
     </>}
     <Fold title={t('cPrivacy')}><AppText variant="caption">{t('sMessageNotice')}</AppText></Fold>
     <Button label={t('sBlock')} kind="secondary" disabled={status==='blocked'||social.status==='saving'} onPress={()=>confirmation.request('block',peer.id)}/>

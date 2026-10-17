@@ -4,11 +4,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import type { PayKind, Wallet } from '@kakehashi/shared';
-import { StatusBanner, Button, Card, Columns, Field, Fold, Pill, Screen, formatDate } from '../../src/ui';
+import { StatusBanner, Button, Card, Field, Fold, Pill, Screen, TaskWorkspace, formatDate } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
-import { colors, fonts, type, yen } from '../../src/theme';
+import { fonts, type, yen } from '../../src/theme';
 
 const NISA_URL = 'https://www.fsa.go.jp/policy/nisa2/';
 const ICON: Record<PayKind, keyof typeof Feather.glyphMap> = { visit: 'home', call: 'phone', 'weather-call': 'cloud-snow', outing: 'map-pin' };
@@ -54,9 +54,8 @@ export default function WalletScreen() {
   const startEdit = () => { setGoalName(goal?.name ?? ''); setTarget(goal ? String(goal.targetJpy) : ''); setPct(String(goal?.setAsidePct ?? 20)); setEditing(true); };
 
   return (
-    <Screen wide fit header={{ title: t('walletTitle'), sub: t('walletLead') }}>
-      <Columns fill scrollLeft
-        left={<>
+    <Screen header={{ title: t('walletTitle'), sub: t('walletLead') }}>
+
       <StatusBanner title={t('rDemo')} message={t('rWalletDemo')} />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {pair.map((s) => (
@@ -70,7 +69,7 @@ export default function WalletScreen() {
       {/* The three numbers that matter, then payday */}
       <Card>
         <Text style={type.eyebrow}>{t('walletThisMonth')}</Text>
-        <Text style={{ fontFamily: fonts.display, fontSize: 34, lineHeight: 42, color: colors.ink }}>{yen(w.monthJpy)}</Text>
+        <Text variant="value" style={{ fontVariant: ['tabular-nums'] }}>{yen(w.monthJpy)}</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
           <View style={{ flex: 1 }}><Text style={type.caption}>{t('walletPending')}</Text><Text style={type.bodyBold}>{yen(w.pendingJpy)}</Text></View>
           <View style={{ flex: 1 }}><Text style={type.caption}>{t('walletPaid')}</Text><Text style={type.bodyBold}>{yen(w.paidJpy)}</Text></View>
@@ -80,6 +79,21 @@ export default function WalletScreen() {
         <Text style={type.caption}>{t('walletRates', { hour: yen(w.rates.hourJpy), visit: yen(w.rates.hourJpy * w.rates.visitHours), call: yen(w.rates.callJpy) })}</Text>
       </Card>
 
+      <TaskWorkspace tabs defaultTask="history" tasks={[
+        { id: 'history', label: t('walletHistory'), content: <>
+      {w.entries.map((p) => (
+        <View key={p.id} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line }}>
+          <Feather name={ICON[p.kind]} size={18} color={colors.ai} />
+          <View style={{ flex: 1 }}>
+            <Text style={type.bodyBold}>{t(`pay_${p.kind}` as Key)}{p.hours ? `, ${t('hoursN', { n: p.hours })}` : ''}</Text>
+            <Text style={type.caption}>{formatDate(p.date, lang)}</Text>
+          </View>
+          <Pill label={t(p.status === 'paid' ? 'payPaid' : 'payPending')} color={p.status === 'paid' ? colors.moss : colors.kaki} bg={p.status === 'paid' ? colors.mossTint : colors.kakiTint} />
+          <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'], minWidth: 64, textAlign: 'right' }]}>{yen(p.amountJpy)}</Text>
+        </View>
+      ))}
+        </> },
+        { id: 'savings', label: t('goalTitle'), content: <>
       {/* Savings goal: a tracker, the money stays in their own bank */}
       <Card>
         <Text style={type.section}>{t('goalTitle')}</Text>
@@ -117,33 +131,20 @@ export default function WalletScreen() {
         <Text style={type.caption}>{t('goalNote')}</Text>
       </Card>
 
-        </>}
-        right={<>
+        </> },
+        { id: 'learn', label: t('nisaTitle'), content: <>
       {/* Long-term saving: neutral information and the government's guide, never advice */}
-      <Fold title={t('nisaTitle')} icon="trending-up" summary={t('nisaSummary')}>
         <Card tint>
           <Text style={type.section}>{t('nisaTitle')}</Text>
           <Text style={type.body}>{t('nisaBody')}</Text>
           <Button label={t('nisaLink')} kind="secondary" icon="external-link" onPress={() => Linking.openURL(NISA_URL)} />
           <Text style={type.caption}>{t('nisaDisclaimer')}</Text>
         </Card>
-      </Fold>
 
-      <Text style={type.section}>{t('walletHistory')}</Text>
-      {w.entries.map((p) => (
-        <View key={p.id} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line }}>
-          <Feather name={ICON[p.kind]} size={18} color={colors.ai} />
-          <View style={{ flex: 1 }}>
-            <Text style={type.bodyBold}>{t(`pay_${p.kind}` as Key)}{p.hours ? `, ${t('hoursN', { n: p.hours })}` : ''}</Text>
-            <Text style={type.caption}>{formatDate(p.date, lang)}</Text>
-          </View>
-          <Pill label={t(p.status === 'paid' ? 'payPaid' : 'payPending')} color={p.status === 'paid' ? colors.moss : colors.kaki} bg={p.status === 'paid' ? colors.mossTint : colors.kakiTint} />
-          <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'], minWidth: 64, textAlign: 'right' }]}>{yen(p.amountJpy)}</Text>
-        </View>
-      ))}
+        </> },
+      ]} />
       {error ? <StatusBanner tone="error" title={error} /> : null}
-        </>}
-      />
+
     </Screen>
   );
 }

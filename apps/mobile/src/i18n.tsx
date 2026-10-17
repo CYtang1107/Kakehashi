@@ -3,6 +3,23 @@ import React, { createContext, useContext, useState } from 'react';
 export type Lang = 'en' | 'ja';
 
 const en = {
+  uxRoleLead: 'Choose your space. This prototype uses demo sign-in.', uxTypedCommands: 'Typed Commands', uxVoiceCommands: 'Voice Commands',
+  uxNoOlderRecords: 'No older records yet.',
+  uxAllTasks: 'All sections', uxChooseTask: 'What would you like to do?', uxOptions: 'Options',
+  uxChangeView: 'Change View', uxViewOptions: 'View Options', uxHomeDetails: 'Home Details',
+  uxAddMemory: 'Add a Memory', uxDetails: 'Additional Information', uxDecisionsWishes: 'Decisions and Wishes',
+  uxInvitations: 'Invitations', uxMyFriends: 'My Friends', uxMeetPeople: 'Meet New People', uxConnections: 'Activities and Connections',
+  uxCompanionPrivacy: 'Companion Privacy', uxFriendshipPrivacy: 'Friendship Privacy', uxLocalData: 'Local Data Management',
+  uxAvailability: 'Availability', uxReadingAppearance: 'Reading and Appearance', uxLanguage: 'Language', uxRecordingSharing: 'Recording and Sharing', uxGeneral: 'General',
+  uxBelongingsMemories: 'Belongings and Memories', uxSafetyFuture: 'Home Safety and Future', uxAssistanceWorkers: 'Assistance and Workers',
+  uxActivitiesOutings: 'Activities and Outings', uxNotesPeople: 'Notes and People', uxPreparation: 'Visit Preparation', uxVisitReport: 'Visit Report',
+  uxLetters: 'Letters', uxCalls: 'Call Records', uxReports: 'Visit Reports', uxAppreciation: 'Appreciation', uxHistory: 'History',
+  uxAvailablePlans: 'Available Plans', uxPayment: 'Payment', uxPaymentHistory: 'Payment History', uxNewMemories: 'New Memories',
+  uxSafetySummary: '{n} safety improvements · {done} completed', uxHelpStatus: 'Help Status', uxRecentActivities: 'Recent Activities',
+  uxStatusEarnings: 'Status and Earnings', uxRulesClearance: 'Rules and Clearance', uxReadiness: '{done} of {total} readiness checks complete',
+  uxNotJoined: 'Not a member', uxMoreSuggestions: 'More conversation ideas', uxExploreGlobe: 'Explore the story globe', uxStoryDirectory: 'Find a story on the globe',
+  uxDemoTools: 'Demonstration Tools', uxDemoIdentity: 'Demonstration identity',
+
   sLead: 'Find company through interests you choose to share.', sDemoIdentity: 'Fictional demo · {name}', sLocalDemo: 'These people and interactions are fictional and stay on this device.',
   sPermissions: 'Friendship sharing choices', sPermissionLead: 'Choose what your demo profile may use for discovery.', sSwitchDemo: 'Switch demo person', sCommunities: 'Hobby communities', sConnections: 'Your connections', sRecommendations: 'People to get to know',
   sPermissionOn: 'Matching is on. Only permitted fields can be compared.', sPermissionOff: 'Matching is paused. Your saved interests and existing friendships remain.',
@@ -843,6 +860,23 @@ const en = {
 export type Key = keyof typeof en;
 
 const ja: Record<Key, string> = {
+  uxRoleLead: 'ご利用になる立場をお選びください。この試作版はデモ用ログインです。', uxTypedCommands: '文字で操作', uxVoiceCommands: '声で操作',
+  uxNoOlderRecords: '以前の記録はまだありません。',
+  uxAllTasks: 'セクション一覧', uxChooseTask: '何をしますか？', uxOptions: 'オプション',
+  uxChangeView: '表示を変更', uxViewOptions: '表示オプション', uxHomeDetails: '住まいの詳細',
+  uxAddMemory: '思い出を追加', uxDetails: '詳しい情報', uxDecisionsWishes: '選択と希望',
+  uxInvitations: '招待', uxMyFriends: '友達', uxMeetPeople: '新しい出会い', uxConnections: '活動とつながり',
+  uxCompanionPrivacy: '会話のプライバシー', uxFriendshipPrivacy: '友達とのプライバシー', uxLocalData: '端末内のデータ管理',
+  uxAvailability: '参加の設定', uxReadingAppearance: '読みやすさと表示', uxLanguage: '言語', uxRecordingSharing: '録音と共有', uxGeneral: '一般',
+  uxBelongingsMemories: '持ち物と思い出', uxSafetyFuture: '住まいの安全とこれから', uxAssistanceWorkers: 'お手伝いと作業者',
+  uxActivitiesOutings: '活動と外出', uxNotesPeople: 'メモと訪問する学生', uxPreparation: '訪問の準備', uxVisitReport: '訪問報告',
+  uxLetters: '手紙', uxCalls: '通話の記録', uxReports: '訪問報告', uxAppreciation: '感謝の便り', uxHistory: '履歴',
+  uxAvailablePlans: '選べるプラン', uxPayment: 'お支払い', uxPaymentHistory: 'お支払い履歴', uxNewMemories: '新しい思い出',
+  uxSafetySummary: '安全の改善 {n}件 · 完了 {done}件', uxHelpStatus: 'お手伝いの状況', uxRecentActivities: '最近の活動',
+  uxStatusEarnings: '状況と報酬', uxRulesClearance: 'ルールと資格確認', uxReadiness: '準備の確認 {total}項目中{done}項目完了',
+  uxNotJoined: '未参加', uxMoreSuggestions: '会話のヒントをもっと見る', uxExploreGlobe: '物語の地球儀を見る', uxStoryDirectory: '地球儀から物語を探す',
+  uxDemoTools: 'デモ用ツール', uxDemoIdentity: 'デモ用の人物',
+
   sLead: '共有したい趣味を通じて、つながりを見つけましょう。', sDemoIdentity: '架空のデモ・{name}', sLocalDemo: '人物や交流は架空のもので、この端末内だけに残ります。',
   sPermissions: '友達探しの共有設定', sPermissionLead: 'デモの友達探しに使う情報を選べます。', sSwitchDemo: 'デモの人物を切り替え', sCommunities: '趣味の集まり', sConnections: 'あなたのつながり', sRecommendations: '知り合うきっかけに',
   sPermissionOn: '友達探しはオンです。許可した情報だけを比べます。', sPermissionOff: '友達探しは停止中です。保存した趣味や成立した友達関係は残ります。',

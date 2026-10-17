@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
-import { AppText, Button, Fold } from '../../ui';
+import { AppText, TaskWorkspace, SectionTabs } from '../../ui';
 import { HerPage } from '../../her/HerPage';
 import { useHomeCopy } from '../homeDemo/copy';
 import { useHomeDemo } from '../homeDemo/store';
@@ -17,11 +16,13 @@ export function SmartHomeDashboard() {
     <DemoStatus />
     {!['loading', 'loadError'].includes(store.status) ? <>
       <AppText variant="section">{c('controls')}</AppText>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{ROOMS.map(id => <Button key={id} label={c(id)} selected={room === id} kind="secondary" onPress={() => setRoom(id)} />)}</View>
+      <SectionTabs label={c('controls')} value={room} options={ROOMS.map(id => [id, c(id)] as const)} onChange={setRoom} />
       <RoomCard room={room} />
-      <CommandInput />
-      <Fold title={c('routines')} icon="sun"><RoutineCard routine="morning" /><RoutineCard routine="evening" /></Fold>
-      <DeviceActivityLog />
+      <TaskWorkspace tasks={[
+        { id: 'commands', label: c('command'), icon: 'message-circle', retain: false, content: <CommandInput /> },
+        { id: 'routines', label: c('routines'), icon: 'sun', content: <><RoutineCard routine="morning" /><RoutineCard routine="evening" /></> },
+        { id: 'history', label: c('log'), icon: 'clock', content: <DeviceActivityLog expanded /> },
+      ]} />
       <AppText variant="caption">{c('roomsNote')}</AppText>
     </> : null}
   </HerPage>;

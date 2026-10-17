@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CONDITION_PARTS, outingIsLive, pick } from '@kakehashi/shared';
-import { AppText, Button, Card, EmptyState, Fold, StatusBanner, AccessibleSwitch, LangToggle, formatDate } from '../ui';
+import { AppText, Button, Card, EmptyState, Fold, StatusBanner, AccessibleSwitch, LangToggle, formatDate, SectionTabs, TaskWorkspace } from '../ui';
 import { HerPage } from './HerPage';
 import { useData } from '../data';
 import { useI18n, type Key } from '../i18n';
 import { useWeather } from '../Weather';
-import { api } from '../api';
+import { fileUrl, api } from '../api';
 import { AppSettings } from '../design-system/AppSettings';
 import { itemPhotos } from '../PhotoCarousel';
 import { DecisionChip } from '../ui';
@@ -150,26 +150,30 @@ export function MyHomeScreen() {
 }
 const collections = [['hBelongings', 'all'], ['hPhotos', 'photos'], ['hAudio', 'audio'], ['hStories', 'stories'], ['hDecisions', 'decisions'], ['hWishes', 'wishes'], ['hSharing', 'sharing']] as const;
 export function MemoriesScreen() {
-  const { t } = useI18n();
-  return <HerPage title={t('hMemories')} description={t('hMemoryLead')}>
-    {collections.map(([label, filter]) => <Destination key={filter} label={label} href={`/her/memories/collection?filter=${filter}`} icon={filter === 'audio' ? 'mic' : filter === 'photos' ? 'image' : 'book-open'} />)}
-  </HerPage>;
+  return <CollectionScreen hub />;
 }
-export function CollectionScreen() {
+export function CollectionScreen({ hub = false }: { hub?: boolean }) {
   const { filter = 'all' } = useLocalSearchParams<{ filter?: string }>();
   const { data } = useData(); const { t, lang } = useI18n();
   const items = data?.items.filter(i => filter === 'photos' ? itemPhotos(i).length : filter === 'audio' ? i.audioUrl : filter === 'stories' ? i.story || i.storyJa : filter === 'wishes' ? i.wish : true) ?? [];
-  return <HerPage back title={t(collections.find(c => c[1] === filter)?.[0] ?? 'hBelongings')}
+  const category = filter === 'wishes' ? 'decisions' : filter;
+  return <HerPage back={!hub} title={t(hub ? 'hMemories' : collections.find(c => c[1] === filter)?.[0] ?? 'hBelongings')}
     description={t(filter === 'wishes' ? 'hWishesNote' : filter === 'sharing' ? 'hSharingBody' : 'hMemoryLead')}>
+    <SectionTabs label={t('hMemories')} value={category} onChange={value => router.setParams({ filter: value })}
+      options={collections.filter(([, key]) => key !== 'wishes').map(([label, key]) => [key, t(key === 'decisions' ? 'uxDecisionsWishes' : label)] as const)} />
+    {category === 'decisions' ? <SectionTabs label={t('uxDecisionsWishes')} value={filter}
+      options={[["decisions", t('hDecisions')], ["wishes", t('hWishes')]]} onChange={value => router.setParams({ filter: value })} /> : null}
     {filter === 'wishes' && data ? <><AppText variant="section">{t('herWishHouse')}</AppText><AppText>{t(`hwish_${data.home.future.wish}` as Key)}</AppText>
       {data.home.future.words ? <AppText>{pick(lang, data.home.future.words, data.home.future.wordsJa)}</AppText> : null}
       {data.home.future.familyNotes.map((n, index) => <AppText key={index}>{n.by}: {pick(lang, n.note, n.noteJa)}</AppText>)}</> : null}
-    {items.length ? items.map(i => <View key={i.id} style={{ gap: 12, paddingVertical: 12 }}>
+    {items.length ? items.map(i => <Card key={i.id}>
+      {itemPhotos(i)[0] ? <Image source={{ uri: fileUrl(itemPhotos(i)[0].url) }} accessibilityLabel={pick(lang, i.name, i.nameJa)} style={{ width: '100%', aspectRatio: 2, borderRadius: radii.control }} /> : null}
+      {itemPhotos(i)[0] && itemPhotos(i)[0].kind !== 'photo' ? <AppText variant="caption">{t(itemPhotos(i)[0].kind === 'illustration' ? 'photoIllustrationBadge' : 'photoOldBadge')}</AppText> : null}
       <AppText variant="section">{pick(lang, i.name, i.nameJa)}</AppText><DecisionChip decision={i.decision} />
       {i.wish ? <AppText>{t('wishFrom', { name: i.wish.from })}: {t(`wish_${i.wish.kind.replace(/-/g, '_')}` as Key)}{i.wish.note ? ` · ${i.wish.note}` : ''}</AppText> : null}
       {filter === 'sharing' ? <AppText>{i.share ? t('sharedOn', { date: formatDate(i.share.at, lang) }) : t('notShared')}</AppText> : null}
       <Button label={t('hOpenItem', { name: pick(lang, i.name, i.nameJa) })} kind="secondary" onPress={() => router.push(`/her/item/${i.id}`)} />
-    </View>) : <EmptyState title={t('hNoMemories')} message={t('hNoMemoriesBody')} action={{ label: t('hBelongings'), onPress: () => router.replace('/her/memories/collection?filter=all') }} />}
+    </Card>) : <EmptyState title={t('hNoMemories')} message={t('hNoMemoriesBody')} action={{ label: t('hBelongings'), onPress: () => router.replace('/her/memories/collection?filter=all') }} />}
   </HerPage>;
 }
 export function HouseInformationScreen() {
@@ -191,15 +195,22 @@ export function SettingsScreen() {
     try { await api.consent(data!.home.id, value); await refresh(); showToast(t('saved')); } catch { setError(true); } finally { setBusy(false); }
   };
   return <HerPage back title={t('hSettings')}>
-    <AppText variant="section">{t('hPreferences')}</AppText><Button label={t('appSettingsTitle')} icon="settings" kind="secondary" onPress={() => setSettings(true)} /><LangToggle />
-    <AppSettings visible={settings} onClose={() => setSettings(false)} />
-    <AppText variant="section">{t('hPrivacy')}</AppText>
-    <Destination label="cProfile" href="/her/profile" icon="user" />
-    <Destination label="cPrivacy" href="/her/privacy" icon="shield" />
-    <AccessibleSwitch label={t('hRecording')} description={t('hRecordingBody')} value={Boolean(data?.home.consent.recording)} disabled={busy} onValueChange={consent} />
+    <TaskWorkspace tasks={[
+      { id: 'reading', label: t('uxReadingAppearance'), icon: 'type', content: <Button label={t('appSettingsTitle')} icon="settings" kind="secondary" onPress={() => setSettings(true)} /> },
+      { id: 'language', label: t('uxLanguage'), icon: 'globe', content: <LangToggle /> },
+      { id: 'profile', label: t('cProfile'), icon: 'user', content: <Destination label="cProfile" href="/her/profile" icon="user" /> },
+      { id: 'privacy', label: t('hPrivacy'), icon: 'shield', content: <>
+        <Destination label="cPrivacy" href="/her/privacy" icon="shield" />
+        <Destination label="sPermissions" href="/her/friends/permissions" icon="users" />
+        <AppText variant="caption">{t('hPrivacyNote')}</AppText>
+      </> },
+      { id: 'recording', label: t('uxRecordingSharing'), icon: 'mic', content: <>
+        <AccessibleSwitch label={t('hRecording')} description={t('hRecordingBody')} value={Boolean(data?.home.consent.recording)} disabled={busy} onValueChange={consent} />
+        <Destination label="hSharing" href="/her/memories/collection?filter=sharing" icon="eye" />
+      </> },
+      { id: 'general', label: t('uxGeneral'), icon: 'settings', content: <Button label={t('switchRole')} kind="secondary" onPress={() => router.replace('/')} /> },
+    ]} />
     {error ? <StatusBanner tone="error" title={t('hSaveError')} /> : null}
-    <Destination label="hSharing" href="/her/memories/collection?filter=sharing" icon="eye" />
-    <AppText variant="caption">{t('hPrivacyNote')}</AppText>
-    <Button label={t('switchRole')} kind="secondary" onPress={() => router.replace('/')} />
+    <AppSettings visible={settings} onClose={() => setSettings(false)} />
   </HerPage>;
 }

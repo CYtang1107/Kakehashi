@@ -1,10 +1,9 @@
 import { AppText as Text } from '../../src/design-system/AppText';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, Share, TextInput, View, type TextInputProps } from 'react-native';
-import { router } from 'expo-router';
+import { Platform, Pressable, Share, TextInput, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { pick, type PublicStory } from '@kakehashi/shared';
-import { Button, Card, ConfirmationDialog, Field, StatusBanner, Columns, Screen, formatDate, useWide } from '../../src/ui';
+import { Button, ConfirmationDialog, Field, StatusBanner, Screen, formatDate, Fold } from '../../src/ui';
 import { StoryPlayer } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { PhotoCarousel } from '../../src/PhotoCarousel';
@@ -12,13 +11,13 @@ import { spriteFor } from '../../src/pixelArt';
 import { StoryGlobe } from '../../src/StoryGlobe';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
-import { colors, elevation, fonts, radii, spacing, type } from '../../src/theme';
+import { elevation, fonts, radii, spacing, type } from '../../src/theme';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
 export default function StoriesFeed() {
   const { t } = useI18n();
-  return <Screen requiresHome={false} wide fit globalNav="home"
+  return <Screen requiresHome={false} globalNav="home"
     header={{ eyebrow: t('feedEyebrow'), title: t('feedTitle'), sub: t('feedLead') }}>
     <StoriesFeedContent />
   </Screen>;
@@ -27,8 +26,7 @@ export default function StoriesFeed() {
 export function StoriesFeedContent() {
   const { palette: colors } = useAccessibilityPreferences();
   const { t, lang } = useI18n();
-  // On a laptop the page fits the window: the globe fills the left, the posts scroll on the right.
-  const fit = useWide();
+  const fit = false;
   const { reducedMotion } = useAccessibilityPreferences();
   const [stories, setStories] = useState<PublicStory[] | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -45,11 +43,11 @@ export function StoriesFeedContent() {
     <>
       {error ? <StatusBanner tone="error" title={error} action={{ label: t('retry'), onPress: load }} /> : null}
       {!stories && !error ? <Text>{t('rNoStories')}</Text> : null}
-      <Columns fill
-        left={stories?.length ? (
+      {stories?.length ? <Fold title={t('uxExploreGlobe')} icon="globe" summary={t('globeHint')}>
         <View style={{ gap: 8, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
           <StoryGlobe fill={fit} stories={stories} selected={selected} onSelect={setSelected} labels={{ zoomIn: t('globeZoomIn'), zoomOut: t('globeZoomOut'), japan: t('globeJapan') }} />
           <Text style={[type.caption, { textAlign: 'center' }]}>{t('globeHint')}</Text>
+          <Fold title={t('uxStoryDirectory')} icon="list">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {stories.map((st) => (
               <Pressable key={st.id} accessibilityRole="button" onPress={() => setSelected(st.id)}
@@ -60,15 +58,15 @@ export function StoriesFeedContent() {
               </Pressable>
             ))}
           </View>
+          </Fold>
           <Text style={type.caption}>{t('globeLegend')}</Text>
         </View>
-      ) : null}
-        right={<>
+      </Fold> : null}
+        <>
           {stories?.map((s) => <StoryPost key={s.id} story={s} />)}
           {stories && stories.length === 0 ? <Text style={type.body}>{t('feedEmpty')}</Text> : null}
           <Text style={type.caption}>{t('feedRules')}</Text>
-        </>}
-      />
+        </>
 
       {/* A story opened from the globe, with where it went */}
       <ConfirmationDialog visible={!!selected} title={t('feedTitle')} onCancel={() => { setSelected(null); load(); }}>

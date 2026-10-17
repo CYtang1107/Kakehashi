@@ -5,11 +5,11 @@ import { Image, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import type { Estimate } from '@kakehashi/shared';
-import { StatusBanner, Button, Card, Columns, Field, Screen } from '../../src/ui';
+import { StatusBanner, Button, Card, Field, Fold, Screen } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
-import { colors, fonts, type, yen } from '../../src/theme';
+import { fonts, type, yen } from '../../src/theme';
 
 type Photo = { uri: string; base64: string; mime: string };
 
@@ -69,14 +69,13 @@ export default function AddItem() {
   };
 
   return (
-    <Screen wide fit header={{ title: t('addTitle') }}>
-      <Columns fill scrollLeft
-        left={<>
+    <Screen header={{ title: t('addTitle') }}>
+
       <Card>
         <Text variant="bodyBold">{t('rMemoryFirst')}</Text>
         {photo ? <Image source={{ uri: photo.uri }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 12 }} resizeMode="cover" accessibilityLabel={t('rItemPhoto')} /> : null}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" kind={photo ? 'secondary' : 'primary'} onPress={() => pick(true)} /></View>
+          <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" kind="secondary" onPress={() => pick(true)} /></View>
           <View style={{ flex: 1 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => pick(false)} /></View>
         </View>
         <Field label={t('itemName')} value={name} onChangeText={setName} placeholder={t('rItemExample')} />
@@ -90,8 +89,8 @@ export default function AddItem() {
           ))}
         </View>
       </Card>
-        </>}
-        right={<>
+
+      <Fold title={t('whatWorth')} icon="tag" summary={t('worthHint')}>
       <Card>
         <Text style={type.section}>{t('whatWorth')}</Text>
         <Text style={type.caption}>{t('worthHint')}</Text>
@@ -106,10 +105,10 @@ export default function AddItem() {
         ) : null}
         <Button label={busy === 'estimate' ? t('estimating') : t('getEstimate')} kind="secondary" icon="zap" busy={busy === 'estimate'} disabled={busy !== null || (!photo && !name.trim())} onPress={getEstimate} />
       </Card>
+      </Fold>
       <Button label={t('addItem')} icon="plus" busy={busy === 'save'} disabled={busy !== null || !name.trim()} onPress={save} />
       {error ? <StatusBanner tone="error" title={error} /> : null}
-        </>}
-      />
+
     </Screen>
   );
 }

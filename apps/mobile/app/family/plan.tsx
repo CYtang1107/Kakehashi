@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import type { Home } from '@kakehashi/shared';
-import { Button, Card, Columns, Pill, Screen, StatusBanner, formatDate } from '../../src/ui';
+import { Button, Card, Pill, Screen, StatusBanner, formatDate, TaskWorkspace } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
-import { colors, fonts, type, yen } from '../../src/theme';
+import { fonts, type, yen } from '../../src/theme';
 
 const PROCEEDS: Home['proceedsChoice'][] = ['keep', 'grandchild', 'donate'];
 
@@ -44,10 +44,15 @@ export default function PlanScreen() {
   };
 
   return (
-    <Screen wide fit header={{ title: t('plansTitle'), sub: t('plansLead') }}>
-      <Columns fill scrollLeft
-        left={<>
+    <Screen header={{ title: t('plansTitle'), sub: t('plansLead') }}>
       <StatusBanner title={t('rDemo')} message={t(data.services.payments === 'stripe-test' ? 'rPaymentTest' : 'rPaymentDemo')} />
+      <Card>
+        <Text variant="eyebrow">{t('currentPlan')}</Text>
+        <Text variant="section">{data.home.planId ? pickPlanName(data.plans.find(p => p.id === data.home.planId), lang) : t('plansTitle')}</Text>
+        {data.plans.find(p => p.id === data.home.planId) ? <Text variant="value">{yen(data.plans.find(p => p.id === data.home.planId)!.priceJpy)}<Text variant="caption"> {t('perMonth')}</Text></Text> : null}
+      </Card>
+      <TaskWorkspace tasks={[
+        { id: 'plans', label: t('uxAvailablePlans'), icon: 'layers', content: <>
       {data.plans.map((p) => {
         const active = p.id === planId;
         return (
@@ -63,8 +68,9 @@ export default function PlanScreen() {
           </Pressable>
         );
       })}
-        </>}
-        right={<>
+        </> },
+        { id: 'payment', label: t('uxPayment'), icon: 'credit-card', content: <>
+          <Text variant="bodyBold">{pickPlanName(plan, lang)}</Text>
       <Card>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
           <Text style={[type.bodyBold, { flex: 1 }]}>{t('youPay')}</Text>
@@ -72,9 +78,22 @@ export default function PlanScreen() {
         </View>
         <Button label={t('payNow')} icon="credit-card" busy={busy} onPress={pay} />
         <Text style={type.caption}>{data.services.payments === 'stripe-test' ? t('stripeTest') : t('demoMode')}</Text>
-        {error ? <StatusBanner tone="error" title={error} /> : null}
       </Card>
 
+        </> },
+        { id: 'history', label: t('uxPaymentHistory'), icon: 'clock', content: <>
+      <Text style={type.section}>{t('payments')}</Text>
+      {data.home.payments.length === 0 ? <Text style={type.caption}>{t('noPayments')}</Text> : [...data.home.payments].sort((a, b) => b.at.localeCompare(a.at)).map((p) => (
+        <Card key={p.id}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={[type.body, { flex: 1 }]}>{formatDate(p.at, lang)} · {t(p.mode === 'demo' ? 'demoMode' : 'stripeTest')}</Text>
+            <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'] }]}>{yen(p.amountJpy)}</Text>
+          </View>
+          <Text style={type.caption}>{t(p.status === 'paid' ? 'paid' : 'payPending')}</Text>
+        </Card>
+      ))}
+        </> },
+        { id: 'proceeds', label: t('proceedsChoice'), icon: 'heart', content: <>
       <Card style={{ backgroundColor: colors.mossTint, borderColor: 'transparent' }}>
         <Text style={type.section}>{t('proceedsTitle')}</Text>
         <Text style={type.body}>{t('proceedsBody', { amount: yen(data.seniorProceedsJpy) })}</Text>
@@ -92,18 +111,12 @@ export default function PlanScreen() {
         </View>
       </Card>
 
-      <Text style={type.section}>{t('payments')}</Text>
-      {data.home.payments.length === 0 ? <Text style={type.caption}>{t('noPayments')}</Text> : data.home.payments.map((p) => (
-        <Card key={p.id}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={[type.body, { flex: 1 }]}>{formatDate(p.at, lang)} · {t(p.mode === 'demo' ? 'demoMode' : 'stripeTest')}</Text>
-            <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'] }]}>{yen(p.amountJpy)}</Text>
-          </View>
-          <Text style={type.caption}>{t('paid')}</Text>
-        </Card>
-      ))}
-        </>}
-      />
+        </> },
+      ]} />
+      {error ? <StatusBanner tone="error" title={error} /> : null}
+
     </Screen>
   );
 }
+
+function pickPlanName(plan: { name: string; nameJa: string } | undefined, lang: string) { return plan ? lang === 'ja' ? plan.nameJa : plan.name : ''; }

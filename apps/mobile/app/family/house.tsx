@@ -3,10 +3,10 @@ import { AppText as Text } from '../../src/design-system/AppText';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { Destination } from '../../src/her/Screens';
 import React, { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
-import { Button, Card, Columns, DecisionChip, Glyph, Screen, useWide } from '../../src/ui';
+import { Button, Card, DecisionChip, Screen, ConfirmationDialog, Fold, TaskWorkspace } from '../../src/ui';
 import { FloorPlan } from '../../src/FloorPlan';
 import { NearbyList, NeighbourhoodMap } from '../../src/NeighbourhoodMap';
 import { Home3D, eveningState, hasStory, memoryColors, type ColorBy, type Evening } from '../../src/Home3D';
@@ -21,7 +21,7 @@ import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
-import { colors, getDecisionColors, fonts, getRoomColors, type } from '../../src/theme';
+import { getDecisionColors, fonts, getRoomColors, type } from '../../src/theme';
 
 type View3 = '3d' | '2d' | 'memory' | 'map';
 const TOUR_MS = 7000;
@@ -41,7 +41,7 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
   const [colorBy, setColorBy] = useState<ColorBy>('none');
   const [evening, setEvening] = useState<Evening>('off');
   const [focus, setFocus] = useState<{ id: string; n: number } | undefined>();
-  const [section, setSection] = useState<'items' | 'safer' | 'future' | 'photos'>('items');
+  const [menu, setMenu] = useState<'view' | 'options' | null>(null);
 
   const memories = data ? data.items.filter((i) => i.story || i.audioUrl) : [];
   const memory = view === 'memory';
@@ -79,17 +79,17 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
   const current = data?.items.find((i) => i.id === selected);
   const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
-  // On a laptop the whole page fits the window: the stage fills the height, the side panel scrolls on its own.
-  const isWide = useWide();
-  const fit = isWide && !olderAdult;
+  // Large scenes have a bounded stage; household details share the page's scroll area.
+  const { width, height } = useWindowDimensions();
+  const fit = width >= 760;
   const colourCard = (
-    <Card style={{ gap: 10 }}>
+    <View style={{ gap: 24 }}> 
       <Segment label={t('colourBy')} value={colorBy} options={(['none', 'decision', 'stories', 'fixes'] as const).map((v) => [v, t(`colour_${v}`)])}
         onChange={(v) => { setColorBy(v); setEvening('off'); }} />
       <Segment label={t('evening')} value={evening} options={(['off', 'today', 'plan'] as const).map((v) => [v, t(`evening_${v}`)])}
         onChange={(v) => { setEvening(v); setColorBy('none'); }} />
       <ViewLegend colorBy={colorBy} evening={evening} />
-    </Card>
+    </View>
   );
   const tourButtons = (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -105,21 +105,14 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
   } : undefined;
 
   return (
-    <Frame back={olderAdult} wide fit={!olderAdult} header={header}>
-      {data ? (
-        <Columns fill={!olderAdult}
-          left={<>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, backgroundColor: colors.sheet, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: colors.line }}>
-            {(['3d', '2d', 'memory', 'map'] as const).map((v) => (
-              <Pressable key={v} accessibilityRole="button" accessibilityState={{ selected: view === v }} aria-pressed={view === v} onPress={() => pickView(v)}
-                style={{ flexGrow: 1, flexBasis: '42%', minHeight: 56, padding: 12, borderRadius: 9, alignItems: 'center', backgroundColor: view === v ? (v === 'memory' ? memoryColors.sky : colors.aiTint) : 'transparent' }}>
-                <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: view === v ? (v === 'memory' ? memoryColors.lantern : colors.ai) : colors.inkSoft }}>{labels[v]}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {view === 'map' ? <LiveOutingBanner /> : null}
-          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line, ...(fit ? { flex: 1, minHeight: 0 } : null) }}>
+    <Frame back={olderAdult} wide header={header}>
+      {data ? <>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+          <Button label={`${t('uxChangeView')} · ${labels[view]}`} icon="layers" kind="secondary" onPress={() => setMenu('view')} />
+          {view === '3d' ? <Button label={t('uxViewOptions')} icon="sliders" kind="tertiary" onPress={() => setMenu('options')} /> : null}
+        </View>
+        {view === 'map' ? <LiveOutingBanner /> : null}
+          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line, ...(fit ? { height: Math.min(640, height * 0.62) } : null) }}>
             {view === 'map'
               ? <NeighbourhoodMap homeId={data.home.id} focus={focus} fill={fit} />
               : view === '2d'
@@ -138,32 +131,21 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
               </View>
             ) : null}
           </Card>
-          {/* On a laptop these sit with the stage so they never need scrolling to; on a phone, where they always were. */}
-          {view === '3d' && !fit ? colourCard : null}
-          {memory && fit ? tourButtons : null}
-          </>}
-          right={<>
-          {view === '3d' && fit ? colourCard : null}
-          {view === 'map' ? (
-            <NearbyList onFocus={(id) => setFocus((f) => ({ id, n: (f?.n ?? 0) + 1 }))} />
-          ) : memory ? (
-            <>
-              {current ? <MemoryCard item={current} rooms={data.home.rooms} /> : null}
-              {!fit ? tourButtons : null}
-              <Text style={type.caption}>{t('memoryPrivacy')}</Text>
-            </>
-          ) : (
-            <>
-              <Segment label="" value={section} onChange={setSection}
-                options={[['items', t('items')], ['safer', t('saferShort')], ['future', t('futureShort')], ['photos', t('photosShort')]]} />
-              {section === 'safer' ? <SaferHomeCard mode={olderAdult ? 'her' : 'family'} /> : null}
-              {section === 'future' ? olderAdult ? <Destination label="hHouseInfo" href="/her/house-information" /> : <HouseFutureCard mode="family" /> : null}
-              {section === 'photos' ? <RoomGallery /> : null}
-              {section === 'items' ? data.items.map((it) => {
+
+        {view === 'map' ? <NearbyList onFocus={id => setFocus(f => ({ id, n: (f?.n ?? 0) + 1 }))} />
+          : memory ? <>
+            {tourButtons}
+            {current ? <MemoryCard item={current} rooms={data.home.rooms} /> : null}
+            <Text style={type.caption}>{t('memoryPrivacy')}</Text>
+          </> : null}
+        <Fold title={t('uxHomeDetails')} icon="home" summary={t('items')}>
+          <TaskWorkspace tasks={[
+            { id: 'items', label: t('items'), icon: 'box', content: <>
+              {data.items.map((it) => {
                 const room = data.home.rooms.find((r) => r.id === it.roomId);
                 return (
                   <Pressable key={it.id} accessibilityRole="button" onPress={() => onSelect(it.id)}
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.sheet }}>
+                    style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, minHeight: 64, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: colors.separator, backgroundColor: colors.sheet }}>
                     <PixelIcon sprite={spriteFor(it)} />
                     <View style={{ flex: 1, gap: 2 }}>
                       <Text style={type.bodyBold}>{lang === 'ja' && it.nameJa ? it.nameJa : it.name}</Text>
@@ -172,12 +154,18 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
                     <DecisionChip decision={it.decision} />
                   </Pressable>
                 );
-              }) : null}
-            </>
-          )}
-          </>}
-        />
-      ) : null}
+              })}
+            </> },
+            { id: 'safety', label: t('saferShort'), icon: 'shield', content: <SaferHomeCard mode={olderAdult ? 'her' : 'family'} /> },
+            { id: 'future', label: t('futureShort'), icon: 'home', content: olderAdult ? <Destination label="hHouseInfo" href="/her/house-information" /> : <HouseFutureCard mode="family" /> },
+            { id: 'photos', label: t('roomPhotosTitle'), icon: 'image', content: <RoomGallery /> },
+          ]} />
+        </Fold>
+        <ConfirmationDialog visible={menu !== null} title={t(menu === 'options' ? 'uxViewOptions' : 'uxChangeView')} onCancel={() => setMenu(null)}>
+          {menu === 'view' ? (['3d', '2d', 'memory', 'map'] as const).map(v => <Button key={v} label={labels[v]} kind="secondary" selected={view === v}
+            onPress={() => { pickView(v); setMenu(null); }} />) : colourCard}
+        </ConfirmationDialog>
+      </> : null}
     </Frame>
   );
 }

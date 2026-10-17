@@ -20,6 +20,7 @@ export { Button, PrimaryButton, SecondaryButton, TertiaryButton, DestructiveButt
 export { Card, UpcomingVisitCard, MemoryCard, FriendRecommendationCard, HomeAssistanceCard, DeviceControlCard, ReminderCard, SafetyCard } from './design-system/Cards';
 export { StatusBanner, ToastFeedback, EmptyState } from './design-system/Feedback';
 export { ConfirmationDialog } from './design-system/ConfirmationDialog';
+export { TaskWorkspace, TaskPanel, SectionTabs } from './design-system/TaskWorkspace';
 export { ScreenFrame } from './design-system/ScreenFrame';
 
 export function LangToggle() {

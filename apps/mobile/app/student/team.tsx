@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { READINESS, pick, type ReadinessStep, type Student } from '@kakehashi/shared';
-import { StatusBanner, Avatar, Card, Columns, Screen, formatDate } from '../../src/ui';
+import { StatusBanner, Avatar, Card, Screen, SectionTabs, formatDate } from '../../src/ui';
 import { StudentBadges } from '../../src/Community';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
-import { colors, type } from '../../src/theme';
+import { type } from '../../src/theme';
 
 // Coordinator view: every student passes each step before visiting a senior.
 export default function Team() {
@@ -18,6 +18,7 @@ export default function Team() {
   const { t, lang } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [studentId, setStudentId] = useState<string | null>(null);
   if (!data) return <Screen>{null}</Screen>;
 
   const toggle = async (s: Student, step: ReadinessStep) => {
@@ -41,6 +42,7 @@ export default function Team() {
               {s.role === 'trainee' ? <Text style={type.caption}>{t('traineeRole')}</Text> : null}
             </View>
           </View>
+          <Text variant="section">{t('uxReadiness', { done: READINESS.filter(step => s.passed[step]).length, total: READINESS.length })}</Text>
           <StudentBadges student={s} />
           {READINESS.map((step) => {
             const done = s.passed[step];
@@ -57,13 +59,12 @@ export default function Team() {
   );
 
   return (
-    <Screen wide fit header={{ title: t('teamTitle'), sub: t('teamLead') }}>
+    <Screen header={{ title: t('teamTitle'), sub: t('teamLead') }}>
       <StatusBanner title={t('rDemo')} message={t('rCoordinator')} />
       {error ? <StatusBanner tone="error" title={error} /> : null}
-      <Columns fill scrollLeft
-        left={data.home.students.map((s, i) => (i % 2 ? null : studentCard(s, i)))}
-        right={data.home.students.map((s, i) => (i % 2 ? studentCard(s, i) : null))}
-      />
+      <SectionTabs label={t('teamTitle')} value={studentId ?? data.home.students[0]?.id ?? ''}
+        options={data.home.students.map(s => [s.id, s.name] as const)} onChange={setStudentId} />
+      {data.home.students.map((s, i) => s.id === (studentId ?? data.home.students[0]?.id) ? studentCard(s, i) : null)}
     </Screen>
   );
 }

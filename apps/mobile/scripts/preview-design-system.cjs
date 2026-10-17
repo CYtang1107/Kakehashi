@@ -150,7 +150,7 @@ http.createServer(async (request, response) => {
   }
   let file = path.resolve(dist, '.' + decodeURIComponent(url.pathname));
   if (!file.startsWith(dist + path.sep) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(dist, 'index.html');
-  const mime = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript', '.ttf': 'font/ttf', '.png': 'image/png', '.json': 'application/json' };
+  const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript', '.ttf': 'font/ttf', '.png': 'image/png', '.json': 'application/json' };
   response.writeHead(200, { 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' });
   fs.createReadStream(file).pipe(response);
 }).listen(4399, '127.0.0.1', () => console.log('Isolated UI fixture http://127.0.0.1:4399 (all writes are disposable memory only)'));

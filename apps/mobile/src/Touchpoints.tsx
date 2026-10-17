@@ -53,7 +53,7 @@ export function LetterCard({ mode }: { mode: 'family' | 'student' }) {
       <Text style={type.section}>{t('letterTitle')}</Text>
       <Text style={type.caption}>{t('letterLead')}</Text>
       {error ? <StatusBanner tone="error" title={error} /> : null}
-      {mode === 'family' && home.letters.length > 0 ? home.letters.map((l) => (
+      {mode === 'family' && home.letters.length > 0 ? [...home.letters].sort((a, b) => b.month.localeCompare(a.month)).map((l) => (
         <View key={l.id} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingVertical: 6 }}>
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={type.bodyBold}>{t('letterMonth', { month: monthLabel(l.month, lang) })}</Text>
@@ -105,7 +105,7 @@ export function CallsCard({ mode }: { mode: 'family' | 'student' }) {
   if (!data) return null;
   const { home } = data;
   const next = home.calls.find((c) => c.status === 'planned');
-  const done = home.calls.filter((c) => c.status === 'done');
+  const done = home.calls.filter((c) => c.status === 'done').sort((a, b) => b.date.localeCompare(a.date));
   const caller = next?.by ?? home.students[0].name;
 
   const log = async () => {

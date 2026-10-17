@@ -9,20 +9,20 @@ import { useAccessibilityPreferences } from './preferences';
 export type ButtonProps = {
   label: string; onPress: () => void; kind?: 'primary' | 'secondary' | 'tertiary' | 'danger';
   icon?: keyof typeof Feather.glyphMap; disabled?: boolean; busy?: boolean;
-  selected?: boolean; accessibilityLabel?: string; accessibilityHint?: string; style?: ViewStyle;
+  selected?: boolean; tabIndex?: 0 | -1; accessibilityRole?: 'button' | 'tab'; accessibilityLabel?: string; accessibilityHint?: string; style?: ViewStyle;
 };
 
 export function Button({ label, onPress, kind = 'primary', icon, disabled, busy, selected,
-  accessibilityLabel, accessibilityHint, style }: ButtonProps) {
+  accessibilityLabel, accessibilityHint, accessibilityRole = 'button', tabIndex, style }: ButtonProps) {
   const { palette, preferences } = useAccessibilityPreferences();
   const [focused, setFocused] = useState(false);
   const inactive = Boolean(disabled || busy);
   const primary = kind === 'primary';
   const foreground = disabled && !busy ? palette.disabledText : primary ? palette.onPrimary
     : kind === 'danger' ? palette.danger : selected || kind === 'tertiary' ? palette.ai : palette.ink;
-  return <Pressable testID="premium-button" accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label}
-    accessibilityHint={accessibilityHint} accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }} aria-disabled={inactive} aria-busy={Boolean(busy)} aria-pressed={selected}
-    disabled={inactive} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+  return <Pressable testID="premium-button" accessibilityRole={accessibilityRole} accessibilityLabel={accessibilityLabel ?? label}
+    accessibilityHint={accessibilityHint} accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }} aria-disabled={inactive} aria-busy={Boolean(busy)} aria-pressed={accessibilityRole === 'button' ? selected : undefined} aria-selected={accessibilityRole === 'tab' ? selected : undefined}
+    disabled={inactive} tabIndex={tabIndex} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
     style={({ pressed }) => [{ minHeight: primary ? control.primary : control.secondary, minWidth: control.minimum, maxWidth: '100%', flexShrink: 1,
       paddingHorizontal: kind === 'tertiary' ? spacing.lg : spacing.xl, paddingVertical: spacing.md, borderRadius: radii.control,
       flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center',

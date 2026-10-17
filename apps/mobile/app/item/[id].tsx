@@ -1,14 +1,14 @@
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { AppText as Text } from '../../src/design-system/AppText';
 import { Worth } from '../../src/ItemWorth';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ItemDetail } from '../../src/her/ItemDetail';
 import { useStoryDraft } from '../../src/useStoryDraft';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { CHOICES, WISHES, pick, type Decision, type Estimate, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
-import { StatusBanner, Button, Card, Columns, ConfirmationDialog, DecisionChip, Field, Fold, Glyph, Screen, formatDate } from '../../src/ui';
+import { CHOICES, WISHES, pick, type Decision, type HandoverStage, type Item, type WishKind } from '@kakehashi/shared';
+import { StatusBanner, Button, Card, Columns, ConfirmationDialog, DecisionChip, Field, Fold, Screen, formatDate } from '../../src/ui';
 import { StoryPlayer, StoryRecorder } from '../../src/Audio';
 import { PixelIcon } from '../../src/PixelIcon';
 import { spriteFor } from '../../src/pixelArt';
@@ -18,8 +18,8 @@ import { AddPhotoCard, PhotoCarousel } from '../../src/PhotoCarousel';
 import { TrackMap, isTrackable } from '../../src/TrackMap';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
-import { api, fileUrl } from '../../src/api';
-import { colors, getDecisionColors, fonts, type, yen } from '../../src/theme';
+import { api } from '../../src/api';
+import { getDecisionColors, fonts, type } from '../../src/theme';
 
 const wishKey = (k: WishKind) => `wish_${k.replace(/-/g, '_')}` as Key;
 const today = () => new Date().toISOString().slice(0, 10);
@@ -73,8 +73,8 @@ function LegacyItemScreen() {
   };
 
   return (
-    <Screen back wide fit header={header}>
-      <Columns fill scrollLeft
+    <Screen back wide header={header}>
+      <Columns stickyLeft
         left={<>
       <PhotoCarousel item={item} onMakePixel={student ? (photoId) => run('icon', () => api.setIcon(item.id, { photoId }), t('photoPixelMade')) : undefined} />
       {student && item.icon ? (
@@ -105,18 +105,28 @@ function LegacyItemScreen() {
           <Card>
             <Text style={type.section}>{t('decisionBySenior')}</Text>
             <Text>{t('hMemoryLead')}</Text>
+            <DecisionChip decision={item.decision} />
+            <Fold title={t('hReviewDecision')} icon="check-circle">
             <ChoiceGrid value={item.decision} disabled={busy !== null} onPick={d => d === 'open' ? run('decision', () => api.update(item.id, { decision: d }), t('saved')) : setDecision(d)} />
+            </Fold>
             {held ? <Text style={[type.caption, { color: colors.moss }]}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text> : null}
           </Card>
-          <AddPhotoCard item={item} />
+          <Fold title={t('uxAddMemory')} icon="plus-circle">
+          <Fold title={t('hPhotos')} icon="image"><AddPhotoCard item={item} /></Fold>
+          <Fold title={t('hStories')} icon="edit-2">
           <Card>
             <Text style={type.section}>{t('storyTag')}</Text>
             <Field label={t('storyInHerWords')} multiline editable={busy === null} value={draft.value} onChangeText={setValue} />
             {draft.language !== lang ? <Text variant="caption">{t('hDraftLanguage', { language: draft.language === 'ja' ? '日本語' : 'English' })}</Text> : null}
             <Button label={t('saveStory')} kind="secondary" busy={busy === 'story'} disabled={!dirty || busy !== null} onPress={() => run('story', () => api.update(item.id, { story: draft.value }), t('saved')).then(ok => { if (ok) markSaved(); })} />
+            <Fold title={t('hAudio')} icon="mic">
             <StoryRecorder item={item} consent={data.home.consent.recording} onSaved={(it) => { replaceItem(it); showToast(t('recordingSaved')); }} />
+            </Fold>
           </Card>
+          </Fold>
+          </Fold>
           {item.decision === 'pass' || item.decision === 'recycle' ? (
+            <Fold title={t('logHandover')} icon="truck">
             <Card>
               <Text style={type.section}>{t('logHandover')} · {t(`stage_${nextStage}`)}</Text>
               {held ? (
@@ -133,6 +143,7 @@ function LegacyItemScreen() {
                 </>
               )}
             </Card>
+            </Fold>
           ) : null}
         </>
       ) : (
@@ -144,6 +155,7 @@ function LegacyItemScreen() {
             </View>
             {held ? <Text style={[type.caption, { color: colors.moss }]}>{t('heldUntil', { date: formatDate(item.holdUntil!, lang) })}</Text> : null}
           </View>
+          <Fold title={t('yourWish')} icon="heart" summary={item.wish ? t(wishKey(item.wish.kind)) : t('wishHint')}>
           <Card flat>
             <Text style={type.section}>{t('yourWish')}</Text>
             <Text style={type.caption}>{t('wishHint')}</Text>
@@ -160,9 +172,11 @@ function LegacyItemScreen() {
               })}
             </View>
           </Card>
+          </Fold>
         </>
       )}
 
+      <Fold title={t('uxDetails')} icon="info">
       <Card>
         <Text style={type.section}>{isTrackable(item) ? t('whereNow') : t('journey')}</Text>
         {isTrackable(item) ? <TrackMap item={item} height={180} /> : null}
@@ -170,12 +184,13 @@ function LegacyItemScreen() {
           ? <Fold title={t('everyStep', { n: item.journey.length })} icon="list"><Journey steps={item.journey} /></Fold>
           : <Journey steps={item.journey} />}
       </Card>
-      {student ? <ShareCard item={item} mode="student" /> : (
+      <Worth item={item} />
+      </Fold>
+      {student ? item.share ? <ShareCard item={item} mode="student" /> : <Fold title={t('shareTitle')} icon="globe" summary={t('notSharedShort')}><ShareCard item={item} mode="student" /></Fold> : (
         <Fold title={t('shareTitle')} icon="globe" summary={item.share ? t('sharedOn', { date: formatDate(item.share.at, lang) }) : t('notSharedShort')}>
           <ShareCard item={item} mode="family" />
         </Fold>
       )}
-      <Worth item={item} />
         </>}
       />
       {error ? <StatusBanner tone="error" title={error} /> : null}

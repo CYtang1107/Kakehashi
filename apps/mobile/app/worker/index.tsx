@@ -5,12 +5,12 @@ import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { COMMISSION, WORKER_CHECKS, isCleared, pick, type JobListing, type Worker } from '@kakehashi/shared';
-import { StatusBanner, Button, Card, Columns, Fold, Pill, Screen, formatDate } from '../../src/ui';
+import { StatusBanner, Button, Card, Fold, Pill, Screen, formatDate, TaskWorkspace } from '../../src/ui';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { workerName } from '../../src/Services';
-import { colors, fonts, type, yen } from '../../src/theme';
+import { fonts, type, yen } from '../../src/theme';
 
 type Board = { open: JobListing[]; mine: (JobListing & { status: string; feedback?: string })[]; earned: number };
 
@@ -46,15 +46,18 @@ export default function HelperBoard() {
   };
 
   return (
-    <Screen wide fit bottomNav={[
+    <Screen bottomNav={[
       { id: 'jobs', label: t('helperTitle'), icon: 'briefcase', active: true, onPress: () => undefined },
       { id: 'settings', label: t('hSettings'), icon: 'settings', onPress: () => router.navigate('/settings') },
     ]}
       header={{ title: t('helperTitle'), sub: t('helperLead', { pct: Math.round(COMMISSION * 100) }) }}>
-      <Columns fill scrollLeft
-        left={<>
-      <Text variant="caption">{t('rHelperDemo')}</Text>
-
+      <StatusBanner title={t('uxDemoIdentity')} message={t('rHelperDemo')} />
+      {worker ? <Card>
+        <Text variant="section">{workerName(worker, lang)}</Text>
+        <Text variant="caption">{pick(lang, worker.from, worker.fromJa)}</Text>
+        <Pill label={t(isCleared(worker) ? 'checksDone' : 'checksMissing')} />
+      </Card> : null}
+      <Fold key={worker?.id ?? 'choose'} title={t('helperWho')} icon="users" open={!worker}>
       {/* Demo sign-in: pick which helper you are */}
       <View style={{ gap: 8 }}>
         <Text style={type.eyebrow}>{t('helperWho')}</Text>
@@ -69,24 +72,10 @@ export default function HelperBoard() {
         </View>
       </View>
 
-      <Fold title={t('helperRulesTitle')} icon="book-open" summary={t('helperRulesSummary', { pct: Math.round(COMMISSION * 100) })} open={!me}>
-        <Card tint>
-          <Text style={type.section}>{t('helperRulesTitle')}</Text>
-          {(['rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6'] as const).map((r, i) => (
-            <View key={r} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-              <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ai, width: 16 }}>{i + 1}</Text>
-              <Text style={[type.body, { flex: 1 }]}>{t(`helperRule${i + 1}` as Key, { pct: Math.round(COMMISSION * 100) })}</Text>
-            </View>
-          ))}
-        </Card>
       </Fold>
-
-      {worker ? <Checks worker={worker} /> : null}
       {error ? <StatusBanner tone="error" title={error} action={me ? { label: t('retry'), onPress: () => load(me) } : undefined} /> : null}
-        </>}
-        right={<>
-      {worker && board ? (
-        <>
+      {worker && board ? <TaskWorkspace key={worker.id} tabs defaultTask="available" tasks={[
+        { id: 'available', label: t('openJobs', { n: board.open.length }), content: <>
           <Text style={type.section}>{t('openJobs', { n: board.open.length })}</Text>
           {board.open.length === 0 ? <Text style={type.caption}>{t('noOpenJobs')}</Text> : null}
           {board.open.map((j) => (
@@ -105,6 +94,8 @@ export default function HelperBoard() {
             </Card>
           ))}
 
+        </> },
+        { id: 'mine', label: t('myJobs'), content: <>
           <Text style={type.section}>{t('myJobs')}</Text>
           {board.mine.length === 0 ? <Text style={type.caption}>{t('noMyJobs')}</Text> : null}
           {board.mine.map((j) => (
@@ -118,17 +109,31 @@ export default function HelperBoard() {
               <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'] }]}>{yen(j.youReceiveJpy)}</Text>
             </View>
           ))}
-          <Text style={type.body}>{t('earned', { amount: yen(board.earned) })}</Text>
-        </>
-      ) : !worker ? (
-        <Card tint style={{ alignItems: 'center', paddingVertical: 28 }}>
-          <Feather name="briefcase" size={28} color={colors.ai} />
-          <Text style={[type.bodyBold, { textAlign: 'center' }]}>{t('helperPickFirst')}</Text>
-          <Text style={[type.caption, { textAlign: 'center' }]}>{t('helperPickFirstHint')}</Text>
+        </> },
+        { id: 'status', label: t('uxStatusEarnings'), content: <>
+          <Card><Text variant="eyebrow">{t('uxStatusEarnings')}</Text><Text variant="value">{yen(board.earned)}</Text><Text>{t('earned', { amount: yen(board.earned) })}</Text><Text variant="caption">{t('rHelperDemo')}</Text></Card>
+          <Checks worker={worker} />
+        </> },
+      ]} /> : !worker ? <Card tint style={{ alignItems: 'center', paddingVertical: 28 }}>
+        <Feather name="briefcase" size={28} color={colors.ai} />
+        <Text style={[type.bodyBold, { textAlign: 'center' }]}>{t('helperPickFirst')}</Text>
+        <Text style={[type.caption, { textAlign: 'center' }]}>{t('helperPickFirstHint')}</Text>
+      </Card> : !error ? <Text>{t('dsLoading')}</Text> : null}
+
+      <Fold title={t('uxRulesClearance')} icon="book-open">
+
+        <Card tint>
+          <Text style={type.section}>{t('helperRulesTitle')}</Text>
+          {(['rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6'] as const).map((r, i) => (
+            <View key={r} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+              <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ai, width: 16 }}>{i + 1}</Text>
+              <Text style={[type.body, { flex: 1 }]}>{t(`helperRule${i + 1}` as Key, { pct: Math.round(COMMISSION * 100) })}</Text>
+            </View>
+          ))}
         </Card>
-      ) : !error ? <Text>{t('dsLoading')}</Text> : null}
-        </>}
-      />
+
+          {worker ? <Checks worker={worker} /> : null}
+      </Fold>
     </Screen>
   );
 }

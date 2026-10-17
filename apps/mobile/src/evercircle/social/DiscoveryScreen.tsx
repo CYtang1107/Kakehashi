@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { router } from 'expo-router';
-import { AppText, Button, Card, EmptyState, Fold, StatusBanner } from '../../ui';
+import { AppText, Button, Card, EmptyState, Fold, StatusBanner, TaskWorkspace } from '../../ui';
 import { useI18n, type Key } from '../../i18n';
 import { interestKey } from '../profile/PendingInterests';
 import { eligibility, personEligibility, simulateAgents, WEIGHTS, type Component } from './matching';
@@ -24,12 +24,7 @@ export function DiscoveryScreen({children}:{children?:React.ReactNode}){
     .filter(entry=>entry.result.eligible&&['none','declined'].includes(relationship(social.state,own,entry.person)))
     .sort((a,b)=>(b.result.eligible?b.result.score:0)-(a.result.eligible?a.result.score:0)||a.person.id.localeCompare(b.person.id)):[];
   const list=(values:string[],hobbies=false)=>values.map(id=>t(hobbies?interestKey(id):`cOption_${id}` as Key)).join(' / ');
-  return <SocialPage title="hFriends" description="sLead" back={false}>
-    <AppText variant="caption">{t('sLocalDemo')}</AppText>
-    <AppText>{t(own.matching?'sPermissionOn':'sPermissionOff')}</AppText>
-    {reason?<AppText>{t(`sEligibility_${reason}` as Key)}</AppText>:null}
-    <Button label={t('sPermissions')} icon="shield" kind={reason?'primary':'secondary'} onPress={()=>router.push('/her/friends/permissions')}/>
-    {connections.length?<View style={{gap:16}}><AppText variant="section">{t('sConnections')}</AppText>{connections.map(person=>{
+  const connectionCards = (people: typeof connections) => people.map(person=>{
       const status=relationship(social.state,own,person),name=person.shared.identity?displayPerson(person,lang):t('sPrivateMember');
       return <Card key={person.id}><AppText variant="section">{name}</AppText><AppText>{t(`sState_${status}` as Key)}</AppText>
         {status==='received'?<><Button label={t('sAccept')} accessibilityLabel={`${t('sAccept')}: ${name}`} disabled={busy||!social.healthy||Boolean(eligibility(own,person))} onPress={()=>confirmation.request('accept',person.id)}/>
@@ -37,7 +32,20 @@ export function DiscoveryScreen({children}:{children?:React.ReactNode}){
         {status==='accepted'?<Button label={t('sOpenMessages')} accessibilityLabel={`${t('sOpenMessages')}: ${name}`} onPress={()=>router.push(`/her/friends/conversation/${person.id}`)}/>:null}
         <Button label={t('sBlock')} kind="secondary" disabled={busy} onPress={()=>confirmation.request('block',person.id)}/>
       </Card>;
-    })}</View>:null}
+    });
+  return <SocialPage title="hFriends" description="sLead" back={false}>
+    <AppText variant="caption">{t('sLocalDemo')}</AppText>
+    <AppText>{t(own.matching?'sPermissionOn':'sPermissionOff')}</AppText>
+    {reason?<AppText>{t(`sEligibility_${reason}` as Key)}</AppText>:null}
+    <Button label={t('sPermissions')} icon="shield" kind={reason?'primary':'secondary'} onPress={()=>router.push('/her/friends/permissions')}/>
+    <TaskWorkspace key={own.id} tabs defaultTask="friends" label={t('hFriends')} tasks={[
+      { id: 'friends', label: t('uxMyFriends'), content: <>
+        {connections.some(person => relationship(social.state, own, person) === 'accepted') ? connectionCards(connections.filter(person => relationship(social.state, own, person) === 'accepted')) : <EmptyState title={t('sNoConnections')} />}
+      </> },
+      { id: 'invitations', label: t('uxInvitations'), content: <>
+        {connections.some(person => relationship(social.state, own, person) !== 'accepted') ? connectionCards(connections.filter(person => relationship(social.state, own, person) !== 'accepted')) : <EmptyState title={t('sNoConnections')} />}
+      </> },
+      { id: 'meet', label: t('uxMeetPeople'), content: <>
     <View style={{gap:16}}><AppText variant="section">{t('sRecommendations')}</AppText>
       {!recommendations.length?<EmptyState title={t('sNoMatches')}/>:recommendations.slice(0,all?undefined:3).map(({person,result})=>{
         if(!result.eligible)return null;const candidate=result.candidate;
@@ -53,11 +61,18 @@ export function DiscoveryScreen({children}:{children?:React.ReactNode}){
       })}
       {!all&&recommendations.length>3?<Button label={t('sMorePeople')} kind="secondary" onPress={()=>setAll(true)}/>:null}
     </View>
-    <Button label={t('sSwitchDemo')} icon="users" kind="secondary" onPress={()=>router.push('/her/friends/demo')}/>
-    <Button label={t('sCommunities')} icon="coffee" kind="secondary" onPress={()=>router.push('/her/friends/communities')}/>
-    {own.id==='tanaka'?<Button label={t('cProfile')} kind="secondary" onPress={()=>router.push('/her/profile')}/>:null}
-    {!connections.length?<AppText variant="caption">{t('sNoConnections')}</AppText>:null}
+        <Button label={t('sCommunities')} icon="coffee" kind="secondary" onPress={()=>router.push('/her/friends/communities')}/>
+      </> },
+      { id: 'activities', label: t('uxConnections'), content: <>
     {own.id==='tanaka'?children:<StatusBanner title={t('sDemoWarning')}/>}
+      </> },
+    ]} />
+    <Fold title={t('uxOptions')} icon="sliders">
+      {own.id==='tanaka'?<Button label={t('cProfile')} kind="secondary" onPress={()=>router.push('/her/profile')}/>:null}
+      <Fold title={t('uxDemoTools')} icon="code"><AppText variant="caption">{t('sDemoWarning')}</AppText>
+        <Button label={t('sSwitchDemo')} icon="users" kind="secondary" onPress={()=>router.push('/her/friends/demo')}/>
+      </Fold>
+    </Fold>
     {confirmation.dialog}
   </SocialPage>;
 }
