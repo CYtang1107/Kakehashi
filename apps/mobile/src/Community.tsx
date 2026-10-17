@@ -153,8 +153,8 @@ export function RoomCapture({ roomId }: { roomId: string }) {
       <Text style={type.caption}>{t('roomCaptureLead')}</Text>
       <Thumbs photos={room.photos} />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
-        <View style={{ flex: 1 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => add(false)} /></View>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => add(false)} /></View>
       </View>
       {error ? <StatusBanner tone="error" title={error} /> : null}
     </Card>

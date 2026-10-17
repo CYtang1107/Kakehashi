@@ -116,9 +116,9 @@ export default function WalletScreen() {
               <Field label={t('goalTarget')} value={target} onChangeText={setTarget} keyboardType="number-pad" />
               <Field label={t('goalPct')} value={pct} onChangeText={setPct} keyboardType="number-pad" />
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                <View style={{ flex: 1 }}><Button label={t('goalSave')} icon="check" busy={busy === 'goal'} disabled={!goalName.trim() || !(Number(target) > 0)}
+                <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('goalSave')} icon="check" busy={busy === 'goal'} disabled={!goalName.trim() || !(Number(target) > 0)}
                   onPress={() => run('goal', () => api.setGoal(homeId, me, { name: goalName, targetJpy: Number(target), setAsidePct: Number(pct) }), t('saved')).then((ok) => { if (ok) setEditing(false); })} /></View>
-                {goal ? <View style={{ flex: 1 }}><Button label={t('goalRemove')} kind="secondary" disabled={busy !== null} onPress={() => run('goal', () => api.setGoal(homeId, me, { clear: true }), t('saved')).then(ok => { if (ok) setEditing(false); })} /></View> : null}
+                {goal ? <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('goalRemove')} kind="secondary" disabled={busy !== null} onPress={() => run('goal', () => api.setGoal(homeId, me, { clear: true }), t('saved')).then(ok => { if (ok) setEditing(false); })} /></View> : null}
               </View>
             </View>
           ) : (

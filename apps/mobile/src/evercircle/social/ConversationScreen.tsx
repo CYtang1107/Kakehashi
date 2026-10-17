@@ -1,16 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { AppText, Button, ConfirmationDialog, Field, Fold, StatusBanner } from '../../ui';
+import { AppText, Button, ConfirmationDialog, Fold, StatusBanner } from '../../ui';
 import { useI18n, type Key } from '../../i18n';
 import { useAccessibilityPreferences } from '../../design-system/preferences';
 import { canMessage, pairKey, relationship, type ReportReason } from './model';
 import { SocialPage, displayPerson, useSocialConfirmation } from './SocialPage';
 import { useSocial } from './store';
+import { MessageComposer } from '../../design-system/MessageComposer';
 
 export function ConversationScreen(){
   const {id}=useLocalSearchParams<{id:string}>(),{t,lang}=useI18n(),social=useSocial(),confirmation=useSocialConfirmation();
-  const {palette,scale,reducedMotion}=useAccessibilityPreferences();
+  const {palette,reducedMotion}=useAccessibilityPreferences();
   const scroll=useRef<ScrollView>(null),chatTop=useRef(0),latestTop=useRef(0);
   const [text,setText]=useState(''),[report,setReport]=useState(false),[reason,setReason]=useState<ReportReason>('unwanted');
   useEffect(()=>{setText('');setReport(false);},[social.active.id,id]);
@@ -22,12 +23,9 @@ export function ConversationScreen(){
   const allowed=canMessage(social.state,social.active,peer,social.healthy);
   const full=messages.length>=100;
   const send=()=>{void social.act({type:'message',actor:social.active.id,target:peer.id,text}).then(ok=>{if(ok)setText('');});};
-  return <SocialPage title="sMessages" description="sMessageLead" scrollRef={scroll} footer={<View style={{backgroundColor:palette.surface,borderTopWidth:1,borderColor:palette.border,padding:12}}>
-    <View style={{maxWidth:680,width:'100%',alignSelf:'center',gap:8}}>
-      <Field label={t('sMessageTo',{name})} value={text} onChangeText={setText} multiline maxLength={800} editable={allowed&&!full} style={{minHeight:80*scale,maxHeight:140*scale}}/>
-      <Button label={t('sSend')} icon="send" disabled={!allowed||full||!text.trim()} onPress={send}/>
-    </View>
-  </View>}>
+  return <SocialPage title="sMessages" description="sMessageLead" scrollRef={scroll} footer={<MessageComposer
+    label={t('sMessageTo',{name})} value={text} onChangeText={setText} editable={allowed&&!full}
+    sendLabel={t('sSend')} disabled={!allowed||full||!text.trim()} onSend={send} />}>
     <AppText variant="section">{name}</AppText><AppText>{t(`sState_${status}` as Key)}</AppText>
     {status!=='accepted'?<StatusBanner title={t('sMessageClosed')}/>:<>
       <View onLayout={event=>{chatTop.current=event.nativeEvent.layout.y;}} style={{gap:20}}>

@@ -22,7 +22,7 @@ export function HerPage({ children, title, description, header, back, wide, requ
     }, 150);
     return () => clearTimeout(timer);
   }, []));
-  return <ScreenFrame wide={wide} footer={footer} scrollRef={scrollRef}>
+  return <ScreenFrame safeTop={false} wide={wide} footer={footer} scrollRef={scrollRef}>
     {back ? <Button label={t('back')} icon="chevron-left" kind="tertiary" style={{ alignSelf: 'flex-start', paddingHorizontal: 12 }}
       onPress={() => router.canGoBack() ? router.back() : router.replace('/her')} /> : null}
     <View ref={heading} tabIndex={-1} accessibilityLabel={title ?? header?.title} style={{ gap: 8 }}>

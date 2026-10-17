@@ -1,17 +1,18 @@
 import React from 'react';
-import { View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { elevation, layout, radii, spacing, surface } from '../theme';
 import { AppText } from './AppText';
 import { AccessibleSwitch, Button, type ButtonProps } from './Controls';
 import { useAccessibilityPreferences } from './preferences';
+import { useResponsiveLayout } from './useResponsiveLayout';
 
 export function Card({ children, style, tint, flat }: { children: React.ReactNode; style?: ViewStyle; tint?: boolean; flat?: boolean }) {
   const { palette, preferences } = useAccessibilityPreferences();
-  const { width } = useWindowDimensions();
-  return <View style={[flat ? { gap: spacing.md, paddingVertical: spacing.sm }
+  const { width, compact, cardPadding } = useResponsiveLayout();
+  return <View style={[{ minWidth: 0, maxWidth: '100%' }, flat ? { gap: spacing.md, paddingVertical: spacing.sm }
     : { backgroundColor: tint ? palette.secondary : palette.surface, borderRadius: radii.card,
-      padding: width >= layout.wideMin ? surface.cardPaddingWide : surface.cardPadding, gap: surface.contentGap,
+      padding: compact ? cardPadding : width >= layout.wideMin ? surface.cardPaddingWide : surface.cardPadding, gap: compact ? spacing.lg : surface.contentGap,
       borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : 'transparent',
       ...(tint || preferences.highContrast ? {} : elevation) }, style]}>{children}</View>;
 }
@@ -24,7 +25,7 @@ function ContentCard({ title, description, detail, icon, action, children }: Con
       {icon ? <View style={{ width: 48, height: 48, borderRadius: radii.control, backgroundColor: palette.secondary, alignItems: 'center', justifyContent: 'center' }}>
         <Feather name={icon} size={24} color={palette.ai} accessible={false} />
       </View> : null}
-      <View style={{ flex: 1, gap: spacing.sm }}>
+      <View style={{ flex: 1, minWidth: 0, gap: spacing.sm }}>
         <AppText variant="section">{title}</AppText>
         {detail ? <AppText variant="caption">{detail}</AppText> : null}
       </View>

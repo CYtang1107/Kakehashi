@@ -194,7 +194,7 @@ export function Home3D(props: { rooms: Room[]; items: Item[]; selected?: string;
   const start = useRef(0);
   const pan = useMemo(() => PanResponder.create({
     onStartShouldSetPanResponder: () => false,
-    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 6,
+    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 6 && Math.abs(g.dx) > Math.abs(g.dy),
     onPanResponderGrant: () => { drag.current.active = true; start.current = drag.current.yaw; },
     onPanResponderMove: (_, g) => { drag.current.yaw = start.current + g.dx * 0.01; },
     onPanResponderRelease: () => { drag.current.active = false; },
@@ -205,6 +205,7 @@ export function Home3D(props: { rooms: Room[]; items: Item[]; selected?: string;
     <View {...pan.panHandlers} style={{ width: '100%', ...(props.fill ? { flex: 1 } : { aspectRatio: 1.15 }), borderRadius: 14, overflow: 'hidden', backgroundColor: memory ? memoryColors.sky : night ? '#141A2B' : '#BFD8E8' }}>
       {/* Rebuilt when the lighting changes: three.js keeps stale shaders when lights are removed. */}
       <Canvas
+        style={Platform.OS === 'web' ? { touchAction: 'pan-y' } : undefined}
         key={memory ? 'memory' : night ? 'night' : 'day'}
         dpr={PIXEL_RATIO}
         camera={{ position: [0, 8.2, 7.6], fov: 42 }}
@@ -212,7 +213,10 @@ export function Home3D(props: { rooms: Room[]; items: Item[]; selected?: string;
         onCreated={({ camera, gl }) => {
           camera.lookAt(0, 0, 0);
           // Scale the low-resolution render up with hard pixel edges (web).
-          if (Platform.OS === 'web' && gl.domElement) gl.domElement.style.imageRendering = 'pixelated';
+          if (Platform.OS === 'web' && gl.domElement) {
+            gl.domElement.style.imageRendering = 'pixelated';
+            gl.domElement.style.touchAction = 'pan-y';
+          }
         }}>
         {memory ? (
           <>

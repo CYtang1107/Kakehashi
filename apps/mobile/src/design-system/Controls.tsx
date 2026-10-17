@@ -71,7 +71,7 @@ export function AccessibleSwitch({ label, description, value, onValueChange, dis
     style={({ pressed }) => ({ minHeight: control.secondary, padding: spacing.lg, borderWidth: preferences.highContrast ? 2 : 1,
       borderColor: focused ? palette.focus : preferences.highContrast ? palette.border : palette.separator, borderRadius: radii.control,
       opacity: disabled ? 0.5 : 1, backgroundColor: pressed ? palette.secondary : palette.surface, flexDirection: 'row', alignItems: 'center', gap: spacing.lg })}>
-    <View style={{ flex: 1, gap: spacing.xs }}>
+    <View style={{ flex: 1, minWidth: 0, gap: spacing.xs }}>
       <AppText variant="bodyBold">{label}</AppText>
       {description ? <AppText variant="caption">{description}</AppText> : null}
     </View>
@@ -90,7 +90,7 @@ export const AccessibleTextInput = forwardRef<TextInput, AccessibleTextInputProp
   const { t } = useI18n();
   const [focused, setFocused] = useState(false);
   const id = useId();
-  return <View style={{ gap: spacing.sm }}>
+  return <View style={{ minWidth: 0, maxWidth: '100%', gap: spacing.sm }}>
     <AppText variant="bodyBold" nativeID={`${id}-label`}>{label}{required ? ` · ${t('dsRequired')}` : ''}</AppText>
     <TextInput ref={ref} {...rest} allowFontScaling accessibilityLabel={rest.accessibilityLabel ?? label}
       accessibilityHint={rest.accessibilityHint ?? [hint, error].filter(Boolean).join('. ')}
@@ -102,7 +102,7 @@ export const AccessibleTextInput = forwardRef<TextInput, AccessibleTextInputProp
         borderRadius: radii.control, padding: spacing.lg, fontFamily: systemFont,
         fontSize: 19 * scale, lineHeight: 30 * scale, color: palette.ink, backgroundColor: palette.surface,
         opacity: rest.editable === false ? 0.6 : 1,
-        textAlignVertical: rest.multiline ? 'top' : 'center', minHeight: rest.multiline ? 140 : control.secondary }, style]} />
+        minWidth: 0, width: '100%', textAlignVertical: rest.multiline ? 'top' : 'center', minHeight: rest.multiline ? 140 : control.secondary }, style]} />
     {error ? <AppText nativeID={`${id}-hint`} variant="caption" accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color: palette.danger }}>{error}</AppText>
       : hint ? <AppText nativeID={`${id}-hint`} variant="caption">{hint}</AppText> : null}
   </View>;

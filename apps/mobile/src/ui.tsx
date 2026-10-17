@@ -15,6 +15,7 @@ import { ConfirmationDialog } from './design-system/ConfirmationDialog';
 import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppBottomBar, GlobalBottomBar } from './design-system/AppBottomBar';
 import { Brand } from './design-system/Brand';
+import { useResponsiveLayout } from './design-system/useResponsiveLayout';
 export { AppText } from './design-system/AppText';
 export { Button, PrimaryButton, SecondaryButton, TertiaryButton, DestructiveButton, IconButton, IconLabelButton, AccessibleSwitch, AccessibleTextInput } from './design-system/Controls';
 export { Card, UpcomingVisitCard, MemoryCard, FriendRecommendationCard, HomeAssistanceCard, DeviceControlCard, ReminderCard, SafetyCard } from './design-system/Cards';
@@ -30,13 +31,15 @@ export function LangToggle() {
 }
 
 export function TopBar({ back, roleSwitch }: { back?: boolean; roleSwitch?: boolean }) {
-  const { top } = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
+  const { top } = insets;
   const { t } = useI18n();
   const { palette, scale } = useAccessibilityPreferences();
   const { width } = useWindowDimensions();
   const path = usePathname();
   const desktop = width >= 1000 * scale;
-  return <View testID="app-toolbar" style={{ paddingTop: top + spacing.md, paddingHorizontal: layout.margin, paddingBottom: spacing.md,
+  const { gutter } = useResponsiveLayout();
+  return <View testID="app-toolbar" style={{ paddingTop: top + spacing.md, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), paddingBottom: spacing.md,
     backgroundColor: palette.surface, borderBottomWidth: 1, borderBottomColor: palette.separator }}>
     <View style={{ width: '100%', maxWidth: layout.wideWidth - layout.margin * 2, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.md }}>
       <Brand />
@@ -76,7 +79,9 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
   const { data, error, refresh } = useData();
   const { t } = useI18n();
   const { palette } = useAccessibilityPreferences();
-  const { bottom } = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
+  const { bottom } = insets;
+  const { gutter } = useResponsiveLayout();
   const isWide = useWide();
   const maxWidth = wide && isWide ? layout.wideWidth : layout.compactWidth;
   const body = requiresHome && error ? <StatusBanner title={t('dsConnectionTitle')} message={t('dsConnectionBody')}
@@ -84,16 +89,16 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
     : requiresHome && !data ? <View style={{ padding: spacing.section, gap: spacing.lg, alignItems: 'center' }}>
       <ActivityIndicator color={palette.primary} accessibilityLabel={t('dsLoading')} /><AppText>{t('dsLoading')}</AppText>
     </View> : children;
-  return <KeyboardAvoidingView style={{ flex: 1, backgroundColor: palette.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+  return <KeyboardAvoidingView style={{ flex: 1, minHeight: 0, minWidth: 0, backgroundColor: palette.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <TopBar back={back} roleSwitch={roleSwitch} />
     {fit && isWide && (!requiresHome || (data && !error)) ? <View style={{ flex: 1, minHeight: 0 }}>
       {header ? <NightBand header={header} maxWidth={maxWidth} /> : null}
       <View style={{ flex: 1, minHeight: 0, padding: layout.margin, paddingBottom: bottom + layout.margin,
         gap: layout.gap, maxWidth, width: '100%', alignSelf: 'center' }}>{body}</View>
-    </View> : <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets
+    </View> : <ScrollView style={{ flex: 1, minHeight: 0 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets={Platform.OS !== 'ios'}
       contentContainerStyle={{ paddingBottom: bottom + spacing.section }}>
       {header ? <NightBand header={header} maxWidth={maxWidth} /> : null}
-      <View style={{ padding: layout.margin, gap: layout.gap, maxWidth, width: '100%', alignSelf: 'center' }}>{body}</View>
+      <View style={{ paddingVertical: gutter, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), gap: layout.gap, maxWidth, minWidth: 0, width: '100%', alignSelf: 'center' }}>{body}</View>
     </ScrollView>}
     <Toast />
     {globalNav ? <GlobalBottomBar active={globalNav} /> : bottomNav ? <AppBottomBar items={bottomNav} /> : null}
@@ -103,11 +108,13 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
 // The page heading on night indigo, directly under the top bar so the two read as one band.
 export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth: number }) {
   const { palette: colors } = useAccessibilityPreferences();
+  const { compact, gutter } = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
   const { eyebrow, title, sub, leading } = header;
-  return <View style={{ paddingTop: spacing.xxl, paddingBottom: spacing.sm }}>
-    <View style={{ maxWidth, paddingHorizontal: layout.margin, width: '100%', alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.lg }}>
+  return <View style={{ paddingTop: compact ? spacing.lg : spacing.xxl, paddingBottom: spacing.sm }}>
+    <View style={{ maxWidth, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), width: '100%', alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.lg }}>
       {leading}
-      <View style={{ flex: 1, minWidth: 180, gap: spacing.sm }}>
+      <View style={{ flex: 1, minWidth: 0, flexBasis: compact && leading ? '100%' : undefined, gap: spacing.sm }}>
         {eyebrow ? <AppText variant="eyebrow" style={{ color: colors.ai }}>{eyebrow}</AppText> : null}
         <AppText variant="title">{title}</AppText>
         {sub ? <AppText variant="caption">{sub}</AppText> : null}
@@ -121,8 +128,7 @@ export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth
 // fill: both columns take the full height left on the page; the right one scrolls inside itself (and the left one too with scrollLeft).
 export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: React.ReactNode; right: React.ReactNode; stickyLeft?: boolean; fill?: boolean; scrollLeft?: boolean }) {
   const wide = useWide();
-  if (!wide) return <>{left}{right}</>;
-  if (fill) {
+  if (fill && wide) {
     return (
       <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: layout.gap }}>
         {scrollLeft
@@ -134,9 +140,9 @@ export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: R
   }
   const sticky = stickyLeft && Platform.OS === 'web' ? ({ position: 'sticky', top: 16 } as unknown as ViewStyle) : null;
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: layout.gap }}>
-      <View style={[{ flex: 1.38, minWidth: 0, gap: spacing.xl }, sticky]}>{left}</View>
-      <View style={{ flex: 1, minWidth: 0, gap: spacing.xl }}>{right}</View>
+    <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'flex-start' : 'stretch', gap: layout.gap }}>
+      <View style={[{ flex: wide ? 1.38 : undefined, minWidth: 0, gap: spacing.xl }, wide ? sticky : null]}>{left}</View>
+      <View style={{ flex: wide ? 1 : undefined, minWidth: 0, gap: spacing.xl }}>{right}</View>
     </View>
   );
 }
@@ -188,7 +194,7 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
         padding: spacing.lg, borderRadius: radii.control, backgroundColor: pressed || open ? palette.secondary : palette.surface,
         borderWidth: preferences.highContrast ? 2 : 1, borderColor: focused ? palette.focus : preferences.highContrast ? palette.border : palette.separator })}>
       {icon ? <Feather name={icon} size={24} color={palette.primary} accessible={false} /> : null}
-      <View style={{ flex: 1, gap: spacing.xs }}>
+      <View style={{ flex: 1, minWidth: 0, gap: spacing.xs }}>
         <AppText variant="bodyBold">{title}</AppText>
         {summary ? <AppText variant="caption">{summary}</AppText> : null}
       </View>

@@ -1,17 +1,25 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { AccessibilityInfo, findNodeHandle, Platform, Pressable, View } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useI18n } from '../i18n';
 import { control, radii, spacing } from '../theme';
 import { AppText } from './AppText';
 import { Button } from './Controls';
 import { useAccessibilityPreferences } from './preferences';
+import { useResponsiveLayout } from './useResponsiveLayout';
 
 export function SectionTabs<T extends string>({ value, options, onChange, label }: {
   value: T; options: readonly (readonly [T, string])[]; onChange: (value: T) => void; label: string;
 }) {
   const { palette } = useAccessibilityPreferences();
+  const { compact } = useResponsiveLayout();
+  const horizontal = compact && options.length > 3;
   const group = useRef<View>(null);
+  const scroll = useRef<ScrollView>(null);
+  const positions = useRef<Record<string, number>>({});
+  useEffect(() => {
+    if (horizontal) scroll.current?.scrollTo({ x: positions.current[value] ?? 0, animated: false });
+  }, [value, horizontal]);
   useEffect(() => {
     if (Platform.OS !== 'web') return;
     const element = group.current as unknown as HTMLElement | null;
@@ -28,13 +36,18 @@ export function SectionTabs<T extends string>({ value, options, onChange, label 
     };
     element?.addEventListener('keydown', move);
     return () => element?.removeEventListener('keydown', move);
-  }, [options, onChange]);
+  }, [options, onChange, horizontal]);
   const focusedTab = options.some(([id]) => id === value) ? value : options[0]?.[0];
-  return <View ref={group} accessibilityRole="tablist" accessibilityLabel={label} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-    {options.map(([id, title]) => <Button key={id} accessibilityRole="tab" tabIndex={focusedTab === id ? 0 : -1} label={title} kind="secondary" selected={value === id}
-      style={{ flexGrow: 1, backgroundColor: value === id ? palette.secondary : palette.surface }}
-      onPress={() => onChange(id)} />)}
+  const tabs = <View ref={group} accessibilityRole="tablist" accessibilityLabel={label} style={{ flexDirection: 'row', flexWrap: horizontal ? 'nowrap' : 'wrap', gap: spacing.sm }}>
+    {options.map(([id, title]) => <View key={id} style={{ flexGrow: horizontal ? 0 : 1, minWidth: 0, maxWidth: horizontal ? undefined : '100%' }} onLayout={event => {
+      positions.current[id] = event.nativeEvent.layout.x;
+      if (horizontal && id === value) scroll.current?.scrollTo({ x: positions.current[id], animated: false });
+    }}><Button accessibilityRole="tab" tabIndex={focusedTab === id ? 0 : -1} label={title} kind="secondary" selected={value === id}
+      style={{ flexGrow: horizontal ? 0 : 1, flexShrink: horizontal ? 0 : 1, backgroundColor: value === id ? palette.secondary : palette.surface }}
+      onPress={() => onChange(id)} /></View>)}
   </View>;
+  return horizontal ? <ScrollView ref={scroll} horizontal showsHorizontalScrollIndicator style={{ flexGrow: 0, flexShrink: 0 }}
+    keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: spacing.sm }}>{tabs}</ScrollView> : tabs;
 }
 
 // Visited forms stay mounted so moving between tasks does not discard an unfinished draft.
@@ -53,6 +66,7 @@ export function TaskWorkspace({ tasks, defaultTask, label, tabs = false }: {
 }) {
   const { t } = useI18n();
   const { palette, preferences } = useAccessibilityPreferences();
+  const { compact } = useResponsiveLayout();
   const [selected, setSelected] = useState<string | null>(defaultTask ?? null);
   const [focused, setFocused] = useState<string | null>(null);
   const heading = useRef<View>(null);
@@ -75,7 +89,7 @@ export function TaskWorkspace({ tasks, defaultTask, label, tabs = false }: {
     {!current && !tabs ? <View style={{ gap: spacing.md }}>{tasks.map(task => <Pressable key={task.id}
       accessibilityRole="button" accessibilityLabel={task.label} accessibilityHint={task.description}
       onFocus={() => setFocused(task.id)} onBlur={() => setFocused(null)} onPress={() => choose(task.id)}
-      style={({ pressed }) => ({ minHeight: control.secondary, padding: spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.lg,
+      style={({ pressed }) => ({ minHeight: control.secondary, padding: compact ? spacing.lg : spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.lg,
         borderRadius: radii.card, backgroundColor: pressed ? palette.secondary : palette.surface,
         borderWidth: preferences.highContrast || focused === task.id ? 2 : 1,
         borderColor: focused === task.id ? palette.focus : preferences.highContrast ? palette.border : palette.separator })}>

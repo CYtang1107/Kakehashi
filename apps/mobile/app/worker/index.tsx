@@ -11,6 +11,7 @@ import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { workerName } from '../../src/Services';
 import { fonts, type, yen } from '../../src/theme';
+import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
 
 type Board = { open: JobListing[]; mine: (JobListing & { status: string; feedback?: string })[]; earned: number };
 
@@ -18,6 +19,7 @@ type Board = { open: JobListing[]; mine: (JobListing & { status: string; feedbac
 // Only checked helpers see the board; her name and address are never shown, only the area.
 export default function HelperBoard() {
   const { palette: colors } = useAccessibilityPreferences();
+  const { compact } = useResponsiveLayout();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [me, setMe] = useState<string | null>(null);
@@ -80,8 +82,8 @@ export default function HelperBoard() {
           {board.open.length === 0 ? <Text style={type.caption}>{t('noOpenJobs')}</Text> : null}
           {board.open.map((j) => (
             <Card key={j.id}>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 8 }}>
-                <Text style={[type.section, { flex: 1 }]}>{t(`svc_${j.kind}` as Key)}</Text>
+              <View style={{ flexDirection: compact ? 'column' : 'row', flexWrap: 'wrap', alignItems: compact ? 'flex-start' : 'baseline', gap: 8 }}>
+                <Text style={[type.section, { flex: compact ? undefined : 1 }]}>{t(`svc_${j.kind}` as Key)}</Text>
                 <Text style={{ fontFamily: fonts.display, fontSize: 22, color: colors.ink }}>{yen(j.priceJpy)}</Text>
               </View>
               {j.note ? <Text style={type.body}>{pick(lang, j.note, j.noteJa)}</Text> : null}

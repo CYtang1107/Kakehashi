@@ -9,11 +9,13 @@ import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
 import { fonts, type, yen } from '../../src/theme';
+import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
 
 const PROCEEDS: Home['proceedsChoice'][] = ['keep', 'grandchild', 'donate'];
 
 export default function PlanScreen() {
   const { palette: colors } = useAccessibilityPreferences();
+  const { compact } = useResponsiveLayout();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [chosen, setChosen] = useState<string | undefined>();
@@ -58,8 +60,8 @@ export default function PlanScreen() {
         return (
           <Pressable key={p.id} accessibilityRole="radio" accessibilityState={{ checked: active }} aria-checked={active} onPress={() => setChosen(p.id)}
             style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  padding: 14, borderRadius: 16, borderWidth: active ? 2 : 1, borderColor: active ? colors.ai : colors.line, backgroundColor: colors.sheet, gap: 6 }}>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 6 }}>
-              <Text style={[type.section, { flex: 1 }]}>{lang === 'ja' ? p.nameJa : p.name}</Text>
+            <View style={{ flexDirection: compact ? 'column' : 'row', flexWrap: 'wrap', alignItems: compact ? 'flex-start' : 'baseline', gap: 6 }}>
+              <Text style={[type.section, { flex: compact ? undefined : 1 }]}>{lang === 'ja' ? p.nameJa : p.name}</Text>
               <Text style={{ fontFamily: fonts.display, fontSize: 22, color: colors.ink }}>{yen(p.priceJpy)}</Text>
               <Text style={type.caption}>{t('perMonth')}</Text>
             </View>
@@ -85,7 +87,7 @@ export default function PlanScreen() {
       <Text style={type.section}>{t('payments')}</Text>
       {data.home.payments.length === 0 ? <Text style={type.caption}>{t('noPayments')}</Text> : [...data.home.payments].sort((a, b) => b.at.localeCompare(a.at)).map((p) => (
         <Card key={p.id}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             <Text style={[type.body, { flex: 1 }]}>{formatDate(p.at, lang)} · {t(p.mode === 'demo' ? 'demoMode' : 'stripeTest')}</Text>
             <Text style={[type.bodyBold, { fontVariant: ['tabular-nums'] }]}>{yen(p.amountJpy)}</Text>
           </View>

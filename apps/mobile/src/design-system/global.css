@@ -15,7 +15,13 @@
 }
 
 html, body { background: var(--kk-paper); overscroll-behavior: none; }
-#root { height: 100dvh; }
+#root { height: var(--kk-viewport-height, 100dvh); }
+[data-testid="app-text"] { overflow-wrap: anywhere; }
+[data-testid="mobile-navigation"] { flex-shrink: 0; }
+html[data-keyboard-open="true"] [data-testid="mobile-navigation"] { display: none; }
+textarea, input { scroll-margin-block: 24px; }
+[data-testid="dialog-panel"] { overscroll-behavior: contain; }
+[data-testid="dialog-backdrop"] { max-height: var(--kk-viewport-height, 100dvh); }
 * { scrollbar-width: thin; scrollbar-color: var(--kk-border) transparent; }
 *::-webkit-scrollbar { width: 7px; height: 7px; }
 *::-webkit-scrollbar-thumb { background: var(--kk-border); border: 2px solid var(--kk-paper); border-radius: 8px; }
@@ -55,6 +61,10 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], [ro
   [role="tab"]:hover:not([aria-selected="true"]) { background-color: var(--kk-secondary) !important; }
 }
 @media (pointer: coarse) { input, textarea, select { font-size: max(16px, 1em); } }
+@media (pointer: coarse) and (max-height: 500px) {
+  body:has(input:focus, textarea:focus) [data-testid="mobile-navigation"] { display: none; }
+  body:has(input:focus, textarea:focus) [data-testid="app-toolbar"] { padding-top: env(safe-area-inset-top, 0px); padding-bottom: 0; }
+}
 @media (prefers-reduced-transparency: reduce) {
   [data-testid="navigation-surface"], [data-testid="app-toolbar"] { background: var(--kk-surface) !important; backdrop-filter: none; }
 }

@@ -75,8 +75,8 @@ export default function AddItem() {
         <Text variant="bodyBold">{t('rMemoryFirst')}</Text>
         {photo ? <Image source={{ uri: photo.uri }} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: 12 }} resizeMode="cover" accessibilityLabel={t('rItemPhoto')} /> : null}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" kind="secondary" onPress={() => pick(true)} /></View>
-          <View style={{ flex: 1 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => pick(false)} /></View>
+          <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('takePhoto')} icon="camera" kind="secondary" onPress={() => pick(true)} /></View>
+          <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('choosePhoto')} icon="image" kind="secondary" onPress={() => pick(false)} /></View>
         </View>
         <Field label={t('itemName')} value={name} onChangeText={setName} placeholder={t('rItemExample')} />
         <Text style={type.bodyBold}>{t('room')}</Text>

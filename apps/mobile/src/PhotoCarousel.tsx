@@ -1,6 +1,6 @@
 import { useAccessibilityPreferences } from './design-system/preferences';
 import { AppText as Text } from './design-system/AppText';
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Image, Pressable, ScrollView, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
@@ -27,8 +27,18 @@ export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'n
   const scroll = useRef<ScrollView>(null);
   const [w, setW] = useState(0);
   const [i, setI] = useState(0);
+  const page = useRef(0);
+  useEffect(() => {
+    page.current = Math.min(page.current, Math.max(0, photos.length - 1));
+    setI(page.current);
+    if (w) scroll.current?.scrollTo({ x: page.current * w, animated: false });
+  }, [w, photos.length]);
   if (photos.length === 0) return null;
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => { if (w) setI(Math.round(e.nativeEvent.contentOffset.x / w)); };
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (!w) return;
+    page.current = Math.max(0, Math.min(photos.length - 1, Math.round(e.nativeEvent.contentOffset.x / w)));
+    setI(page.current);
+  };
   const cur = photos.at(Math.min(i, photos.length - 1))!;
   const caption = pick(lang, cur.caption, cur.captionJa);
   const ink = dark ? '#F5EBDD' : colors.ink, soft = dark ? '#CDBFAE' : colors.inkSoft;
@@ -109,16 +119,16 @@ export function AddPhotoCard({ item, author }: { item: Item; author?: string }) 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {(['photo', 'old-photo', 'illustration'] as const).map((k) => (
           <Pressable key={k} accessibilityRole="radio" accessibilityState={{ checked: kind === k }} aria-checked={kind === k} onPress={() => setKind(k)}
-            style={{ paddingHorizontal: 12, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
+            style={{ maxWidth: '100%', paddingHorizontal: 12, paddingVertical: 12, minHeight: 56, borderRadius: 12, borderWidth: 1, borderColor: kind === k ? colors.ai : colors.line, backgroundColor: kind === k ? colors.aiTint : colors.sheet }}>
             <Text style={{ fontFamily: fonts.bold, fontSize: 18, color: kind === k ? colors.ai : colors.ink }}>{t(`photoKind_${k}` as Key)}</Text>
           </Pressable>
         ))}
       </View>
       {kind === 'illustration' ? <Text style={[type.caption, { color: colors.kaki }]}>{t('photoIllustrationNote')}</Text> : null}
       <Field label={t('photoCaption')} value={caption} onChangeText={setCaption} />
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <View style={{ flex: 1 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
-        <View style={{ flex: 1 }}><Button label={t('choosePhoto')} kind="secondary" icon="image" busy={busy} onPress={() => add(false)} /></View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('takePhoto')} icon="camera" busy={busy} onPress={() => add(true)} /></View>
+        <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('choosePhoto')} kind="secondary" icon="image" busy={busy} onPress={() => add(false)} /></View>
       </View>
       {error ? <Text style={[type.caption, { color: colors.danger }]}>{error}</Text> : null}
     </Card>

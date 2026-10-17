@@ -3,7 +3,7 @@ import { AppText as Text } from '../../src/design-system/AppText';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
 import { Destination } from '../../src/her/Screens';
 import React, { useEffect, useState } from 'react';
-import { Pressable, View, useWindowDimensions } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { DECISIONS, pick, type Decision, type FixStatus, type Item } from '@kakehashi/shared';
 import { Button, Card, DecisionChip, Screen, ConfirmationDialog, Fold, TaskWorkspace } from '../../src/ui';
@@ -22,6 +22,7 @@ import { spriteFor } from '../../src/pixelArt';
 import { useData } from '../../src/data';
 import { useI18n, type Key } from '../../src/i18n';
 import { getDecisionColors, fonts, getRoomColors, type } from '../../src/theme';
+import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
 
 type View3 = '3d' | '2d' | 'memory' | 'map';
 const TOUR_MS = 7000;
@@ -41,7 +42,7 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
   const [colorBy, setColorBy] = useState<ColorBy>('none');
   const [evening, setEvening] = useState<Evening>('off');
   const [focus, setFocus] = useState<{ id: string; n: number } | undefined>();
-  const [menu, setMenu] = useState<'view' | 'options' | null>(null);
+  const [menu, setMenu] = useState<'view' | 'options' | 'items' | null>(null);
 
   const memories = data ? data.items.filter((i) => i.story || i.audioUrl) : [];
   const memory = view === 'memory';
@@ -80,7 +81,7 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
   const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
   // Large scenes have a bounded stage; household details share the page's scroll area.
-  const { width, height } = useWindowDimensions();
+  const { width, height, compact } = useResponsiveLayout();
   const fit = width >= 760;
   const colourCard = (
     <View style={{ gap: 24 }}> 
@@ -92,10 +93,10 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
     </View>
   );
   const tourButtons = (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      <View style={{ flex: 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
-      <View style={{ flex: 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} disabled={reducedMotion} onPress={() => setTouring((x) => !x)} /></View>
-      <View style={{ flex: 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
+    <View style={{ flexDirection: compact ? 'column' : 'row', gap: 8 }}>
+      <View style={{ flex: compact ? undefined : 1 }}><Button label={t('previous')} kind="secondary" icon="chevron-left" onPress={() => step(-1)} /></View>
+      <View style={{ flex: compact ? undefined : 1.4 }}><Button label={touring ? t('stopTour') : t('playTour')} icon={touring ? 'pause' : 'play'} disabled={reducedMotion} onPress={() => setTouring((x) => !x)} /></View>
+      <View style={{ flex: compact ? undefined : 1 }}><Button label={t('next')} kind="secondary" icon="chevron-right" onPress={() => step(1)} /></View>
     </View>
   );
   const header = data ? {
@@ -138,6 +139,7 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
             {current ? <MemoryCard item={current} rooms={data.home.rooms} /> : null}
             <Text style={type.caption}>{t('memoryPrivacy')}</Text>
           </> : null}
+        {compact && view !== 'map' ? <Button label={t('items')} icon="list" kind="secondary" onPress={() => setMenu('items')} /> : null}
         <Fold title={t('uxHomeDetails')} icon="home" summary={t('items')}>
           <TaskWorkspace tasks={[
             { id: 'items', label: t('items'), icon: 'box', content: <>
@@ -161,8 +163,10 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
             { id: 'photos', label: t('roomPhotosTitle'), icon: 'image', content: <RoomGallery /> },
           ]} />
         </Fold>
-        <ConfirmationDialog visible={menu !== null} title={t(menu === 'options' ? 'uxViewOptions' : 'uxChangeView')} onCancel={() => setMenu(null)}>
-          {menu === 'view' ? (['3d', '2d', 'memory', 'map'] as const).map(v => <Button key={v} label={labels[v]} kind="secondary" selected={view === v}
+        <ConfirmationDialog visible={menu !== null} title={t(menu === 'items' ? 'items' : menu === 'options' ? 'uxViewOptions' : 'uxChangeView')} onCancel={() => setMenu(null)}>
+          {menu === 'items' ? data.items.map(item => <Button key={item.id} label={pick(lang, item.name, item.nameJa)} kind="secondary"
+            onPress={() => { setMenu(null); onSelect(item.id); }} />) :
+          menu === 'view' ? (['3d', '2d', 'memory', 'map'] as const).map(v => <Button key={v} label={labels[v]} kind="secondary" selected={view === v}
             onPress={() => { pickView(v); setMenu(null); }} />) : colourCard}
         </ConfirmationDialog>
       </> : null}

@@ -7,6 +7,7 @@ import { AppText } from './AppText';
 import { useI18n } from '../i18n';
 import { useAccessibilityPreferences } from './preferences';
 import { floatingElevation, radii } from '../theme';
+import { useKeyboardVisible } from './useResponsiveLayout';
 
 type NavItem = { id: string; label: string; icon: keyof typeof Feather.glyphMap; active?: boolean; onPress: () => void };
 
@@ -38,11 +39,12 @@ function UtilityAction({ icon, label, onPress, palette }: { icon: keyof typeof F
 }
 
 export function AppBottomBar({ items }: { items: NavItem[] }) {
-  const { bottom } = useSafeAreaInsets();
+  const { bottom, left, right } = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { scale, palette } = useAccessibilityPreferences();
-  if (width >= 1000 * scale) return null;
-  return <NavigationSurface style={{ marginHorizontal: 12, marginTop: 8, marginBottom: bottom + 12 }}>
+  const keyboardVisible = useKeyboardVisible();
+  if (width >= 1000 * scale || keyboardVisible) return null;
+  return <View testID="mobile-navigation" style={{ flexShrink: 0, paddingLeft: left, paddingRight: right }}><NavigationSurface style={{ padding: 4, marginHorizontal: 4, marginTop: 4, marginBottom: bottom + 4 }}>
     <View accessibilityRole="tablist" style={{ flexDirection: 'row', gap: 6 }}>
       {items.map((item) => <Pressable key={item.id} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: item.active }} aria-selected={Boolean(item.active)}
         onPress={item.onPress} style={({ pressed }) => ({ flex: 1, minWidth: 0, padding: 6, minHeight: 64, borderRadius: radii.control, gap: 5, alignItems: 'center', justifyContent: 'center',
@@ -51,7 +53,7 @@ export function AppBottomBar({ items }: { items: NavItem[] }) {
         <AppText variant="caption" style={{ maxWidth: '100%', fontSize: 15, lineHeight: 21, fontWeight: item.active ? '600' : '400', textAlign: 'center', color: item.active ? palette.primary : palette.textSecondary }}>{item.label}</AppText>
       </Pressable>)}
     </View>
-  </NavigationSurface>;
+  </NavigationSurface></View>;
 }
 
 export function GlobalBottomBar({ active }: { active: 'home' | 'stories' | 'roles' | 'settings' }) {

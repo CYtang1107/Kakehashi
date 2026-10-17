@@ -36,6 +36,29 @@ export default function RootLayout() {
 function AppStack() {
   const { reducedMotion, preferences, palette } = useAccessibilityPreferences();
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const viewport = window.visualViewport;
+    const root = document.documentElement;
+    const resize = () => {
+      // Safari's keyboard resizes the visual viewport, while its layout viewport stays tall.
+      if (viewport.scale !== 1) return;
+      root.style.setProperty('--kk-viewport-height', `${viewport.height}px`);
+      root.dataset.keyboardOpen = String(window.innerHeight - viewport.height > 120 &&
+        Boolean(document.activeElement?.matches('input, textarea, [contenteditable="true"]')));
+    };
+    resize();
+    viewport.addEventListener('resize', resize);
+    document.addEventListener('focusin', resize);
+    document.addEventListener('focusout', resize);
+    return () => {
+      viewport.removeEventListener('resize', resize);
+      document.removeEventListener('focusin', resize);
+      document.removeEventListener('focusout', resize);
+      root.style.removeProperty('--kk-viewport-height');
+      delete root.dataset.keyboardOpen;
+    };
+  }, []);
+  useEffect(() => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
     for (const key of ['paper', 'surface', 'ink', 'primary', 'secondary', 'border', 'separator'] as const) {

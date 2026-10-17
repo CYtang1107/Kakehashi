@@ -19,6 +19,7 @@ import { OutingCard } from '../../src/Outing';
 import { WeatherCheckCard } from '../../src/Weather';
 import { spriteFor } from '../../src/pixelArt';
 import { fonts, type } from '../../src/theme';
+import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
 
 type Step = 'before' | 'with' | 'after';
 
@@ -116,18 +117,19 @@ export default function Visit() {
 // A visit is a sequence: before you go in, with her, and after you leave.
 function VisitSteps({ step, onChange }: { step: Step; onChange: (s: Step) => void }) {
   const { palette: colors } = useAccessibilityPreferences();
+  const { compact } = useResponsiveLayout();
   const { t } = useI18n();
   const steps: [Step, string][] = [['before', t('stepBefore')], ['with', t('stepWith')], ['after', t('stepAfter')]];
   return (
     <View style={{ gap: 12 }}>
       <Text variant="caption" accessibilityLiveRegion="polite">{t('rVisitProgress', { step: steps.findIndex(([key]) => key === step) + 1 })}</Text>
-      <View role="tablist" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View role="tablist" style={{ flexDirection: 'row', flexWrap: compact ? 'nowrap' : 'wrap', gap: compact ? 4 : 8 }}>
       {steps.map(([k, label], i) => {
         const on = step === k;
         return (
           <Pressable key={k} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: on }} aria-selected={on} onPress={() => onChange(k)}
-            style={{ minHeight: 60, maxWidth: '100%', justifyContent: 'center', flexDirection: 'row', alignItems: 'center', flexBasis: 160, flexGrow: 1, padding: 12, borderRadius: 12, backgroundColor: on ? colors.secondary : colors.sheet, borderWidth: 2, borderColor: on ? colors.primary : 'transparent', gap: 12 }}>
-            <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.primary : colors.inkSoft }}>{i + 1}</Text>
+            style={{ minHeight: 60, minWidth: 0, maxWidth: '100%', justifyContent: 'center', flexDirection: 'row', alignItems: 'center', flexBasis: compact ? 0 : 160, flexGrow: 1, padding: compact ? 6 : 12, borderRadius: 12, backgroundColor: on ? colors.secondary : colors.sheet, borderWidth: 2, borderColor: on ? colors.primary : 'transparent', gap: compact ? 4 : 12 }}>
+            {!compact ? <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.primary : colors.inkSoft }}>{i + 1}</Text> : null}
             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.primary : colors.ink }}>{label}</Text>
           </Pressable>
         );

@@ -21,7 +21,7 @@ export function AppText({ variant = 'body', style, ...props }: AppTextProps) {
   const color = merged.color === typography.caption.color ? palette.inkSoft
     : merged.color === typography.body.color ? palette.ink
     : merged.color === typography.eyebrow.color ? palette.kakiInk : merged.color;
-  return <Text accessibilityLanguage={lang === 'ja' ? 'ja-JP' : 'en-GB'}
+  return <Text testID="app-text" accessibilityLanguage={lang === 'ja' ? 'ja-JP' : 'en-GB'}
     accessibilityRole={variant === 'title' || variant === 'section' ? 'header' : undefined}
     {...(Platform.OS === 'web' && (variant === 'title' || variant === 'section') ? { 'aria-level': variant === 'title' ? 1 : 2 } : {})}
     {...props} allowFontScaling

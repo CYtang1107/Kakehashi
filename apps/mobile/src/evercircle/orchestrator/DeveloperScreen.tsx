@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useSyncExternalStore } from 'react';
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { AppText, Button, ConfirmationDialog, Fold, StatusBanner, TaskWorkspace } from '../../ui';
 import { ScreenFrame } from '../../design-system/ScreenFrame';
@@ -48,7 +48,10 @@ export default function DeveloperScreen() {
           {selected ? <><AppText variant="section">{moduleName(selected, ja)}</AppText>
             <AppText>{c('Select a recorded transition to inspect it.', '記録された遷移を選ぶと詳細を確認できます。')}</AppText>
             {events.map((e, index) => e.from === selected || e.to === selected ? <Button key={index} kind="secondary" selected={cursor === index} label={`${index + 1} · ${stepDescription(e.kind, ja)}`} onPress={() => { setPlaying(false); setCursor(index); }} /> : null)}</> : null}
-          <Fold title={c('Inspect sanitized events', 'サニタイズ済みイベントを確認')}><AppText selectable variant="caption">{JSON.stringify(events, null, 2)}</AppText></Fold>
+          <Fold title={c('Inspect sanitized events', 'サニタイズ済みイベントを確認')}><ScrollView horizontal keyboardShouldPersistTaps="handled"
+            accessibilityLabel={c('Sanitized events', 'サニタイズ済みイベント')} style={{ flexGrow: 0 }}>
+            <AppText selectable variant="caption" style={{ minWidth: 600, fontFamily: 'monospace', flexShrink: 0 }}>{JSON.stringify(events, null, 2)}</AppText>
+          </ScrollView></Fold>
         </View>
   );
   return <ScreenFrame wide title={c('Agent collaboration', 'エージェントの連携')} description={c('Prototype developer tooling · fictional, local simulations. Persona switching is not account access.', '開発者向け試作ツール · 架空のローカル実演です。人物の切り替えはアカウント認証ではありません。')}>

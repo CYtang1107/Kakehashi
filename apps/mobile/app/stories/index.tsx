@@ -13,6 +13,7 @@ import { useI18n, type Key } from '../../src/i18n';
 import { api } from '../../src/api';
 import { elevation, fonts, radii, spacing, type } from '../../src/theme';
 import { useAccessibilityPreferences } from '../../src/design-system/preferences';
+import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
 
 // Public story feed (物語の広場): stories older people agreed to share, shown like posts, for anyone to read.
 export default function StoriesFeed() {
@@ -87,6 +88,7 @@ function rememberHeart(id: string, on: boolean) {
 
 function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: boolean }) {
   const { palette: colors } = useAccessibilityPreferences();
+  const { compact, cardPadding } = useResponsiveLayout();
   const { t, lang } = useI18n();
   const [hearts, setHearts] = useState(story.hearts);
   const [heartBusy, setHeartBusy] = useState(false);
@@ -129,13 +131,13 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
 
   return (
     <View nativeID={`story-${story.id}`} style={{ backgroundColor: colors.sheet, borderRadius: radii.card, borderWidth: 1,
-      borderColor: colors.separator, paddingVertical: spacing.xl, gap: spacing.lg, ...elevation }}>
+      borderColor: colors.separator, paddingVertical: cardPadding, gap: spacing.lg, minWidth: 0, ...elevation }}>
       {/* Header: the item's icon as the avatar, who told it, when */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: spacing.xl }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 12, paddingHorizontal: cardPadding }}>
         <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', backgroundColor: colors.paper, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.line }}>
           <PixelIcon sprite={spriteFor({ id: story.id, name: story.name, nameJa: story.nameJa, icon: story.icon })} size={30} />
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: colors.ink }}>{pick(lang, story.name, story.nameJa)}{story.year ? ` · ${story.year}` : ''}</Text>
           <Text style={type.caption}>{teller} · {formatDate(story.sharedAt, lang)}</Text>
         </View>
@@ -147,11 +149,11 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
       </View>
 
       {/* Media: her photos (with her OK), or the story itself as the post */}
-      <View style={{ paddingHorizontal: spacing.xl }}>
+      <View style={{ paddingHorizontal: cardPadding }}>
         {story.photos.length ? (
           <PhotoCarousel item={{ name: story.name, photos: story.photos, icon: story.icon }} />
         ) : (
-          <View style={{ backgroundColor: colors.aiTint, borderRadius: radii.control, paddingHorizontal: 22, paddingVertical: 28, minHeight: 200, justifyContent: 'center', gap: 12 }}>
+          <View style={{ backgroundColor: colors.aiTint, borderRadius: radii.control, paddingHorizontal: compact ? 16 : 22, paddingVertical: compact ? 20 : 28, minHeight: compact ? 140 : 200, justifyContent: 'center', gap: 12 }}>
             <Text style={[type.story, { fontSize: 20, lineHeight: 32 }]}>“{text}”</Text>
             <Text style={[type.caption, { color: colors.ai }]}>{teller}</Text>
           </View>
@@ -159,13 +161,13 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
       </View>
 
       {/* Actions: heart, message, share */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, paddingHorizontal: spacing.xl }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, paddingHorizontal: cardPadding }}>
         <Action icon="heart" label={t('feedHeart')} count={hearts} on={hearted} disabled={heartBusy} onPress={heart} />
         <Action icon="message-circle" label={t('feedComment')} count={story.comments.length} onPress={openWriting} />
         <Action icon="send" label={t('feedShare')} onPress={share} />
       </View>
 
-      <View style={{ paddingHorizontal: spacing.xl, gap: spacing.sm }}>
+      <View style={{ paddingHorizontal: cardPadding, gap: spacing.sm }}>
         {story.photos.length ? (
           <Text style={type.body}><Text style={type.bodyBold}>{teller} </Text>{text}</Text>
         ) : null}

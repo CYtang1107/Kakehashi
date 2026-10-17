@@ -64,16 +64,18 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
 
   return <Modal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'}
     onShow={focusFirst} onRequestClose={() => { if (!busy) onCancel(); }}>
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: palette.scrim, justifyContent: compact ? 'flex-end' : 'center', alignItems: 'center',
-      paddingHorizontal: spacing.lg, paddingTop: insets.top + spacing.lg, paddingBottom: insets.bottom + spacing.lg }}>
+    <KeyboardAvoidingView testID="dialog-backdrop" behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, minHeight: 0, backgroundColor: palette.scrim, justifyContent: compact ? 'flex-end' : 'center', alignItems: 'center',
+      paddingLeft: compact ? insets.left : spacing.lg, paddingRight: compact ? insets.right : spacing.lg, paddingTop: insets.top + spacing.lg, paddingBottom: compact ? 0 : insets.bottom + spacing.lg }}>
       {dismissOnBackdrop ? <Pressable accessible={false} focusable={false} tabIndex={-1}
         onPress={() => { if (!busy) onCancel(); }} style={{ position: 'absolute', inset: 0 }} /> : null}
       <View ref={panel} role={onConfirm ? 'alertdialog' : 'dialog'} aria-modal accessibilityViewIsModal
         testID="dialog-panel"
         aria-labelledby={`${id}-title`} aria-describedby={message ? `${id}-message` : undefined}
-        style={{ width: '100%', maxWidth: surface.dialogWidth, maxHeight: '100%', backgroundColor: palette.surface, borderRadius: radii.dialog,
+        style={{ width: '100%', minHeight: 0, flexShrink: 1, maxWidth: compact ? undefined : surface.dialogWidth, maxHeight: '100%', backgroundColor: palette.surface, borderRadius: radii.dialog,
+          borderBottomLeftRadius: compact ? 0 : radii.dialog, borderBottomRightRadius: compact ? 0 : radii.dialog,
           ...floatingElevation, borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : palette.separator }}>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl }}>
+        <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets={Platform.OS !== 'ios'}
+          contentContainerStyle={{ padding: compact ? spacing.lg : spacing.xl, paddingBottom: compact ? insets.bottom + spacing.xl : spacing.xl, gap: spacing.xl }}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
             <AppText variant="section" nativeID={`${id}-title`} style={{ flex: 1 }}>{title}</AppText>
             <IconButton icon="x" label={t('close')} disabled={busy} onPress={onCancel} />

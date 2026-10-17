@@ -78,9 +78,9 @@ export function LetterCard({ mode }: { mode: 'family' | 'student' }) {
               ? <ReadConfirm checked={readLetter} onChange={setReadLetter} label={t('readLetter')} />
               : shown.readBy ? <Text style={type.caption}>{t('readLetterBy', { by: shown.readBy })}</Text> : null}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              <View style={{ flex: 1 }}><Button label={t('markPrinted')} kind="secondary" busy={busy === 'printed'} disabled={shown.status !== 'draft' || !readLetter}
+              <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('markPrinted')} kind="secondary" busy={busy === 'printed'} disabled={shown.status !== 'draft' || !readLetter}
                 onPress={() => run('printed', () => api.letterStatus(shown.id, 'printed', { by: home.students.find((x) => x.role === 'pair')?.name ?? 'Student', readConfirmed: readLetter })).then(ok => { if (ok) setReadLetter(false); })} /></View>
-              <View style={{ flex: 1 }}><Button label={t('markMailed')} busy={busy === 'mailed'} disabled={shown.status === 'mailed'}
+              <View style={{ flexBasis: 180, flexGrow: 1, flexShrink: 1, minWidth: 0 }}><Button label={t('markMailed')} busy={busy === 'mailed'} disabled={shown.status === 'mailed'}
                 onPress={() => run('mailed', () => api.letterStatus(shown.id, 'mailed'))} /></View>
             </View>
           </>
