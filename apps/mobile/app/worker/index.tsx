@@ -48,7 +48,7 @@ export default function HelperBoard() {
   return (
     <Screen bottomNav={[
       { id: 'jobs', label: t('helperTitle'), icon: 'briefcase', active: true, onPress: () => undefined },
-      { id: 'settings', label: t('hSettings'), icon: 'settings', onPress: () => router.navigate('/settings') },
+      { id: 'settings', label: t('hSettings'), icon: 'settings', onPress: () => router.push('/settings') },
     ]}
       header={{ title: t('helperTitle'), sub: t('helperLead', { pct: Math.round(COMMISSION * 100) }) }}>
       <StatusBanner title={t('uxDemoIdentity')} message={t('rHelperDemo')} />

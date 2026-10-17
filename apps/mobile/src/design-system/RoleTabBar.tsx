@@ -37,7 +37,7 @@ export function RoleTabBar({ state, descriptors, navigation, icons }: TabBarProp
           <AppText variant="caption" style={{ maxWidth: '100%', fontSize: 15, lineHeight: 21, textAlign: 'center', fontWeight: active ? '600' : '400', color: active ? palette.primary : palette.inkSoft }}>{label}</AppText>
         </Pressable>;
       })}
-      <Pressable accessibilityRole="tab" accessibilityLabel={t('hSettings')} aria-selected={false} onPress={() => router.navigate('/settings')}
+      <Pressable accessibilityRole="tab" accessibilityLabel={t('hSettings')} aria-selected={false} onPress={() => router.push('/settings')}
         style={({ pressed }) => ({ flex: compact ? undefined : 1, flexBasis: compact ? '28%' : undefined, flexGrow: compact ? 1 : undefined, minWidth: 0, minHeight: 64, padding: 6, gap: 5,
           flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: radii.control, borderWidth: 1,
           borderColor: 'transparent', backgroundColor: pressed ? palette.secondary : 'transparent' })}>

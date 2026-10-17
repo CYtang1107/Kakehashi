@@ -47,7 +47,7 @@ export function TopBar({ back, roleSwitch }: { back?: boolean; roleSwitch?: bool
         ] as const).map(([href, label, icon]) => {
           const active = href === '/' ? path === '/' || path === '/stories' : path === href;
           return <Button key={href} label={label} icon={icon} kind="tertiary" selected={active}
-            style={{ minHeight: 48, paddingHorizontal: spacing.lg }} onPress={() => router.navigate(href)} />;
+            style={{ minHeight: 48, paddingHorizontal: spacing.lg }} onPress={() => href === '/settings' && path.startsWith('/worker') ? router.push(href) : router.navigate(href)} />;
         })}
       </View> : null}
       {back ? <IconLabelButton label={t('back')} kind="secondary" icon="chevron-left"
