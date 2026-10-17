@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { READINESS, pick, type ReadinessStep, type Student } from '@kakehashi/shared';
-import { StatusBanner, Avatar, Card, Screen, SectionTabs, formatDate } from '../../src/ui';
+import { StatusBanner, Avatar, Card, Fold, Screen, SectionTabs, formatDate } from '../../src/ui';
 import { StudentBadges } from '../../src/Community';
 import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
