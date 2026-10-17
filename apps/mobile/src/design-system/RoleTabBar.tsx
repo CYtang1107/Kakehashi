@@ -20,7 +20,7 @@ export function RoleTabBar({ state, descriptors, navigation, icons }: TabBarProp
   const { bottom, left, right } = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const compact = width < 600 * scale;
-  const { short } = useResponsiveLayout();
+  const { short, navigation: sizing } = useResponsiveLayout();
   const keyboardVisible = useKeyboardVisible();
   if (keyboardVisible) return null;
   return <View testID="mobile-navigation" style={{ flexShrink: 0, paddingLeft: left, paddingRight: right }}><NavigationSurface style={{ padding: compact ? 4 : 8, marginHorizontal: compact ? 4 : 12, marginTop: compact ? 4 : 8, marginBottom: bottom + (compact ? 4 : 12),
@@ -34,19 +34,19 @@ export function RoleTabBar({ state, descriptors, navigation, icons }: TabBarProp
           onPress={() => { const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
             if (!active && !event.defaultPrevented) navigation.navigate(route.name, route.params); }}
           onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
-          style={({ pressed }) => ({ flex: 1, minWidth: 0, minHeight: short ? 48 : 64,
-            padding: compact ? 3 : 6, gap: 4, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: radii.control,
+          style={({ pressed }) => ({ flex: 1, minWidth: 0, minHeight: short ? 48 : sizing.minimum,
+            padding: sizing.padding, gap: sizing.gap, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: radii.control,
             borderWidth: 1, borderColor: active ? palette.primary : 'transparent', backgroundColor: active || pressed ? palette.secondary : 'transparent' })}>
-          <Feather name={icons[route.name] ?? 'circle'} size={24} color={active ? palette.primary : palette.textSecondary} accessible={false} />
-          <AppText variant="caption" style={{ maxWidth: '100%', fontSize: compact ? 14 : 15, lineHeight: compact ? 20 : 21, textAlign: 'center', fontWeight: active ? '600' : '400', color: active ? palette.primary : palette.inkSoft }}>{label}</AppText>
+          <Feather name={icons[route.name] ?? 'circle'} size={sizing.icon} color={active ? palette.primary : palette.textSecondary} accessible={false} />
+          <AppText variant="navigation" style={{ maxWidth: '100%', textAlign: 'center', fontWeight: active ? '600' : '400', color: active ? palette.primary : palette.inkSoft }}>{label}</AppText>
         </Pressable>;
       })}
       <Pressable accessibilityRole="button" accessibilityLabel={t('hSettings')} onPress={() => router.push('/settings')}
-        style={({ pressed }) => ({ flex: 1, minWidth: 0, minHeight: short ? 48 : 64, padding: compact ? 3 : 6, gap: 4,
+        style={({ pressed }) => ({ flex: 1, minWidth: 0, minHeight: short ? 48 : sizing.minimum, padding: sizing.padding, gap: sizing.gap,
           flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: radii.control, borderWidth: 1,
           borderColor: 'transparent', backgroundColor: pressed ? palette.secondary : 'transparent' })}>
-        <Feather name="settings" size={24} color={palette.textSecondary} accessible={false} />
-        <AppText variant="caption" style={{ maxWidth: '100%', fontSize: compact ? 14 : 15, lineHeight: compact ? 20 : 21, textAlign: 'center' }}>{t('hSettings')}</AppText>
+        <Feather name="settings" size={sizing.icon} color={palette.textSecondary} accessible={false} />
+        <AppText variant="navigation" style={{ maxWidth: '100%', textAlign: 'center' }}>{t('hSettings')}</AppText>
       </Pressable>
     </View>
   </NavigationSurface></View>;

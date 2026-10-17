@@ -117,7 +117,7 @@ export default function Visit() {
 // A visit is a sequence: before you go in, with her, and after you leave.
 function VisitSteps({ step, onChange }: { step: Step; onChange: (s: Step) => void }) {
   const { palette: colors } = useAccessibilityPreferences();
-  const { compact } = useResponsiveLayout();
+  const { compact, control } = useResponsiveLayout();
   const { t } = useI18n();
   const steps: [Step, string][] = [['before', t('stepBefore')], ['with', t('stepWith')], ['after', t('stepAfter')]];
   return (
@@ -128,7 +128,7 @@ function VisitSteps({ step, onChange }: { step: Step; onChange: (s: Step) => voi
         const on = step === k;
         return (
           <Pressable key={k} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: on }} aria-selected={on} onPress={() => onChange(k)}
-            style={{ minHeight: 60, minWidth: 0, maxWidth: '100%', justifyContent: 'center', flexDirection: 'row', alignItems: 'center', flexBasis: compact ? 0 : 160, flexGrow: 1, padding: compact ? 6 : 12, borderRadius: 12, backgroundColor: on ? colors.secondary : colors.sheet, borderWidth: 2, borderColor: on ? colors.primary : 'transparent', gap: compact ? 4 : 12 }}>
+            style={{ minHeight: compact ? control.secondary : 60, minWidth: 0, maxWidth: '100%', justifyContent: 'center', flexDirection: 'row', alignItems: 'center', flexBasis: compact ? 0 : 160, flexGrow: 1, padding: compact ? 6 : 12, borderRadius: 12, backgroundColor: on ? colors.secondary : colors.sheet, borderWidth: 2, borderColor: on ? colors.primary : 'transparent', gap: compact ? 4 : 12 }}>
             {!compact ? <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.primary : colors.inkSoft }}>{i + 1}</Text> : null}
             <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: on ? colors.primary : colors.ink }}>{label}</Text>
           </Pressable>

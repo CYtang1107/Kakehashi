@@ -10,6 +10,7 @@ import { useData } from './data';
 import { useI18n, type Key } from './i18n';
 import { api, fileUrl } from './api';
 import { colors, fonts, type } from './theme';
+import { useResponsiveLayout } from './design-system/useResponsiveLayout';
 
 // Every picture of an item: the album, plus the single photo older items were logged with.
 export function itemPhotos(item: Pick<Item, 'photos' | 'photoUrl'>): ItemPhoto[] {
@@ -22,6 +23,7 @@ export function itemPhotos(item: Pick<Item, 'photos' | 'photoUrl'>): ItemPhoto[]
 // Swipe through an item's pictures, like a post. Illustrations always carry a label saying they are not real photos.
 export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'name' | 'photos' | 'photoUrl' | 'icon'>; dark?: boolean; onMakePixel?: (photoId: string) => void }) {
   const { palette: colors } = useAccessibilityPreferences();
+  const { compact } = useResponsiveLayout();
   const { t, lang } = useI18n();
   const photos = itemPhotos(item);
   const scroll = useRef<ScrollView>(null);
@@ -70,7 +72,10 @@ export function PhotoCarousel({ item, dark, onMakePixel }: { item: Pick<Item, 'n
           {photos.map((p, k) => <View key={p.id} style={{ width: k === i ? 18 : 6, height: 6, borderRadius: 3, backgroundColor: k === i ? colors.ai : (dark ? '#5C544C' : colors.line) }} />)}
         </View>
       ) : null}
-      {photos.length > 1 ? <View style={{ gap: 8 }}><Button label={t('previous')} kind="secondary" disabled={i === 0} onPress={() => scroll.current?.scrollTo({ x: (i - 1) * w, animated: false })} /><Button label={t('next')} kind="secondary" disabled={i >= photos.length - 1} onPress={() => scroll.current?.scrollTo({ x: (i + 1) * w, animated: false })} /></View> : null}
+      {photos.length > 1 ? <View style={{ gap: 8, flexDirection: compact ? 'row' : 'column' }}>
+        <Button label={t('previous')} kind="secondary" style={compact ? { flex: 1 } : undefined} disabled={i === 0} onPress={() => scroll.current?.scrollTo({ x: (i - 1) * w, animated: false })} />
+        <Button label={t('next')} kind="secondary" style={compact ? { flex: 1 } : undefined} disabled={i >= photos.length - 1} onPress={() => scroll.current?.scrollTo({ x: (i + 1) * w, animated: false })} />
+      </View> : null}
       {caption ? <Text style={{ fontFamily: fonts.medium, fontSize: 18, lineHeight: 28, color: ink }}>{caption}</Text> : null}
       {cur.kind === 'illustration' ? <Text style={{ fontFamily: fonts.medium, fontSize: 17, lineHeight: 27, color: soft }}>{t('photoIllustrationNote')}</Text> : null}
       {onMakePixel && cur.kind === 'photo' && item.icon?.fromId !== cur.id ? (

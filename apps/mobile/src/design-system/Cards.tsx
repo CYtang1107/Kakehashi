@@ -9,10 +9,10 @@ import { useResponsiveLayout } from './useResponsiveLayout';
 
 export function Card({ children, style, tint, flat }: { children: React.ReactNode; style?: ViewStyle; tint?: boolean; flat?: boolean }) {
   const { palette, preferences } = useAccessibilityPreferences();
-  const { width, compact, cardPadding } = useResponsiveLayout();
+  const { width, cardPadding, contentGap } = useResponsiveLayout();
   return <View style={[{ minWidth: 0, maxWidth: '100%' }, flat ? { gap: spacing.md, paddingVertical: spacing.sm }
     : { backgroundColor: tint ? palette.secondary : palette.surface, borderRadius: radii.card,
-      padding: compact ? cardPadding : width >= layout.wideMin ? surface.cardPaddingWide : surface.cardPadding, gap: compact ? spacing.lg : surface.contentGap,
+      padding: width >= layout.wideMin ? surface.cardPaddingWide : cardPadding, gap: contentGap,
       borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : 'transparent',
       ...(tint || preferences.highContrast ? {} : elevation) }, style]}>{children}</View>;
 }

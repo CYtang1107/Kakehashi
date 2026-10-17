@@ -10,11 +10,13 @@ import { useData } from '../../src/data';
 import { useI18n } from '../../src/i18n';
 import { api } from '../../src/api';
 import { fonts, type, yen } from '../../src/theme';
+import { useResponsiveLayout } from '../../src/design-system/useResponsiveLayout';
 
 type Photo = { uri: string; base64: string; mime: string };
 
 export default function AddItem() {
   const { palette: colors } = useAccessibilityPreferences();
+  const { control } = useResponsiveLayout();
   const { data, replaceItem, showToast } = useData();
   const { t, lang } = useI18n();
   const [photo, setPhoto] = useState<Photo | null>(null);
@@ -83,7 +85,7 @@ export default function AddItem() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {data.home.rooms.map((r) => (
             <Pressable key={r.id} accessibilityRole="radio" accessibilityState={{ checked: r.id === room }} aria-checked={r.id === room} onPress={() => setRoomId(r.id)}
-              style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: r.id === room ? colors.ai : colors.line, backgroundColor: r.id === room ? colors.aiTint : colors.sheet }}>
+              style={{ minHeight: control.secondary, maxWidth: '100%', justifyContent: 'center',  paddingHorizontal: 12, paddingVertical: 8, borderRadius: 99, borderWidth: 1, borderColor: r.id === room ? colors.ai : colors.line, backgroundColor: r.id === room ? colors.aiTint : colors.sheet }}>
               <Text style={{ fontFamily: fonts.medium, fontSize: 17, color: r.id === room ? colors.ai : colors.ink }}>{lang === 'ja' ? r.nameJa : r.name}</Text>
             </Pressable>
           ))}

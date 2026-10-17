@@ -19,7 +19,7 @@ type Board = { open: JobListing[]; mine: (JobListing & { status: string; feedbac
 // Only checked helpers see the board; her name and address are never shown, only the area.
 export default function HelperBoard() {
   const { palette: colors } = useAccessibilityPreferences();
-  const { compact } = useResponsiveLayout();
+  const { compact, control, cardPadding } = useResponsiveLayout();
   const { data, refresh, showToast } = useData();
   const { t, lang } = useI18n();
   const [me, setMe] = useState<string | null>(null);
@@ -66,7 +66,7 @@ export default function HelperBoard() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {workers.map((w) => (
             <Pressable key={w.id} accessibilityRole="radio" disabled={busy !== null} accessibilityState={{ checked: me === w.id, disabled: busy !== null }} aria-checked={me === w.id} aria-disabled={busy !== null} onPress={() => setMe(w.id)}
-              style={{ minHeight: 56, maxWidth: '100%', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: me === w.id ? colors.ai : colors.line, backgroundColor: me === w.id ? colors.aiTint : colors.sheet }}>
+              style={{ minHeight: control.secondary, maxWidth: '100%', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: me === w.id ? colors.ai : colors.line, backgroundColor: me === w.id ? colors.aiTint : colors.sheet }}>
               <Text style={{ fontFamily: fonts.bold, fontSize: 17, color: me === w.id ? colors.ai : colors.ink }}>{workerName(w, lang)}</Text>
               <Text style={type.caption}>{pick(lang, w.from, w.fromJa)}</Text>
             </Pressable>
@@ -92,7 +92,7 @@ export default function HelperBoard() {
                 <Pill label={t('youReceive', { amount: yen(j.youReceiveJpy) })} color={colors.moss} bg={colors.mossTint} />
                 <Pill label={t('appFee', { amount: yen(j.feeJpy), pct: Math.round(COMMISSION * 100) })} color={colors.inkSoft} bg={colors.paper} />
               </View>
-              <Button label={t('acceptJob')} icon="check" busy={busy === j.id} disabled={busy !== null || !isCleared(worker)} onPress={() => accept(j)} />
+              <Button label={t('acceptJob')} icon="check" style={compact ? { alignSelf: 'flex-start' } : undefined} busy={busy === j.id} disabled={busy !== null || !isCleared(worker)} onPress={() => accept(j)} />
             </Card>
           ))}
 
@@ -116,7 +116,7 @@ export default function HelperBoard() {
           <Card><Text variant="eyebrow">{t('uxStatusEarnings')}</Text><Text variant="value">{yen(board.earned)}</Text><Text>{t('earned', { amount: yen(board.earned) })}</Text><Text variant="caption">{t('rHelperDemo')}</Text></Card>
           <Checks worker={worker} />
         </> },
-      ]} /> : !worker ? <Card tint style={{ alignItems: 'center', paddingVertical: 28 }}>
+      ]} /> : !worker ? <Card tint style={{ alignItems: 'center', paddingVertical: compact ? cardPadding : 28 }}>
         <Feather name="briefcase" size={28} color={colors.ai} />
         <Text style={[type.bodyBold, { textAlign: 'center' }]}>{t('helperPickFirst')}</Text>
         <Text style={[type.caption, { textAlign: 'center' }]}>{t('helperPickFirstHint')}</Text>

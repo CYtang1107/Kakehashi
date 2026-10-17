@@ -154,7 +154,7 @@ function StoryPost({ story, withJourney }: { story: PublicStory; withJourney?: b
         {story.photos.length ? (
           <PhotoCarousel item={{ name: story.name, photos: story.photos, icon: story.icon }} />
         ) : (
-          <View style={{ backgroundColor: colors.aiTint, borderRadius: radii.control, paddingHorizontal: compact ? 16 : 22, paddingVertical: compact ? 20 : 28, minHeight: compact ? 140 : 200, justifyContent: 'center', gap: 12 }}>
+          <View style={{ backgroundColor: colors.aiTint, borderRadius: radii.control, paddingHorizontal: compact ? 16 : 22, paddingVertical: compact ? 16 : 28, minHeight: compact ? undefined : 200, justifyContent: 'center', gap: 12 }}>
             <Text style={[type.story, { fontSize: 20, lineHeight: 32 }]}>“{text}”</Text>
             <Text style={[type.caption, { color: colors.ai }]}>{teller}</Text>
           </View>

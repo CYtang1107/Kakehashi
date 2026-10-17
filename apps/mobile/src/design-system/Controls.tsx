@@ -5,6 +5,7 @@ import { control, radii, spacing, systemFont } from '../theme';
 import { useI18n } from '../i18n';
 import { AppText } from './AppText';
 import { useAccessibilityPreferences } from './preferences';
+import { useResponsiveLayout } from './useResponsiveLayout';
 
 export type ButtonProps = {
   label: string; onPress: () => void; kind?: 'primary' | 'secondary' | 'tertiary' | 'danger';
@@ -15,6 +16,7 @@ export type ButtonProps = {
 export function Button({ label, onPress, kind = 'primary', icon, disabled, busy, selected,
   accessibilityLabel, accessibilityHint, accessibilityRole = 'button', tabIndex, style }: ButtonProps) {
   const { palette, preferences } = useAccessibilityPreferences();
+  const { control: sizing } = useResponsiveLayout();
   const [focused, setFocused] = useState(false);
   const inactive = Boolean(disabled || busy);
   const primary = kind === 'primary';
@@ -23,8 +25,8 @@ export function Button({ label, onPress, kind = 'primary', icon, disabled, busy,
   return <Pressable testID="premium-button" accessibilityRole={accessibilityRole} accessibilityLabel={accessibilityLabel ?? label}
     accessibilityHint={accessibilityHint} accessibilityState={{ disabled: inactive, busy: Boolean(busy), selected }} aria-disabled={inactive} aria-busy={Boolean(busy)} aria-pressed={accessibilityRole === 'button' ? selected : undefined} aria-selected={accessibilityRole === 'tab' ? selected : undefined}
     disabled={inactive} tabIndex={tabIndex} onPress={onPress} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-    style={({ pressed }) => [{ minHeight: primary ? control.primary : control.secondary, minWidth: control.minimum, maxWidth: '100%', flexShrink: 1,
-      paddingHorizontal: kind === 'tertiary' ? spacing.lg : spacing.xl, paddingVertical: spacing.md, borderRadius: radii.control,
+    style={({ pressed }) => [{ minHeight: primary ? sizing.primary : sizing.secondary, minWidth: control.minimum, maxWidth: '100%', flexShrink: 1,
+      paddingHorizontal: kind === 'tertiary' ? Math.min(spacing.lg, sizing.paddingHorizontal) : sizing.paddingHorizontal, paddingVertical: sizing.paddingVertical, borderRadius: radii.control,
       flexDirection: 'row', gap: spacing.sm, alignItems: 'center', justifyContent: 'center',
       borderWidth: 2,
       borderColor: focused ? palette.focus : selected ? palette.primary
@@ -33,7 +35,7 @@ export function Button({ label, onPress, kind = 'primary', icon, disabled, busy,
         : kind === 'danger' ? pressed ? palette.dangerPressed : palette.dangerSurface : pressed ? palette.controlPressed
         : selected ? palette.secondary : kind === 'tertiary' ? 'transparent' : palette.controlSurface }, style]}>
     {busy ? <ActivityIndicator color={foreground} accessibilityElementsHidden importantForAccessibility="no" />
-      : icon ? <Feather name={icon} size={control.icon} color={foreground} accessible={false} /> : null}
+      : icon ? <Feather name={icon} size={sizing.icon} color={foreground} accessible={false} /> : null}
     <AppText variant="button" style={{ color: foreground, textAlign: 'center', flexShrink: 1 }}>{label}</AppText>
     {selected && !icon && !busy ? <Feather name="check" size={20} color={foreground} accessible={false} /> : null}
   </Pressable>;
@@ -64,11 +66,12 @@ export function AccessibleSwitch({ label, description, value, onValueChange, dis
   label: string; description?: string; value: boolean; onValueChange: (value: boolean) => void; disabled?: boolean;
 }) {
   const { palette, preferences, olderAdult } = useAccessibilityPreferences();
+  const { contentGap, control: sizing } = useResponsiveLayout();
   const [focused, setFocused] = useState(false);
   return <Pressable accessibilityRole="switch" accessibilityLabel={label} accessibilityHint={description}
     accessibilityState={{ checked: value, disabled: Boolean(disabled) }} aria-checked={value} aria-disabled={Boolean(disabled)} disabled={disabled}
     onPress={() => onValueChange(!value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-    style={({ pressed }) => ({ minHeight: control.secondary, padding: spacing.lg, borderWidth: preferences.highContrast ? 2 : 1,
+    style={({ pressed }) => ({ minHeight: sizing.secondary, padding: Math.min(spacing.lg, contentGap), borderWidth: preferences.highContrast ? 2 : 1,
       borderColor: focused ? palette.focus : preferences.highContrast ? palette.border : palette.separator, borderRadius: radii.control,
       opacity: disabled ? 0.5 : 1, backgroundColor: pressed ? palette.secondary : palette.surface, flexDirection: 'row', alignItems: 'center', gap: spacing.lg })}>
     <View style={{ flex: 1, minWidth: 0, gap: spacing.xs }}>
@@ -87,6 +90,7 @@ export type AccessibleTextInputProps = TextInputProps & { label: string; hint?: 
 export const AccessibleTextInput = forwardRef<TextInput, AccessibleTextInputProps>(function AccessibleTextInput(
   { label, hint, error, required, style, onFocus, onBlur, ...rest }, ref) {
   const { palette, scale, preferences } = useAccessibilityPreferences();
+  const { contentGap, control: sizing, bodyText } = useResponsiveLayout();
   const { t } = useI18n();
   const [focused, setFocused] = useState(false);
   const id = useId();
@@ -99,10 +103,10 @@ export const AccessibleTextInput = forwardRef<TextInput, AccessibleTextInputProp
       placeholderTextColor={palette.inkSoft}
       onFocus={event => { setFocused(true); onFocus?.(event); }} onBlur={event => { setFocused(false); onBlur?.(event); }}
       style={[{ borderWidth: preferences.highContrast ? 2 : 1, borderColor: error ? palette.danger : focused ? palette.focus : palette.border,
-        borderRadius: radii.control, padding: spacing.lg, fontFamily: systemFont,
-        fontSize: 19 * scale, lineHeight: 30 * scale, color: palette.ink, backgroundColor: palette.surface,
+        borderRadius: radii.control, padding: Math.min(spacing.lg, contentGap), fontFamily: systemFont,
+        fontSize: bodyText.fontSize * scale, lineHeight: bodyText.lineHeight * scale, color: palette.ink, backgroundColor: palette.surface,
         opacity: rest.editable === false ? 0.6 : 1,
-        minWidth: 0, width: '100%', textAlignVertical: rest.multiline ? 'top' : 'center', minHeight: rest.multiline ? 140 : control.secondary }, style]} />
+        minWidth: 0, width: '100%', textAlignVertical: rest.multiline ? 'top' : 'center', minHeight: rest.multiline ? sizing.inputMultiline : sizing.secondary }, style]} />
     {error ? <AppText nativeID={`${id}-hint`} variant="caption" accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ color: palette.danger }}>{error}</AppText>
       : hint ? <AppText nativeID={`${id}-hint`} variant="caption">{hint}</AppText> : null}
   </View>;

@@ -5,6 +5,7 @@ import { AppText } from '../../ui';
 import { useAccessibilityPreferences } from '../../design-system/preferences';
 import { MODULES, type Event, type Module } from './model';
 import { moduleName } from './copy';
+import { useResponsiveLayout } from '../../design-system/useResponsiveLayout';
 
 // This component is imported only by the developer route. The graph has at most ten nodes.
 export function AgentGraph({ events, current, selected, onSelect, ja }: {
@@ -12,6 +13,7 @@ export function AgentGraph({ events, current, selected, onSelect, ja }: {
 }) {
   const { palette, reducedMotion, scale } = useAccessibilityPreferences();
   const { width } = useWindowDimensions();
+  const { sectionGap, control } = useResponsiveLayout();
   const narrow = width < 600 * scale;
   const opacity = useRef(new Animated.Value(1)).current;
   const [boxes,setBoxes]=useState<Partial<Record<Module,{x:number;y:number;width:number;height:number}>>>({});
@@ -29,7 +31,7 @@ export function AgentGraph({ events, current, selected, onSelect, ja }: {
     return <Animated.View key={id} onLayout={event=>{const box=event.nativeEvent.layout;setBoxes(previous=>JSON.stringify(previous[id])===JSON.stringify(box)?previous:{...previous,[id]:box});}}
       style={{ flexBasis: narrow || id==='orchestrator'?'100%':'44%', flexGrow:1, opacity: active ? opacity : 1 }}>
       <Pressable accessibilityRole="button" accessibilityState={{ selected: selected === id }} aria-pressed={selected === id} accessibilityLabel={moduleName(id, ja)} onPress={() => onSelect(id)}
-        style={({ pressed }) => ({ minHeight: 66, justifyContent: 'center', padding: 12, borderRadius: 12, borderWidth: selected === id || active ? 3 : 1,
+        style={({ pressed }) => ({ minHeight: narrow ? control.secondary : 66, justifyContent: 'center', padding: 12, borderRadius: 12, borderWidth: selected === id || active ? 3 : 1,
           borderColor: blocked ? palette.danger : active ? palette.primary : palette.border,
           backgroundColor: blocked ? palette.dangerSurface : active || pressed ? palette.secondary : palette.surface })}>
         <AppText variant="bodyBold">{moduleName(id, ja)}</AppText>
@@ -39,7 +41,7 @@ export function AgentGraph({ events, current, selected, onSelect, ja }: {
   };
   const edges=events.filter((e,i)=>events.findIndex(other=>other.from===e.from&&other.to===e.to)===i)
     .sort((a,b)=>Number(a.from===current?.from&&a.to===current.to)-Number(b.from===current?.from&&b.to===current.to));
-  return <View style={{ gap: 40, paddingLeft:narrow?24:0, flexDirection:'row',flexWrap:'wrap', position:'relative' }}>
+  return <View style={{ gap: narrow ? sectionGap : 40, paddingLeft:narrow?24:0, flexDirection:'row',flexWrap:'wrap', position:'relative' }}>
     <Svg width="100%" height="100%" style={{position:'absolute'}} accessible={false} pointerEvents="none">
       {edges.map(e=>{const a=boxes[e.from],b=boxes[e.to];if(!a||!b||e.from===e.to)return null;
         const active=current?.from===e.from&&current.to===e.to,blocked=active&&current.kind==='blocked';

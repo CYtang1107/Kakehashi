@@ -6,6 +6,7 @@ import { useData } from '../data';
 import { useI18n } from '../i18n';
 import { herLocation } from './navigation';
 import { CareLoadingScreen } from '../design-system/CareLoadingScreen';
+import { useResponsiveLayout } from '../design-system/useResponsiveLayout';
 
 // The persistent shell owns navigation and feedback; pages own a single scroll area.
 export function HerPage({ children, title, description, header, back, wide, requiresHome = true, footer, scrollRef }: {
@@ -16,6 +17,10 @@ export function HerPage({ children, title, description, header, back, wide, requ
   const { t } = useI18n();
   const location = herLocation(usePathname());
   const heading = useRef<View>(null);
+  const { compact } = useResponsiveLayout();
+  const backAction = back ? <Button label={t('back')} icon="chevron-left" kind="tertiary" style={{ alignSelf: 'flex-start', paddingHorizontal: 12 }}
+    onPress={() => router.canGoBack() ? router.back() : router.replace('/her')} /> : null;
+  const breadcrumb = location.parent ? <AppText variant="caption">{t(location.parent)}{location.label ? ` / ${t(location.label)}` : ''}</AppText> : null;
   useFocusEffect(useCallback(() => {
     const timer = setTimeout(() => {
       if (Platform.OS === 'web') (heading.current as unknown as HTMLElement)?.focus();
@@ -23,11 +28,10 @@ export function HerPage({ children, title, description, header, back, wide, requ
     }, 150);
     return () => clearTimeout(timer);
   }, []));
-  return <ScreenFrame safeTop={false} wide={wide} footer={footer} scrollRef={scrollRef}>
-    {back ? <Button label={t('back')} icon="chevron-left" kind="tertiary" style={{ alignSelf: 'flex-start', paddingHorizontal: 12 }}
-      onPress={() => router.canGoBack() ? router.back() : router.replace('/her')} /> : null}
+  return <ScreenFrame safeTop={false} safeBottom={false} wide={wide} footer={footer} scrollRef={scrollRef}>
+    {!compact ? backAction : null}
     <View ref={heading} tabIndex={-1} accessibilityLabel={title ?? header?.title} style={{ gap: 8 }}>
-      {location.parent ? <AppText variant="caption">{t(location.parent)}{location.label ? ` / ${t(location.label)}` : ''}</AppText> : null}
+      {compact && back ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>{backAction}{breadcrumb}</View> : breadcrumb}
       <AppText variant="title">{title ?? header?.title}</AppText>
       {description || header?.sub ? <AppText variant="caption">{description ?? header?.sub}</AppText> : null}
     </View>

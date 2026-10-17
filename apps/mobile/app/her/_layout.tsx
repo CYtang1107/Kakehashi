@@ -24,7 +24,7 @@ function HerNavigation() {
   const { width } = useWindowDimensions();
   const { scale, palette } = useAccessibilityPreferences();
   const { top, bottom, left, right } = useSafeAreaInsets();
-  const { short, gutter } = useResponsiveLayout();
+  const { short, gutter, toolbarPadding, navigation: sizing } = useResponsiveLayout();
   const keyboardVisible = useKeyboardVisible();
   const { t } = useI18n();
   const { toast } = useData();
@@ -36,16 +36,16 @@ function HerNavigation() {
     {herDestinations.map(([id, href, label, icon]) => <Pressable key={id} accessibilityRole="tab" accessibilityLabel={t(label as Key)}
       accessibilityState={{ selected: active === id }} aria-selected={active === id} onPress={() => router.navigate(href)}
       style={({ pressed }) => ({ flex: desktop ? undefined : 1, minWidth: 0,
-        minHeight: 64, padding: desktop ? 14 : 4, gap: desktop ? 12 : 4, borderRadius: radii.control, borderWidth: 1,
+        minHeight: desktop ? 64 : sizing.minimum, padding: desktop ? 14 : sizing.padding, gap: desktop ? 12 : sizing.gap, borderRadius: radii.control, borderWidth: 1,
         borderColor: active === id ? palette.primary : 'transparent',
         backgroundColor: active === id || pressed ? palette.plumTint : 'transparent',
         flexDirection: desktop ? 'row' : 'column', alignItems: 'center', justifyContent: desktop ? 'flex-start' : 'center' })}>
-      <Feather name={icon} size={24} color={active === id ? palette.ai : palette.inkSoft} accessible={false} />
-      <AppText style={{ maxWidth: '100%', fontSize: desktop ? 18 : 15, lineHeight: desktop ? 27 : 21, fontWeight: active === id ? '600' : '400', color: active === id ? palette.ai : palette.inkSoft, textAlign: desktop ? 'left' : 'center', flexShrink: 1 }}>{t(label as Key)}</AppText>
+      <Feather name={icon} size={desktop ? 24 : sizing.icon} color={active === id ? palette.ai : palette.inkSoft} accessible={false} />
+      <AppText variant="navigation" style={{ maxWidth: '100%', ...(desktop ? { fontSize: 18, lineHeight: 27 } : {}), fontWeight: active === id ? '600' : '400', color: active === id ? palette.ai : palette.inkSoft, textAlign: desktop ? 'left' : 'center', flexShrink: 1 }}>{t(label as Key)}</AppText>
     </Pressable>)}
   </View>;
   return <View testID="older-adult-shell" style={{ flex: 1, minHeight: 0, backgroundColor: palette.paper, paddingTop: top }}>
-    <View testID="app-toolbar" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between', paddingLeft: Math.max(gutter, left), paddingRight: Math.max(gutter, right), paddingVertical: short ? 4 : 12,
+    <View testID="app-toolbar" style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between', paddingLeft: Math.max(gutter, left), paddingRight: Math.max(gutter, right), paddingVertical: short ? 4 : toolbarPadding,
       backgroundColor: palette.surface, borderBottomWidth: 1, borderColor: palette.separator }}>
       <Brand compact={!desktop && width < 390 * scale} />
       <Button label={t('hSettings')} icon="settings" kind="tertiary" selected={settingsContext}

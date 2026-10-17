@@ -2,7 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { AccessibilityInfo, findNodeHandle, Platform, Pressable, ScrollView, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useI18n } from '../i18n';
-import { control, radii, spacing } from '../theme';
+import { radii, spacing } from '../theme';
 import { AppText } from './AppText';
 import { Button } from './Controls';
 import { useAccessibilityPreferences } from './preferences';
@@ -52,11 +52,12 @@ export function SectionTabs<T extends string>({ value, options, onChange, label 
 
 // Visited forms stay mounted so moving between tasks does not discard an unfinished draft.
 export function TaskPanel({ active, children, retain = true }: { active: boolean; children: React.ReactNode; retain?: boolean }) {
+  const { sectionGap } = useResponsiveLayout();
   const [visited, setVisited] = useState(active);
   useEffect(() => { if (active) setVisited(true); }, [active]);
   if (!active && (!visited || !retain)) return null;
   return <View accessibilityElementsHidden={!active} importantForAccessibility={active ? 'auto' : 'no-hide-descendants'}
-    style={{ display: active ? 'flex' : 'none', gap: spacing.xl }}>{children}</View>;
+    style={{ display: active ? 'flex' : 'none', gap: Math.min(spacing.xl, sectionGap) }}>{children}</View>;
 }
 
 export type WorkspaceTask = { id: string; label: string; description?: string; icon?: keyof typeof Feather.glyphMap; content: React.ReactNode; retain?: boolean };
@@ -66,7 +67,7 @@ export function TaskWorkspace({ tasks, defaultTask, label, tabs = false }: {
 }) {
   const { t } = useI18n();
   const { palette, preferences } = useAccessibilityPreferences();
-  const { compact } = useResponsiveLayout();
+  const { compact, sectionGap, contentGap, control: sizing } = useResponsiveLayout();
   const [selected, setSelected] = useState<string | null>(defaultTask ?? null);
   const [focused, setFocused] = useState<string | null>(null);
   const heading = useRef<View>(null);
@@ -79,7 +80,7 @@ export function TaskWorkspace({ tasks, defaultTask, label, tabs = false }: {
       else { const handle = findNodeHandle(heading.current); if (handle) AccessibilityInfo.setAccessibilityFocus(handle); }
     });
   };
-  return <View style={{ gap: spacing.xl }}>
+  return <View style={{ gap: Math.min(spacing.xl, sectionGap) }}>
     {tabs ? <SectionTabs label={label ?? t('uxChooseTask')} value={selected ?? ''} options={tasks.map(task => [task.id, task.label] as const)} onChange={choose} />
       : current ? <Button label={t('uxAllTasks')} icon="arrow-left" kind="tertiary" style={{ alignSelf: 'flex-start' }} onPress={() => choose(null)} /> : null}
     <View ref={heading} tabIndex={-1} style={{ gap: spacing.sm }}>
@@ -89,7 +90,7 @@ export function TaskWorkspace({ tasks, defaultTask, label, tabs = false }: {
     {!current && !tabs ? <View style={{ gap: spacing.md }}>{tasks.map(task => <Pressable key={task.id}
       accessibilityRole="button" accessibilityLabel={task.label} accessibilityHint={task.description}
       onFocus={() => setFocused(task.id)} onBlur={() => setFocused(null)} onPress={() => choose(task.id)}
-      style={({ pressed }) => ({ minHeight: control.secondary, padding: compact ? spacing.lg : spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.lg,
+      style={({ pressed }) => ({ minHeight: sizing.secondary, padding: compact ? contentGap : spacing.xl, flexDirection: 'row', alignItems: 'center', gap: Math.min(spacing.lg, contentGap),
         borderRadius: radii.card, backgroundColor: pressed ? palette.secondary : palette.surface,
         borderWidth: preferences.highContrast || focused === task.id ? 2 : 1,
         borderColor: focused === task.id ? palette.focus : preferences.highContrast ? palette.border : palette.separator })}>
@@ -98,6 +99,6 @@ export function TaskWorkspace({ tasks, defaultTask, label, tabs = false }: {
         {task.description ? <AppText variant="caption">{task.description}</AppText> : null}</View>
       <Feather name="chevron-right" size={22} color={palette.inkSoft} accessible={false} />
     </Pressable>)}</View> : null}
-    {tasks.map(task => <TaskPanel key={task.id} active={task.id === selected} retain={task.retain}><View nativeID={`${id}-${task.id}`} style={{ gap: spacing.xl }}>{task.content}</View></TaskPanel>)}
+    {tasks.map(task => <TaskPanel key={task.id} active={task.id === selected} retain={task.retain}><View nativeID={`${id}-${task.id}`} style={{ gap: Math.min(spacing.xl, sectionGap) }}>{task.content}</View></TaskPanel>)}
   </View>;
 }

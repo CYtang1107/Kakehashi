@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { AppText as Text } from './design-system/AppText';
+import { useAccessibilityPreferences } from './design-system/preferences';
 import { Feather } from '@expo/vector-icons';
 import { pick } from '@kakehashi/shared';
 import { Fold } from './ui';
 import { useData } from './data';
 import { useI18n } from './i18n';
-import { colors, fonts, type } from './theme';
+import { fonts, type } from './theme';
 
 // Concept preview of "her circle" (the vision in the proposal): people she chooses are told,
 // gently, when a day does not look normal. Nothing is sensed or sent; the switch only changes this card.
 export function HerCircleCard({ mode }: { mode: 'her' | 'family' }) {
+  const { palette: colors } = useAccessibilityPreferences();
   const { data } = useData();
   const { t, lang } = useI18n();
   const [on, setOn] = useState(true);
@@ -31,7 +34,7 @@ export function HerCircleCard({ mode }: { mode: 'her' | 'family' }) {
       {people.map((p) => (
         <View key={p.role} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 99, backgroundColor: colors.mossTint }}>
           <Feather name={p.icon} size={fs} color={colors.moss} />
-          <Text style={{ fontFamily: fonts.bold, fontSize: fs, color: colors.ink }}>{p.who}<Text style={{ fontFamily: fonts.medium, color: colors.inkSoft }}> · {p.role}</Text></Text>
+          <Text variant="caption" style={{ fontFamily: fonts.bold, fontSize: fs, lineHeight: fs * 1.4, color: colors.ink }}>{p.who}<Text variant="caption" style={{ fontFamily: fonts.medium, fontSize: fs, lineHeight: fs * 1.4, color: colors.inkSoft }}> · {p.role}</Text></Text>
         </View>
       ))}
     </View>

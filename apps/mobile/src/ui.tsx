@@ -39,8 +39,8 @@ export function TopBar({ back, roleSwitch }: { back?: boolean; roleSwitch?: bool
   const { width } = useWindowDimensions();
   const path = usePathname();
   const desktop = width >= 1000 * scale;
-  const { gutter } = useResponsiveLayout();
-  return <View testID="app-toolbar" style={{ paddingTop: top + spacing.md, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), paddingBottom: spacing.md,
+  const { gutter, toolbarPadding } = useResponsiveLayout();
+  return <View testID="app-toolbar" style={{ paddingTop: top + toolbarPadding, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), paddingBottom: toolbarPadding,
     backgroundColor: palette.surface, borderBottomWidth: 1, borderBottomColor: palette.separator }}>
     <View style={{ width: '100%', maxWidth: layout.wideWidth - layout.margin * 2, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.md }}>
       <Brand />
@@ -82,7 +82,7 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
   const { palette } = useAccessibilityPreferences();
   const insets = useSafeAreaInsets();
   const { bottom } = insets;
-  const { gutter } = useResponsiveLayout();
+  const { gutter, pageBottom, sectionGap } = useResponsiveLayout();
   const isWide = useWide();
   const maxWidth = wide && isWide ? layout.wideWidth : layout.compactWidth;
   const body = requiresHome && error ? <StatusBanner title={t('dsConnectionTitle')} message={t('dsConnectionBody')}
@@ -95,9 +95,9 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
       <View style={{ flex: 1, minHeight: 0, padding: layout.margin, paddingBottom: bottom + layout.margin,
         gap: layout.gap, maxWidth, width: '100%', alignSelf: 'center' }}>{body}</View>
     </View> : <ScrollView style={{ flex: 1, minHeight: 0 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets={Platform.OS !== 'ios'}
-      contentContainerStyle={{ paddingBottom: bottom + spacing.section }}>
+      contentContainerStyle={{ paddingBottom: bottom + pageBottom }}>
       {header ? <NightBand header={header} maxWidth={maxWidth} /> : null}
-      <View style={{ paddingVertical: gutter, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), gap: layout.gap, maxWidth, minWidth: 0, width: '100%', alignSelf: 'center' }}>{body}</View>
+      <View style={{ paddingVertical: gutter, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), gap: Math.min(layout.gap, sectionGap), maxWidth, minWidth: 0, width: '100%', alignSelf: 'center' }}>{body}</View>
     </ScrollView>}
     <Toast />
     {globalNav ? <GlobalBottomBar active={globalNav} /> : bottomNav ? <AppBottomBar items={bottomNav} /> : null}
@@ -107,10 +107,10 @@ export function Screen({ children, back, roleSwitch = true, header, wide, fit, r
 // The page heading on night indigo, directly under the top bar so the two read as one band.
 export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth: number }) {
   const { palette: colors } = useAccessibilityPreferences();
-  const { compact, gutter } = useResponsiveLayout();
+  const { compact, gutter, pageTop } = useResponsiveLayout();
   const insets = useSafeAreaInsets();
   const { eyebrow, title, sub, leading } = header;
-  return <View style={{ paddingTop: compact ? spacing.lg : spacing.xxl, paddingBottom: spacing.sm }}>
+  return <View style={{ paddingTop: pageTop, paddingBottom: spacing.sm }}>
     <View style={{ maxWidth, paddingLeft: Math.max(gutter, insets.left), paddingRight: Math.max(gutter, insets.right), width: '100%', alignSelf: 'center', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.lg }}>
       {leading}
       <View style={{ flex: 1, minWidth: 0, flexBasis: compact && leading ? '100%' : undefined, gap: spacing.sm }}>
@@ -127,6 +127,8 @@ export function NightBand({ header, maxWidth }: { header: ScreenHeader; maxWidth
 // fill: both columns take the full height left on the page; the right one scrolls inside itself (and the left one too with scrollLeft).
 export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: React.ReactNode; right: React.ReactNode; stickyLeft?: boolean; fill?: boolean; scrollLeft?: boolean }) {
   const wide = useWide();
+  const { sectionGap } = useResponsiveLayout();
+  const gap = Math.min(layout.gap, sectionGap);
   if (fill && wide) {
     return (
       <View style={{ flex: 1, minHeight: 0, flexDirection: 'row', gap: layout.gap }}>
@@ -139,9 +141,9 @@ export function Columns({ left, right, stickyLeft, fill, scrollLeft }: { left: R
   }
   const sticky = stickyLeft && Platform.OS === 'web' ? ({ position: 'sticky', top: 16 } as unknown as ViewStyle) : null;
   return (
-    <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'flex-start' : 'stretch', gap: layout.gap }}>
-      <View style={[{ flex: wide ? 1.38 : undefined, minWidth: 0, gap: spacing.xl }, wide ? sticky : null]}>{left}</View>
-      <View style={{ flex: wide ? 1 : undefined, minWidth: 0, gap: spacing.xl }}>{right}</View>
+    <View style={{ flexDirection: wide ? 'row' : 'column', alignItems: wide ? 'flex-start' : 'stretch', gap }}>
+      <View style={[{ flex: wide ? 1.38 : undefined, minWidth: 0, gap }, wide ? sticky : null]}>{left}</View>
+      <View style={{ flex: wide ? 1 : undefined, minWidth: 0, gap }}>{right}</View>
     </View>
   );
 }
@@ -186,11 +188,12 @@ export function Fold({ title, summary, icon, children, open: initiallyOpen = fal
   const [open, setOpen] = useState(initiallyOpen);
   const [focused, setFocused] = useState(false);
   const { palette, preferences } = useAccessibilityPreferences();
+  const { contentGap, control: sizing } = useResponsiveLayout();
   return <View style={{ gap: spacing.lg }}>
     <Pressable accessibilityRole="button" accessibilityLabel={title} accessibilityState={{ expanded: open }} aria-expanded={open}
       onPress={() => setOpen(value => !value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-      style={({ pressed }) => ({ minHeight: control.secondary, flexDirection: 'row', alignItems: 'center', gap: spacing.md,
-        padding: spacing.lg, borderRadius: radii.control, backgroundColor: pressed || open ? palette.secondary : palette.surface,
+      style={({ pressed }) => ({ minHeight: sizing.secondary, flexDirection: 'row', alignItems: 'center', gap: spacing.md,
+        padding: Math.min(spacing.lg, contentGap), borderRadius: radii.control, backgroundColor: pressed || open ? palette.secondary : palette.surface,
         borderWidth: preferences.highContrast ? 2 : 1, borderColor: focused ? palette.focus : preferences.highContrast ? palette.border : palette.separator })}>
       {icon ? <Feather name={icon} size={24} color={palette.primary} accessible={false} /> : null}
       <View style={{ flex: 1, minWidth: 0, gap: spacing.xs }}>

@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Keyboard, Platform, useWindowDimensions } from 'react-native';
 import { useAccessibilityPreferences } from './preferences';
-import { layout, spacing } from '../theme';
+import { responsiveMetrics, responsiveText } from './responsive';
 
 export function useResponsiveLayout() {
   const { width, height, fontScale } = useWindowDimensions();
-  const { scale } = useAccessibilityPreferences();
+  const { scale, olderAdult } = useAccessibilityPreferences();
   const compact = width < 600 * scale * fontScale;
-  return { width, height, compact, short: height < 500,
-    gutter: compact ? spacing.lg : layout.margin,
-    cardPadding: compact ? spacing.lg : spacing.xl };
+  return { width, height, compact, short: height < 500, fontScale,
+    ...responsiveMetrics(width, olderAdult),
+    bodyText: responsiveText('body', width, olderAdult) };
 }
 
 export function useKeyboardVisible() {

@@ -101,6 +101,7 @@ export const type = {
   story: { fontFamily: fonts.displaySemi, fontSize: 20, lineHeight: 34, color: colors.ink },
   value: { fontFamily: systemFont, fontWeight: '600', fontSize: 32, lineHeight: 40, letterSpacing: -0.8, color: colors.ink },
   button: { fontFamily: systemFont, fontWeight: '600', fontSize: 18, lineHeight: 27, letterSpacing: -0.15, color: colors.ink },
+  navigation: { fontFamily: systemFont, fontWeight: '400', fontSize: 15, lineHeight: 21, color: colors.inkSoft },
 } as const;
 
 export const herType = {
@@ -114,6 +115,39 @@ export const surface = { cardPadding: 24, cardPaddingWide: 28, contentGap: 20, s
 export const layout = { compactWidth: 760, wideWidth: 1240, wideMin: 1000, margin: 24, gap: 24 } as const;
 export const control = { minimum: 48, secondary: 56, primary: 60, icon: 24 } as const;
 export const textScale = { normal: 1, large: 1.15, extraLarge: 1.3 } as const;
+
+// Phone defaults blend into the existing desktop tokens between 600 and 1000px.
+export const mobileType = {
+  title: { fontSize: 25, lineHeight: 34, letterSpacing: -0.5 },
+  section: { fontSize: 19, lineHeight: 26, letterSpacing: -0.2 },
+  body: { fontSize: 16.5, lineHeight: 24 },
+  bodyBold: { fontSize: 16.5, lineHeight: 24 },
+  caption: { fontSize: 15, lineHeight: 21 },
+  eyebrow: { fontSize: 14, lineHeight: 20 },
+  story: { fontSize: 18, lineHeight: 27 },
+  value: { fontSize: 25, lineHeight: 34, letterSpacing: -0.5 },
+  button: { fontSize: 16.5, lineHeight: 23 },
+  navigation: { fontSize: 14, lineHeight: 20 },
+} as const;
+export const herMobileType = {
+  ...mobileType,
+  title: { fontSize: 26, lineHeight: 35, letterSpacing: -0.4 },
+  section: { fontSize: 20, lineHeight: 28, letterSpacing: -0.2 },
+  body: { fontSize: 18, lineHeight: 26 },
+  bodyBold: { fontSize: 18, lineHeight: 26 },
+  caption: { fontSize: 16, lineHeight: 23 },
+  eyebrow: { fontSize: 15, lineHeight: 21 },
+  story: { fontSize: 19, lineHeight: 28 },
+  button: { fontSize: 17.5, lineHeight: 25 },
+  navigation: { fontSize: 15, lineHeight: 21 },
+} as const;
+export const mobileSurface = {
+  gutter: 16, cardPadding: 16, contentGap: 12, sectionGap: 20,
+  pageTop: 16, pageBottom: 24, toolbarPadding: 6,
+} as const;
+export const mobileControl = { ...control, primary: 50, secondary: 48, icon: 22, paddingVertical: 8, inputMultiline: 104 } as const;
+export const herMobileControl = { ...mobileControl, primary: 54, secondary: 48, icon: 24 } as const;
+export const mobileNavigation = { minimum: 56, icon: 22, gap: 2, padding: 3 } as const;
 export const motion = { feedbackMs: 120, disclosureMs: 160, toastMs: 6000 } as const;
 export const elevation = { shadowColor: '#202923', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.035, shadowRadius: 10, elevation: 1 } as const;
 export const floatingElevation = { shadowColor: '#14291F', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 24, elevation: 6 } as const;

@@ -6,6 +6,7 @@ import { useI18n } from '../i18n';
 import { AppText } from './AppText';
 import { Button, IconButton } from './Controls';
 import { useAccessibilityPreferences } from './preferences';
+import { useResponsiveLayout } from './useResponsiveLayout';
 
 export type ConfirmationDialogProps = {
   visible: boolean; title: string; message?: string; confirmLabel?: string; cancelLabel?: string;
@@ -20,6 +21,7 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const compact = width < 760;
+  const { sectionGap } = useResponsiveLayout();
   const panel = useRef<View>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const cancelRef = useRef(onCancel);
@@ -75,7 +77,7 @@ export function ConfirmationDialog({ visible, title, message, confirmLabel, canc
           borderBottomLeftRadius: compact ? 0 : radii.dialog, borderBottomRightRadius: compact ? 0 : radii.dialog,
           ...floatingElevation, borderWidth: preferences.highContrast ? 2 : 1, borderColor: preferences.highContrast ? palette.border : palette.separator }}>
         <ScrollView style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets={Platform.OS !== 'ios'}
-          contentContainerStyle={{ padding: compact ? spacing.lg : spacing.xl, paddingBottom: compact ? insets.bottom + spacing.xl : spacing.xl, gap: spacing.xl }}>
+          contentContainerStyle={{ padding: compact ? spacing.lg : spacing.xl, paddingBottom: compact ? insets.bottom + spacing.xl : spacing.xl, gap: Math.min(spacing.xl, sectionGap) }}>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
             <AppText variant="section" nativeID={`${id}-title`} style={{ flex: 1 }}>{title}</AppText>
             <IconButton icon="x" label={t('close')} disabled={busy} onPress={onCancel} />

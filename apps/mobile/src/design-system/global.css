@@ -54,6 +54,10 @@ button, a, [role="button"], [role="tab"], [role="radio"], [role="checkbox"], [ro
 [data-testid="dialog-panel"] { box-shadow: 0 16px 48px rgb(24 20 28 / 16%); }
 [data-testid="older-adult-shell"] [role="button"],
 [data-testid="older-adult-shell"] [role="switch"] { min-height: 56px; }
+@media (max-width: 999px) {
+  [data-testid="older-adult-shell"] [role="button"],
+  [data-testid="older-adult-shell"] [role="switch"] { min-height: 48px; }
+}
 
 @media (hover: hover) and (pointer: fine) {
   [data-testid="premium-button"]:hover:not([aria-disabled="true"]),

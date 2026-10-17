@@ -8,10 +8,12 @@ import { canMessage, pairKey, relationship, type ReportReason } from './model';
 import { SocialPage, displayPerson, useSocialConfirmation } from './SocialPage';
 import { useSocial } from './store';
 import { MessageComposer } from '../../design-system/MessageComposer';
+import { useResponsiveLayout } from '../../design-system/useResponsiveLayout';
 
 export function ConversationScreen(){
   const {id}=useLocalSearchParams<{id:string}>(),{t,lang}=useI18n(),social=useSocial(),confirmation=useSocialConfirmation();
   const {palette,reducedMotion}=useAccessibilityPreferences();
+  const {contentGap,cardPadding}=useResponsiveLayout();
   const scroll=useRef<ScrollView>(null),chatTop=useRef(0),latestTop=useRef(0);
   const [text,setText]=useState(''),[report,setReport]=useState(false),[reason,setReason]=useState<ReportReason>('unwanted');
   useEffect(()=>{setText('');setReport(false);},[social.active.id,id]);
@@ -28,8 +30,8 @@ export function ConversationScreen(){
     sendLabel={t('sSend')} disabled={!allowed||full||!text.trim()} onSend={send} />}>
     <AppText variant="section">{name}</AppText><AppText>{t(`sState_${status}` as Key)}</AppText>
     {status!=='accepted'?<StatusBanner title={t('sMessageClosed')}/>:<>
-      <View onLayout={event=>{chatTop.current=event.nativeEvent.layout.y;}} style={{gap:20}}>
-      {!messages.length?<AppText>{t('sNoMessages')}</AppText>:messages.map(message=><View key={message.id} onLayout={event=>{if(message.id===messages.at(-1)?.id)latestTop.current=event.nativeEvent.layout.y;}} style={{width:'95%',alignSelf:message.from===social.active.id?'flex-end':'flex-start',backgroundColor:message.from===social.active.id?palette.secondary:palette.surface,borderWidth:0,borderColor:palette.separator,borderRadius:24,padding:20,gap:12}}>
+      <View onLayout={event=>{chatTop.current=event.nativeEvent.layout.y;}} style={{gap:contentGap}}>
+      {!messages.length?<AppText>{t('sNoMessages')}</AppText>:messages.map(message=><View key={message.id} onLayout={event=>{if(message.id===messages.at(-1)?.id)latestTop.current=event.nativeEvent.layout.y;}} style={{width:'95%',alignSelf:message.from===social.active.id?'flex-end':'flex-start',backgroundColor:message.from===social.active.id?palette.secondary:palette.surface,borderWidth:0,borderColor:palette.separator,borderRadius:24,padding:Math.min(20,cardPadding),gap:12}}>
         <AppText variant="bodyBold">{message.kind==='scripted'?t('sScripted',{name:message.from===social.active.id?displayPerson(social.active,lang):name}):message.from===social.active.id?t('cYou'):name}</AppText>
         <AppText accessibilityLiveRegion={message.id===messages.at(-1)?.id?'polite':'none'}>{message.kind==='scripted'?t('sMockReply'):message.text}</AppText>
       </View>)}

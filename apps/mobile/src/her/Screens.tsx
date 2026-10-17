@@ -17,17 +17,19 @@ import { StudentBadges } from '../Community';
 import { DailyAssistance } from '../evercircle/assistance/DailyAssistance';
 import { useAccessibilityPreferences } from '../design-system/preferences';
 import { radii, spacing } from '../theme';
+import { useResponsiveLayout } from '../design-system/useResponsiveLayout';
 
 export function Destination({ label, href, icon }: { label: Key; href: string; icon?: React.ComponentProps<typeof Button>['icon'] }) {
   const { t } = useI18n();
   const { palette, preferences } = useAccessibilityPreferences();
+  const { compact, contentGap, control } = useResponsiveLayout();
   const tint = icon === 'users' ? palette.mossTint : icon === 'home' ? palette.kakiTint
     : icon === 'calendar' || icon === 'sun' ? palette.accent : palette.plumTint;
   return <Pressable accessibilityRole="button" accessibilityLabel={t(label)} onPress={() => router.push(href as never)}
-    style={({ pressed }) => ({ minHeight: 80, padding: spacing.lg, gap: spacing.lg, flexDirection: 'row', alignItems: 'center',
+    style={({ pressed }) => ({ minHeight: compact ? control.primary : 80, padding: Math.min(spacing.lg, contentGap), gap: Math.min(spacing.lg, contentGap), flexDirection: 'row', alignItems: 'center',
       borderRadius: radii.control, borderWidth: preferences.highContrast ? 2 : 1,
       borderColor: preferences.highContrast ? palette.border : palette.separator, backgroundColor: pressed ? palette.secondary : palette.surface })}>
-    <View style={{ width: 52, height: 52, borderRadius: 18, backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ width: compact ? 44 : 52, height: compact ? 44 : 52, borderRadius: 18, backgroundColor: tint, alignItems: 'center', justifyContent: 'center' }}>
       <Feather name={icon ?? 'arrow-right'} size={24} color={icon === 'users' ? palette.moss : icon === 'home' ? palette.kaki : palette.ai} accessible={false} />
     </View>
     <AppText variant="bodyBold" style={{ flex: 1 }}>{t(label)}</AppText>
@@ -49,20 +51,19 @@ export function WeatherAdvice({ always = false }: { always?: boolean }) {
 export function HomeScreen() {
   const { data } = useData(); const { t, lang } = useI18n();
   const { palette } = useAccessibilityPreferences();
+  const { compact, contentGap } = useResponsiveLayout();
   const date = new Date().toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-GB', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'Asia/Tokyo' });
   const day = householdDay();
   const all = data ? plans(data.home, lang, t) : [];
   const next = all.find(p => (p.kind === 'visit' || p.kind === 'helper') && p.date.slice(0, 10) >= day);
   const todays = all.filter(p => p.date.slice(0, 10) === day);
   const helpers = data?.home.services.some(s => s.status === 'booked');
-  return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hToday')} description={date}>
-    <AppText>{t('hHomeLead')}</AppText>
-    <Card tint style={{ backgroundColor: palette.plumTint, gap: spacing.lg }}>
+  const companion = <Card tint style={{ backgroundColor: palette.plumTint, gap: Math.min(spacing.lg, contentGap) }}>
       <AppText variant="section">{t('hCompanionWelcome')}</AppText>
       <AppText variant="caption">{t('cLead')}</AppText>
       <Button label={t('hCompanion')} icon="message-circle" onPress={() => router.push('/her/companion')} />
-    </Card>
-    <Card><AppText variant="section">{t('hGlance')}</AppText>
+    </Card>;
+  const glance = <Card><AppText variant="section">{t('hGlance')}</AppText>
       <View style={{ gap: spacing.sm }}><AppText variant="bodyBold">{t('hNextVisit')}</AppText>
         {next ? <><AppText>{next.title} · {planDate(next.date, lang)}</AppText><AppText variant="caption">{next.detail}</AppText></> : <AppText>{t('hNoVisit')}</AppText>}
       </View>
@@ -72,7 +73,11 @@ export function HomeScreen() {
       </View>
       <WeatherAdvice />
       <Button label={t('hSeeDay')} icon="calendar" kind="secondary" onPress={() => router.push('/her/my-day')} />
-    </Card>
+    </Card>;
+  return <HerPage title={data ? t('hHello', { name: pick(lang, data.home.seniorName, data.home.seniorNameJa) }) : t('hToday')} description={date}>
+    <AppText variant={compact ? 'caption' : 'body'}>{t('hHomeLead')}</AppText>
+    {compact ? glance : companion}
+    {compact ? companion : glance}
     <View style={{ gap: spacing.lg }}><AppText variant="section">{t('hAssistance')}</AppText>
       <AppText variant="caption">{t('hHelpScope')}</AppText>
       <Destination label="hRequestHelp" href="/her/help" icon="tool" />

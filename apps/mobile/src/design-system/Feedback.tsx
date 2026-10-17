@@ -12,11 +12,11 @@ import { useResponsiveLayout } from './useResponsiveLayout';
 type NoticeProps = { title: string; message?: string; tone?: 'info' | 'success' | 'warning' | 'error'; action?: ButtonProps };
 export function StatusBanner({ title, message, tone = 'info', action }: NoticeProps) {
   const { palette, preferences } = useAccessibilityPreferences();
-  const { cardPadding } = useResponsiveLayout();
+  const { cardPadding, contentGap } = useResponsiveLayout();
   const icon = { info: 'info', success: 'check-circle', warning: 'shield', error: 'alert-circle' } as const;
   const fg = tone === 'error' ? palette.danger : tone === 'warning' ? palette.warningText : palette.primary;
   const bg = tone === 'error' ? palette.dangerSurface : tone === 'warning' ? palette.warningSurface : palette.secondary;
-  return <View accessibilityLiveRegion="polite" style={{ minWidth: 0, backgroundColor: bg, padding: cardPadding, borderRadius: radii.card, gap: spacing.lg,
+  return <View accessibilityLiveRegion="polite" style={{ minWidth: 0, backgroundColor: bg, padding: cardPadding, borderRadius: radii.card, gap: Math.min(spacing.lg, contentGap),
     borderWidth: preferences.highContrast ? 2 : 0, borderColor: fg }}>
     <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md }}>
       <Feather name={icon[tone]} size={control.icon} color={fg} accessible={false} />
@@ -31,8 +31,8 @@ export function StatusBanner({ title, message, tone = 'info', action }: NoticePr
 
 export function EmptyState({ title, message, action, icon = 'calendar' }: NoticeProps & { icon?: ButtonProps['icon'] }) {
   const { palette } = useAccessibilityPreferences();
-  const { cardPadding } = useResponsiveLayout();
-  return <View style={{ minWidth: 0, padding: cardPadding, gap: spacing.lg, backgroundColor: palette.secondary, borderRadius: radii.card }}>
+  const { cardPadding, contentGap } = useResponsiveLayout();
+  return <View style={{ minWidth: 0, padding: cardPadding, gap: Math.min(spacing.lg, contentGap), backgroundColor: palette.secondary, borderRadius: radii.card }}>
     {icon ? <Feather name={icon} size={28} color={palette.primary} accessible={false} /> : null}
     <AppText variant="bodyBold">{title}</AppText>
     {message ? <AppText>{message}</AppText> : null}

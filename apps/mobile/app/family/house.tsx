@@ -81,10 +81,10 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
   const labels: Record<View3, string> = { '3d': t('view3d'), '2d': t('view2d'), memory: t('viewMemory'), map: t('viewMap') };
 
   // Large scenes have a bounded stage; household details share the page's scroll area.
-  const { width, height, compact } = useResponsiveLayout();
+  const { width, height, compact, sectionGap } = useResponsiveLayout();
   const fit = width >= 760;
   const colourCard = (
-    <View style={{ gap: 24 }}> 
+    <View style={{ gap: Math.min(24, sectionGap) }}>
       <Segment label={t('colourBy')} value={colorBy} options={(['none', 'decision', 'stories', 'fixes'] as const).map((v) => [v, t(`colour_${v}`)])}
         onChange={(v) => { setColorBy(v); setEvening('off'); }} />
       <Segment label={t('evening')} value={evening} options={(['off', 'today', 'plan'] as const).map((v) => [v, t(`evening_${v}`)])}
@@ -113,12 +113,14 @@ export default function House({ olderAdult = false }: { olderAdult?: boolean }) 
           {view === '3d' ? <Button label={t('uxViewOptions')} icon="sliders" kind="tertiary" onPress={() => setMenu('options')} /> : null}
         </View>
         {view === 'map' ? <LiveOutingBanner /> : null}
-          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line, ...(fit ? { height: Math.min(640, height * 0.62) } : null) }}>
+          <Card style={{ padding: 8, backgroundColor: memory ? memoryColors.sky : colors.sheet, borderColor: memory ? memoryColors.sky : colors.line }}>
+            <View style={fit ? { height: Math.min(640, height * 0.62) - 16 } : undefined}>
             {view === 'map'
               ? <NeighbourhoodMap homeId={data.home.id} focus={focus} fill={fit} />
               : view === '2d'
               ? <FloorPlan rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} fixes={data.home.safety} fill={fit} />
               : <Home3D rooms={data.home.rooms} items={data.items} selected={selected} onSelect={onSelect} memory={memory} fixes={data.home.safety} colorBy={colorBy} evening={evening} fill={fit} />}
+            </View>
             {memory ? (
               <Text style={[type.caption, { color: '#CDBFAE', paddingHorizontal: 6, paddingTop: 4 }]}>{t('memoryLegend', { n: memories.length })}</Text>
             ) : view === '2d' ? (

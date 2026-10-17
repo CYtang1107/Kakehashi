@@ -7,7 +7,7 @@ import { AppText } from './AppText';
 import { useI18n } from '../i18n';
 import { useAccessibilityPreferences } from './preferences';
 import { floatingElevation, radii } from '../theme';
-import { useKeyboardVisible } from './useResponsiveLayout';
+import { useKeyboardVisible, useResponsiveLayout } from './useResponsiveLayout';
 
 type NavItem = { id: string; label: string; icon: keyof typeof Feather.glyphMap; active?: boolean; onPress: () => void };
 
@@ -42,15 +42,16 @@ export function AppBottomBar({ items }: { items: NavItem[] }) {
   const { bottom, left, right } = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { scale, palette } = useAccessibilityPreferences();
+  const { navigation } = useResponsiveLayout();
   const keyboardVisible = useKeyboardVisible();
   if (width >= 1000 * scale || keyboardVisible) return null;
   return <View testID="mobile-navigation" style={{ flexShrink: 0, paddingLeft: left, paddingRight: right }}><NavigationSurface style={{ padding: 4, marginHorizontal: 4, marginTop: 4, marginBottom: bottom + 4 }}>
-    <View accessibilityRole="tablist" style={{ flexDirection: 'row', gap: 6 }}>
+    <View accessibilityRole="tablist" style={{ flexDirection: 'row', gap: navigation.gap }}>
       {items.map((item) => <Pressable key={item.id} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: item.active }} aria-selected={Boolean(item.active)}
-        onPress={item.onPress} style={({ pressed }) => ({ flex: 1, minWidth: 0, padding: 6, minHeight: 64, borderRadius: radii.control, gap: 5, alignItems: 'center', justifyContent: 'center',
+        onPress={item.onPress} style={({ pressed }) => ({ flex: 1, minWidth: 0, padding: navigation.padding, minHeight: navigation.minimum, borderRadius: radii.control, gap: navigation.gap, alignItems: 'center', justifyContent: 'center',
           backgroundColor: item.active || pressed ? palette.secondary : 'transparent', borderWidth: 1, borderColor: item.active ? palette.primary : 'transparent' })}>
-        <Feather name={item.icon} size={23} color={item.active ? palette.primary : palette.textSecondary} accessible={false} />
-        <AppText variant="caption" style={{ maxWidth: '100%', fontSize: 15, lineHeight: 21, fontWeight: item.active ? '600' : '400', textAlign: 'center', color: item.active ? palette.primary : palette.textSecondary }}>{item.label}</AppText>
+        <Feather name={item.icon} size={Math.min(23, navigation.icon)} color={item.active ? palette.primary : palette.textSecondary} accessible={false} />
+        <AppText variant="navigation" style={{ maxWidth: '100%', fontWeight: item.active ? '600' : '400', textAlign: 'center', color: item.active ? palette.primary : palette.textSecondary }}>{item.label}</AppText>
       </Pressable>)}
     </View>
   </NavigationSurface></View>;
