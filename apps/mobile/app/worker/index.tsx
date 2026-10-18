@@ -61,7 +61,6 @@ export default function HelperBoard() {
       <Fold key={worker?.id ?? 'choose'} title={t('helperWho')} icon="users" open={!worker}>
       {/* Demo sign-in: pick which helper you are */}
       <View style={{ gap: 8 }}>
-        <Text style={type.eyebrow}>{t('helperWho')}</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {workers.map((w) => (
             <Pressable key={w.id} accessibilityRole="radio" disabled={busy !== null} accessibilityState={{ checked: me === w.id, disabled: busy !== null }} aria-checked={me === w.id} aria-disabled={busy !== null} onPress={() => setMe(w.id)}
@@ -77,7 +76,6 @@ export default function HelperBoard() {
       {error ? <StatusBanner tone="error" title={error} action={me ? { label: t('retry'), onPress: () => load(me) } : undefined} /> : null}
       {worker && board ? <TaskWorkspace key={worker.id} tabs defaultTask="available" tasks={[
         { id: 'available', label: t('openJobs', { n: board.open.length }), content: <>
-          <Text style={type.section}>{t('openJobs', { n: board.open.length })}</Text>
           {board.open.length === 0 ? <Text style={type.caption}>{t('noOpenJobs')}</Text> : null}
           {board.open.map((j) => (
             <Card key={j.id}>
@@ -97,7 +95,6 @@ export default function HelperBoard() {
 
         </> },
         { id: 'mine', label: t('myJobs'), content: <>
-          <Text style={type.section}>{t('myJobs')}</Text>
           {board.mine.length === 0 ? <Text style={type.caption}>{t('noMyJobs')}</Text> : null}
           {board.mine.map((j) => (
             <View key={j.id} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line }}>
